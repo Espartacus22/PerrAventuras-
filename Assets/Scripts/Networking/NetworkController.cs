@@ -5,6 +5,7 @@ using Fusion;
 using Fusion.Sockets;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
+using Networking;
 
 public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
 {
@@ -17,7 +18,7 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
     [SerializeField] private NetworkRunner _networkRunner;
     [SerializeField] private NetworkSceneManagerDefault _networkSceneManagerDefault;
     [SerializeField] private NetworkObject _playerPrefab;
-
+    private Dictionary<PlayerRef, NetworkObject> _players = new Dictionary<PlayerRef, NetworkObject>();  
     private void Start()
     {
         _createRoomButton.onClick.AddListener(CreateRoom);
@@ -66,15 +67,46 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
 
         if (!_networkRunner.IsServer) return;
 
-        _networkRunner.Spawn(_playerPrefab, new Vector3(UnityEngine.Random.Range(-3, 3), 0, 0), Quaternion.identity, player);
+        var playerSpawned = _networkRunner.Spawn(_playerPrefab, new Vector3(UnityEngine.Random.Range(-3, 3), 0, 0), Quaternion.identity, player);
+        _players.Add(player, playerSpawned);
     }
 
     public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
     {
+        if (!_networkRunner.IsServer) return;
+        if (_players.Remove(player, out var playerSpawned)) 
+        {
+            _networkRunner.Despawn(playerSpawned);  
+        }
+       
     }
 
     public void OnInput(NetworkRunner runner, NetworkInput input)
     {
+
+        var inputPlayer = new NetworkInputPlayer();
+
+        if (Input.GetKey(KeyCode.W))
+        {
+            inputPlayer.moveDirection += Vector3.forward;
+        }
+
+        if (Input.GetKey(KeyCode.S))
+        {
+            inputPlayer.moveDirection += Vector3.back;
+        }
+
+        if (Input.GetKey(KeyCode.A))
+        {
+            inputPlayer.moveDirection += Vector3.left;
+        }
+
+        if (Input.GetKey(KeyCode.D))
+        {
+            inputPlayer.moveDirection += Vector3.right;
+        }
+
+        input.Set(inputPlayer); 
     }
 
 
