@@ -18,11 +18,25 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
     [SerializeField] private NetworkRunner _networkRunner;
     [SerializeField] private NetworkSceneManagerDefault _networkSceneManagerDefault;
     [SerializeField] private NetworkObject _playerPrefab;
-    private Dictionary<PlayerRef, NetworkObject> _players = new Dictionary<PlayerRef, NetworkObject>();  
+    private Dictionary<PlayerRef, NetworkObject> _players = new Dictionary<PlayerRef, NetworkObject>(); 
+    
+    private bool _mouseButtonPressed;
+
     private void Start()
     {
         _createRoomButton.onClick.AddListener(CreateRoom);
         _joinRoomButton.onClick.AddListener(JoinRoom);
+    }
+
+
+    private void Update()
+    {
+        if (Input.GetMouseButtonDown(0)) 
+            {
+
+            _mouseButtonPressed = true;
+
+            }
     }
 
     private async void CreateRoom()
@@ -105,8 +119,10 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
         {
             inputPlayer.moveDirection += Vector3.right;
         }
-
+        inputPlayer.buttons.Set(NetworkInputPlayer.MOUSE_BUTTON_0, _mouseButtonPressed);
         input.Set(inputPlayer); 
+
+        _mouseButtonPressed = false;
     }
 
 
