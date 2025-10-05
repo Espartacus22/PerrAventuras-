@@ -8,7 +8,7 @@ public class Perseguidor : MonoBehaviour
     public Transform player;
     void Start()
     {
-        agent = GetComponent<NavMeshAgent>()
+        agent = GetComponent<NavMeshAgent>();
         chase();
     }
     void chase()
