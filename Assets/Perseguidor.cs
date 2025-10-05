@@ -11,8 +11,8 @@ public class Perseguidor : MonoBehaviour
         agent = GetComponent<NavMeshAgent>()
         chase();
     }
-    void chase();
+    void chase()
     {
         agent SerDestination(obetivo.position);
-}
+    }
 }
