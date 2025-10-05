@@ -41,10 +41,12 @@ public class Player : NetworkBehaviour
             inputPlayer.moveDirection.Normalize();
             _characterController.Move(inputPlayer.moveDirection * Runner.DeltaTime);
             
-            if (inputPlayer.buttons.IsSet(NetworkInputPlayer.MOUSE_BUTTON_0)) 
+            if (inputPlayer.buttons.IsSet(NetworkInputPlayer.MOUSE_BUTTON_0) && HasStateAuthority)
             {
-                Runner.Spawn(_projectilePrefab, _projectileSpawnPoint.position, Quaternion.LookRotation(transform.forward), Object.InputAuthority);
+               var spawnedProjectile = Runner.Spawn(_projectilePrefab, _projectileSpawnPoint.position, Quaternion.LookRotation(transform.forward), Object.InputAuthority);
+                spawnedProjectile.GetComponent<Projectile>().InitProjectile();
             }
+
   
     }
 

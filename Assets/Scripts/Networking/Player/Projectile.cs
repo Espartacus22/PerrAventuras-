@@ -9,11 +9,11 @@ public class Projectile : NetworkBehaviour
     [SerializeField] private float _speed;
     public void InitProjectile ()
     {
-        life = TickTimer.CreateFromSeconds(Runner, delayInSeconds: 3);
+        life = TickTimer.CreateFromSeconds(Runner,3);
     }
     public override void FixedUpdateNetwork()
     {
-        if (life.Expired(Runner))
+        if (!life.Expired(Runner))
             { 
 
             transform.position += transform.forward * Runner.DeltaTime* _speed;
