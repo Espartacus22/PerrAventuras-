@@ -24,7 +24,7 @@ MonoBehaviour:
   dashDuration: 0.2
   crouchHeight: 0.5
   meleeAttacks:
-  - attackName: 
+  - attackName: Ataque con Martillo
     damage: 0
     cooldown: 0
     range: 2

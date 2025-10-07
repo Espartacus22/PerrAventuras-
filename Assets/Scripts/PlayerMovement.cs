@@ -4,7 +4,17 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    [Header("Datos del personaje")]
     public CharacterType characterData;
+
+    [Header("Combate")]
+    public int selectedMeleeIndex = 0;
+    public int selectedRangedIndex = 0;
+
+    private int currentComboIndex = -1;
+    private float comboResetTimer = 0f;
+    private float comboResetDelay = 1f;
+    private float lastAttackTime;
 
     private Rigidbody rb;
     private Animator animator;
@@ -21,11 +31,6 @@ public class PlayerMovement : MonoBehaviour
     private float lastShiftTime;
     private float doubleTapThreshold = 0.3f;
 
-    private int currentComboIndex = 0;
-    private float comboResetTimer = 0f;
-    private float comboResetDelay = 1f;
-    private float lastAttackTime;
-
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -40,6 +45,9 @@ public class PlayerMovement : MonoBehaviour
 
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
+
+        if (characterData == null)
+            Debug.LogError("Falta asignar CharacterType en PlayerMovement");
     }
 
     void Update()
@@ -49,20 +57,27 @@ public class PlayerMovement : MonoBehaviour
         HandleDash();
         HandleCrouch();
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0)) // Clic izquierdo
         {
-            Debug.Log("Bot�n izquierdo presionado");
+            if (currentComboIndex == -1)
+                currentComboIndex = selectedMeleeIndex;
+
             TryMeleeAttack();
         }
 
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(1)) // Clic derecho
         {
-            Debug.Log("Bot�n derecho presionado");
-            TryRangedAttack(0);
+            TryRangedAttack();
         }
 
         if (Time.time > comboResetTimer)
-            currentComboIndex = 0;
+            currentComboIndex = -1;
+
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            Debug.Log($"Melee activo: {GetAttackName(characterData.meleeAttacks, selectedMeleeIndex)}");
+            Debug.Log($"Ranged activo: {GetAttackName(characterData.rangedAttacks, selectedRangedIndex)}");
+        }
     }
 
     void HandleMovement()
@@ -159,7 +174,7 @@ public class PlayerMovement : MonoBehaviour
 
     void TryMeleeAttack()
     {
-        if (characterData == null || characterData.meleeAttacks.Count == 0) return;
+        if (characterData == null || characterData.meleeAttacks.Count <= currentComboIndex) return;
 
         var attack = characterData.meleeAttacks[currentComboIndex];
         if (Time.time < lastAttackTime + attack.cooldown) return;
@@ -176,27 +191,27 @@ public class PlayerMovement : MonoBehaviour
         {
             if (enemy.CompareTag("Enemy"))
             {
-                Debug.Log($"Golpe� a: {enemy.name} con {attack.damage} de da�o.");
+                Debug.Log($"Golpe a: {enemy.name} con {attack.damage} de daño.");
                 // enemy.GetComponent<EnemyHealth>()?.TakeDamage(attack.damage);
             }
         }
 
-        if (attack.canChainCombo)
+        if (attack.canChainCombo && characterData.meleeAttacks.Count > attack.nextComboIndex)
         {
             currentComboIndex = attack.nextComboIndex;
             comboResetTimer = Time.time + comboResetDelay;
         }
         else
         {
-            currentComboIndex = 0;
+            currentComboIndex = -1;
         }
     }
 
-    void TryRangedAttack(int index)
+    void TryRangedAttack()
     {
-        if (characterData == null || index >= characterData.rangedAttacks.Count) return;
+        if (characterData == null || characterData.rangedAttacks.Count <= selectedRangedIndex) return;
 
-        var attack = characterData.rangedAttacks[index];
+        var attack = characterData.rangedAttacks[selectedRangedIndex];
         if (Time.time < lastAttackTime + attack.cooldown) return;
 
         lastAttackTime = Time.time;
@@ -206,7 +221,6 @@ public class PlayerMovement : MonoBehaviour
 
         if (attack.projectilePrefab != null)
         {
-            Debug.Log($"Instanciando proyectil: {attack.attackName}");
             GameObject projectile = Instantiate(
                 attack.projectilePrefab,
                 transform.position + transform.forward,
@@ -249,11 +263,18 @@ public class PlayerMovement : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
-        if (characterData != null && characterData.meleeAttacks.Count > currentComboIndex)
+        if (characterData != null && characterData.meleeAttacks.Count > selectedMeleeIndex)
         {
-            var attack = characterData.meleeAttacks[currentComboIndex];
+            var attack = characterData.meleeAttacks[selectedMeleeIndex];
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(transform.position + transform.forward * attack.range * 0.5f, attack.range * 0.5f);
         }
+    }
+
+    string GetAttackName<T>(List<T> list, int index) where T : class
+    {
+        if (list == null || index >= list.Count || index < 0) return "Ninguno";
+        var field = list[index].GetType().GetField("attackName");
+        return field != null ? field.GetValue(list[index])?.ToString() : "Sin nombre";
     }
 }
