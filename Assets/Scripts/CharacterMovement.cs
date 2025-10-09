@@ -75,6 +75,7 @@ public class CharacterMovement : MonoBehaviour
             controller.center = new Vector3(0, originalHeight / 2f, 0);
         }
     }
+
     void Update()
     {
         // decidir qué input usar
@@ -100,8 +101,28 @@ public class CharacterMovement : MonoBehaviour
             jumpCount = 0;
         }
 
-        // movimiento horizontal
-        Vector3 move = transform.right * currentInput.h + transform.forward * currentInput.v;
+        // === Movimiento horizontal relativo a la cámara ===
+        Vector3 move = Vector3.zero;
+
+        if (Camera.main != null)
+        {
+            Vector3 camForward = Camera.main.transform.forward;
+            Vector3 camRight = Camera.main.transform.right;
+
+            camForward.y = 0f;
+            camRight.y = 0f;
+
+            camForward.Normalize();
+            camRight.Normalize();
+
+            move = camRight * currentInput.h + camForward * currentInput.v;
+        }
+        else
+        {
+            // fallback si no hay cámara
+            move = transform.right * currentInput.h + transform.forward * currentInput.v;
+        }
+
         float speed = currentInput.run ? runSpeed : walkSpeed;
         if (currentInput.crouch) speed = crouchSpeed;
 
@@ -123,6 +144,14 @@ public class CharacterMovement : MonoBehaviour
             controller.Move(move * speed * Time.deltaTime);
         }
 
+        // === Rotación del player hacia la dirección de movimiento ===
+        if (move.sqrMagnitude > 0.01f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(move);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+        }
+
+        // salto
         if (currentInput.jump)
         {
             if (isGrounded || jumpCount < maxJumps)
@@ -131,11 +160,10 @@ public class CharacterMovement : MonoBehaviour
                 jumpCount++;
             }
 
-            if (useLocalInput && localInput != null) 
+            if (useLocalInput && localInput != null)
             {
                 ReadLocalInputToCurrent();
             }
-
         }
 
         // gravity
@@ -150,7 +178,7 @@ public class CharacterMovement : MonoBehaviour
         currentInput.run = localInput.run;
         currentInput.crouch = localInput.crouch;
         currentInput.jump = localInput.jump;
-        currentInput.dash = localInput.ConsumeDash();
+        currentInput.dash = localInput.dash;
     }
 
     public void ApplyNetworkInput(NetworkInputData data)
@@ -159,13 +187,13 @@ public class CharacterMovement : MonoBehaviour
         networkInputBuffer.v = data.move.y;
         networkInputBuffer.run = data.run;
         networkInputBuffer.crouch = data.crouch;
-
         networkInputBuffer.jump = data.jump;
         networkInputBuffer.dash = data.dash;
 
         networkInputActive = true;
         lastNetworkInputTime = Time.time;
     }
+
     public void SetUseLocalInput(bool useLocal)
     {
         useLocalInput = useLocal;
