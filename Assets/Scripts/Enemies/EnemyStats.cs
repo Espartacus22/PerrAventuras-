@@ -33,7 +33,7 @@ public class EnemyStats : MonoBehaviour
     {
         if (enemyData.dropPrefab != null)
         {
-           Vector3 dropPosition = new Vector3(transform.position.x, 2.5f, transform.position.z);
+           Vector3 dropPosition = new Vector3(transform.position.x, 0.2f, transform.position.z);
 
             GameObject drop = Instantiate(enemyData.dropPrefab, dropPosition, Quaternion.identity);
 

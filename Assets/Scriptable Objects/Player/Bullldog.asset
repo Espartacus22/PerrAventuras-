@@ -38,7 +38,7 @@ MonoBehaviour:
   - attackName: Disparo
     damage: 50
     cooldown: 0.2
-    range: 50
+    range: 10
     animation: {fileID: 0}
     sound: {fileID: 0}
     projectilePrefab: {fileID: 1829786823211159021, guid: fc86b118525b2a74e985c28dd2a46bb9, type: 3}
