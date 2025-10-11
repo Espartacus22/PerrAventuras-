@@ -3,29 +3,31 @@ using UnityEngine.AI;
 
 public class EnemyFollow : MonoBehaviour
 {
-    public Transform target; // El jugador
-    public float chaseRange = 3f; // distancia máxima para perseguir
+    public Transform target;
+    public EnemyType enemyData;
 
     private NavMeshAgent agent;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
+        if (enemyData != null)
+            agent.speed = enemyData.moveSpeed;
     }
 
     void Update()
     {
-        if (target == null) return;
+        if (target == null || enemyData == null) return;
 
         float distance = Vector3.Distance(transform.position, target.position);
 
-        if (distance <= chaseRange)
+        if (distance <= enemyData.chaseRange)
         {
             agent.SetDestination(target.position);
         }
         else
         {
-            agent.ResetPath(); // detiene el movimiento
+            agent.ResetPath();
         }
     }
 }

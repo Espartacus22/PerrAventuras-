@@ -30,7 +30,7 @@ public class ProjectileBehavior : MonoBehaviour
         float distanceTraveled = Vector3.Distance(startPosition, transform.position);
         if (distanceTraveled > maxRange)
         {
-            Debug.Log("Proyectil destruido por superar el rango.");
+          
             Destroy(gameObject);
         }
     }
@@ -40,8 +40,12 @@ public class ProjectileBehavior : MonoBehaviour
         if (other.CompareTag("Enemy"))
         {
             Debug.Log($"Impactó a: {other.name} con {damage} de daño.");
-            // Aplicar daño si tenés un sistema de salud
-            // other.GetComponent<EnemyHealth>()?.TakeDamage(damage);
+
+            EnemyStats enemy = other.GetComponent<EnemyStats>();
+            if (enemy != null)
+            {
+                enemy.TakeDamage(Mathf.RoundToInt(damage));
+            }
 
             Destroy(gameObject);
         }

@@ -57,7 +57,9 @@ public class PlayerMovement : MonoBehaviour
         HandleDash();
         HandleCrouch();
 
-        if (Input.GetMouseButtonDown(0)) // Clic izquierdo
+        RotateTowardsMouse();
+
+        if (Input.GetMouseButtonDown(0))
         {
             if (currentComboIndex == -1)
                 currentComboIndex = selectedMeleeIndex;
@@ -65,7 +67,7 @@ public class PlayerMovement : MonoBehaviour
             TryMeleeAttack();
         }
 
-        if (Input.GetMouseButtonDown(1)) // Clic derecho
+        if (Input.GetMouseButtonDown(1))
         {
             TryRangedAttack();
         }
@@ -84,14 +86,22 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isDashing) return;
 
+        // Entrada del jugador
         float moveX = Input.GetAxis("Horizontal");
         float moveZ = Input.GetAxis("Vertical");
-        Vector3 moveDir = new Vector3(moveX, 0, moveZ).normalized;
+        Vector3 input = new Vector3(moveX, 0, moveZ);
 
-        if (moveDir.magnitude >= 0.1f)
+        if (input.sqrMagnitude > 0.01f)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(moveDir, Vector3.up);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, characterData.rotationSpeed * Time.deltaTime);
+            // Obtener referencia a la cámara
+            Transform cam = Camera.main.transform;
+
+            // Proyectar forward y right de la cámara en el plano horizontal
+            Vector3 camForward = Vector3.Scale(cam.forward, new Vector3(1, 0, 1)).normalized;
+            Vector3 camRight = Vector3.Scale(cam.right, new Vector3(1, 0, 1)).normalized;
+
+            // Movimiento relativo a la cámara
+            Vector3 moveDir = (camForward * input.z + camRight * input.x).normalized;
 
             float currentSpeed = characterData.walkSpeed;
             if (isCrouching)
@@ -99,12 +109,27 @@ public class PlayerMovement : MonoBehaviour
             else if (Input.GetKey(KeyCode.LeftShift))
                 currentSpeed *= characterData.runMultiplier;
 
-            Vector3 velocity = moveDir * currentSpeed;
-            rb.linearVelocity = new Vector3(velocity.x, rb.linearVelocity.y, velocity.z);
+            rb.linearVelocity = new Vector3(moveDir.x * currentSpeed, rb.linearVelocity.y, moveDir.z * currentSpeed);
         }
         else
         {
             rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
+        }
+    }
+
+    void RotateTowardsMouse()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f))
+        {
+            Vector3 lookDir = hit.point - transform.position;
+            lookDir.y = 0;
+
+            if (lookDir.sqrMagnitude > 0.01f)
+            {
+                Quaternion lookRotation = Quaternion.LookRotation(lookDir);
+                transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, characterData.rotationSpeed * Time.deltaTime);
+            }
         }
     }
 
@@ -136,14 +161,26 @@ public class PlayerMovement : MonoBehaviour
     {
         isDashing = true;
 
-        Vector3 inputDirection = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
-        if (inputDirection == Vector3.zero) inputDirection = transform.forward;
+        // Entrada del jugador
+        float moveX = Input.GetAxisRaw("Horizontal");
+        float moveZ = Input.GetAxisRaw("Vertical");
+        Vector3 input = new Vector3(moveX, 0, moveZ);
+
+        // Dirección relativa a la cámara
+        Transform cam = Camera.main.transform;
+        Vector3 camForward = Vector3.Scale(cam.forward, new Vector3(1, 0, 1)).normalized;
+        Vector3 camRight = Vector3.Scale(cam.right, new Vector3(1, 0, 1)).normalized;
+        Vector3 dashDir = (camForward * input.z + camRight * input.x).normalized;
+
+        // Si no hay entrada, usar dirección actual del personaje
+        if (dashDir == Vector3.zero)
+            dashDir = transform.forward;
 
         float startTime = Time.time;
 
         while (Time.time < startTime + characterData.dashDuration)
         {
-            rb.linearVelocity = inputDirection * characterData.dashSpeed;
+            rb.linearVelocity = dashDir * characterData.dashSpeed;
             yield return null;
         }
 
@@ -192,7 +229,6 @@ public class PlayerMovement : MonoBehaviour
             if (enemy.CompareTag("Enemy"))
             {
                 Debug.Log($"Golpe a: {enemy.name} con {attack.damage} de daño.");
-                // enemy.GetComponent<EnemyHealth>()?.TakeDamage(attack.damage);
             }
         }
 
@@ -209,22 +245,33 @@ public class PlayerMovement : MonoBehaviour
 
     void TryRangedAttack()
     {
-        if (characterData == null || characterData.rangedAttacks.Count <= selectedRangedIndex) return;
+        if (characterData == null || characterData.rangedAttacks.Count <= selectedRangedIndex)
+            return;
 
         var attack = characterData.rangedAttacks[selectedRangedIndex];
         if (Time.time < lastAttackTime + attack.cooldown) return;
-
         lastAttackTime = Time.time;
 
         if (attack.animation != null) animator.Play(attack.animation.name);
         if (attack.sound != null) audioSource.PlayOneShot(attack.sound);
 
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        Vector3 shootDirection = transform.forward;
+
+        if (Physics.Raycast(ray, out hit, 100f))
+        {
+            shootDirection = (hit.point - transform.position).normalized;
+            Quaternion lookRotation = Quaternion.LookRotation(shootDirection, Vector3.up);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, characterData.rotationSpeed * Time.deltaTime);
+        }
+
         if (attack.projectilePrefab != null)
         {
             GameObject projectile = Instantiate(
                 attack.projectilePrefab,
-                transform.position + transform.forward,
-                transform.rotation
+                transform.position + shootDirection,
+                Quaternion.LookRotation(shootDirection)
             );
 
             ProjectileBehavior pb = projectile.GetComponent<ProjectileBehavior>();
