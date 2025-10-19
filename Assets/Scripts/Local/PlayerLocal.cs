@@ -1,19 +1,17 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// PlayerLocal: Controls the player's movement, jumping, dashing, and attacking in offline mode.
 /// PlayerLocal: Controla el movimiento, salto, dash y ataque del jugador en modo offline.
-/// Supports InputPlayer and CharacterType ScriptableObject.
-/// Compatible con InputPlayer y CharacterType ScriptableObject.
+/// Compatible con CharacterType (ScriptableObject) y PlayerInputHandler.
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(PlayerHealthLocal))]
 public class PlayerLocal : MonoBehaviour
 {
     [Header("Configuración general")]
-    public CharacterType characterData; // ScriptableObject con stats del personaje
-    public PlayerInputHandler input;            // Script de input local
+    public CharacterType characterData;    // ScriptableObject con stats del personaje
+    public PlayerInputHandler input;        // Script de input local
 
     [Header("Componentes")]
     private CharacterController controller;
@@ -21,13 +19,12 @@ public class PlayerLocal : MonoBehaviour
 
     [Header("Movimiento")]
     private Vector3 moveDirection;
-    private float gravity = -9.81f;
     private float verticalVelocity;
+    private float gravity = -9.81f;
     private bool isGrounded;
 
     [Header("Dash")]
     private bool isDashing = false;
-    private float dashTimer = 0f;
 
     private void Start()
     {
@@ -36,10 +33,14 @@ public class PlayerLocal : MonoBehaviour
 
         if (characterData == null)
             Debug.LogWarning("No hay CharacterType asignado al PlayerLocal.");
+        if (input == null)
+            Debug.LogWarning("No hay PlayerInputHandler asignado al PlayerLocal.");
     }
 
     private void Update()
     {
+        if (characterData == null || input == null) return;
+
         HandleMovement();
         HandleJump();
         HandleDash();
@@ -55,11 +56,11 @@ public class PlayerLocal : MonoBehaviour
         move = Camera.main.transform.TransformDirection(move);
         move.y = 0;
 
-        float speed = inputDir.magnitude > 0.5f ? characterData.RunMultiplier : characterData.WalkSpeed;
+        float speed = inputDir.magnitude > 0.5f ? characterData.runMultiplier : characterData.walkSpeed;
 
         controller.Move(move * speed * Time.deltaTime);
 
-        // Gravedad y grounded check
+        // Gravedad
         isGrounded = controller.isGrounded;
         if (isGrounded && verticalVelocity < 0)
             verticalVelocity = -2f;
@@ -71,24 +72,20 @@ public class PlayerLocal : MonoBehaviour
     private void HandleJump()
     {
         if (input.GetJump() && isGrounded)
-        {
-            verticalVelocity = characterData.JumpForce;
-        }
+            verticalVelocity = characterData.jumpForce;
     }
 
     private void HandleDash()
     {
         if (input.GetDash() && !isDashing)
-        {
             StartCoroutine(DashCoroutine());
-        }
     }
 
     private IEnumerator DashCoroutine()
     {
         isDashing = true;
-        float dashTime = characterData.DashDuration;
-        Vector3 dashDirection = transform.forward * characterData.DashSpeed;
+        float dashTime = characterData.dashDuration;
+        Vector3 dashDirection = transform.forward * characterData.dashSpeed;
 
         while (dashTime > 0)
         {
@@ -104,13 +101,13 @@ public class PlayerLocal : MonoBehaviour
     {
         if (input.GetAttack())
         {
-            // Temporary: melee attack / Provisorio: ataque cuerpo a cuerpo
-            Debug.Log("Ataque ejecutado");
+            Debug.Log("Ataque ejecutado!");
         }
     }
 
     public void TakeDamage(int damage)
     {
-        health.TakeDamage(damage);
+        if (health != null)
+            health.TakeDamage(damage);
     }
 }

@@ -302,10 +302,8 @@ GameObject:
   - component: {fileID: 399127964}
   - component: {fileID: 399127963}
   - component: {fileID: 399127962}
-  - component: {fileID: 399127961}
   - component: {fileID: 399127968}
   - component: {fileID: 399127967}
-  - component: {fileID: 399127969}
   m_Layer: 0
   m_Name: Piki
   m_TagString: Player
@@ -313,21 +311,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &399127961
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 399127960}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45c7b0c95c101f04581f086a83eaedc1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  characterData: {fileID: 11400000, guid: 57094d7e95b45e54db697615c651fe85, type: 2}
-  selectedMeleeIndex: 0
-  selectedRangedIndex: 0
 --- !u!54 &399127962
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -565,23 +548,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &399127969
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 399127960}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3ac900c71e045244a83e8a9017f90900, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  characterData: {fileID: 11400000, guid: 57094d7e95b45e54db697615c651fe85, type: 2}
-  currentLevel: 1
-  currentXP: 1
-  xpRequiredPerLevel: 0000000064000000fa000000f401000020030000b0040000
-  hasShield: 0
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
