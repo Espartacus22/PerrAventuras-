@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 434580db0ca717d4597483437195595b, type: 3}
   m_Name: Bullldog
   m_EditorClassIdentifier: 
-  characterName: Piki
+  characterName: Bulldog
   hp: 100
   walkSpeed: 10
   runMultiplier: 5

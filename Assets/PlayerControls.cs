@@ -163,6 +163,24 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Atk melee"",
+                    ""type"": ""Button"",
+                    ""id"": ""b2e95516-458b-43b7-afe6-71bb36776352"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Atk Ranged"",
+                    ""type"": ""Button"",
+                    ""id"": ""471fab9f-1116-42da-ac79-c325c7a1cebd"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -290,7 +308,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""4950c1fa-70a8-4256-828d-4a0c412f23d9"",
-                    ""path"": ""<Keyboard>/leftShift"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -334,7 +352,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""519fc2c6-0b1d-4e92-8ebc-37bb845b7c63"",
-                    ""path"": ""<Keyboard>/leftAlt"",
+                    ""path"": ""<Keyboard>/leftShift"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -396,6 +414,28 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""Ability2"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fd618562-bac6-4f30-9f96-a09fc757ff78"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Atk melee"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6c7a740a-286e-444e-8326-da5a3f4a2b4c"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Atk Ranged"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -412,6 +452,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Player_Dash = m_Player.FindAction("Dash", throwIfNotFound: true);
         m_Player_Ability1 = m_Player.FindAction("Ability1", throwIfNotFound: true);
         m_Player_Ability2 = m_Player.FindAction("Ability2", throwIfNotFound: true);
+        m_Player_Atkmelee = m_Player.FindAction("Atk melee", throwIfNotFound: true);
+        m_Player_AtkRanged = m_Player.FindAction("Atk Ranged", throwIfNotFound: true);
     }
 
     ~@PlayerControls()
@@ -500,6 +542,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Dash;
     private readonly InputAction m_Player_Ability1;
     private readonly InputAction m_Player_Ability2;
+    private readonly InputAction m_Player_Atkmelee;
+    private readonly InputAction m_Player_AtkRanged;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -543,6 +587,14 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Ability2".
         /// </summary>
         public InputAction @Ability2 => m_Wrapper.m_Player_Ability2;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/Atkmelee".
+        /// </summary>
+        public InputAction @Atkmelee => m_Wrapper.m_Player_Atkmelee;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/AtkRanged".
+        /// </summary>
+        public InputAction @AtkRanged => m_Wrapper.m_Player_AtkRanged;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -593,6 +645,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Ability2.started += instance.OnAbility2;
             @Ability2.performed += instance.OnAbility2;
             @Ability2.canceled += instance.OnAbility2;
+            @Atkmelee.started += instance.OnAtkmelee;
+            @Atkmelee.performed += instance.OnAtkmelee;
+            @Atkmelee.canceled += instance.OnAtkmelee;
+            @AtkRanged.started += instance.OnAtkRanged;
+            @AtkRanged.performed += instance.OnAtkRanged;
+            @AtkRanged.canceled += instance.OnAtkRanged;
         }
 
         /// <summary>
@@ -628,6 +686,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Ability2.started -= instance.OnAbility2;
             @Ability2.performed -= instance.OnAbility2;
             @Ability2.canceled -= instance.OnAbility2;
+            @Atkmelee.started -= instance.OnAtkmelee;
+            @Atkmelee.performed -= instance.OnAtkmelee;
+            @Atkmelee.canceled -= instance.OnAtkmelee;
+            @AtkRanged.started -= instance.OnAtkRanged;
+            @AtkRanged.performed -= instance.OnAtkRanged;
+            @AtkRanged.canceled -= instance.OnAtkRanged;
         }
 
         /// <summary>
@@ -724,5 +788,19 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnAbility2(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Atk melee" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnAtkmelee(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Atk Ranged" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnAtkRanged(InputAction.CallbackContext context);
     }
 }
