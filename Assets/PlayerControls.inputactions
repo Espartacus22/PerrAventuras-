@@ -77,6 +77,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Atk melee",
+                    "type": "Button",
+                    "id": "b2e95516-458b-43b7-afe6-71bb36776352",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Atk Ranged",
+                    "type": "Button",
+                    "id": "471fab9f-1116-42da-ac79-c325c7a1cebd",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -204,7 +222,7 @@
                 {
                     "name": "",
                     "id": "4950c1fa-70a8-4256-828d-4a0c412f23d9",
-                    "path": "<Keyboard>/leftShift",
+                    "path": "<Keyboard>/leftCtrl",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -248,7 +266,7 @@
                 {
                     "name": "",
                     "id": "519fc2c6-0b1d-4e92-8ebc-37bb845b7c63",
-                    "path": "<Keyboard>/leftAlt",
+                    "path": "<Keyboard>/leftShift",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -308,6 +326,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "Ability2",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "fd618562-bac6-4f30-9f96-a09fc757ff78",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Atk melee",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6c7a740a-286e-444e-8326-da5a3f4a2b4c",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Atk Ranged",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -14,32 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Piki
   hp: 100
-  walkSpeed: 5
-  runMultiplier: 3
-  crouchMultiplier: 0.5
+  walkSpeed: 10
+  runMultiplier: 5
   rotationSpeed: 10
+  crouchMultiplier: 0.5
   jumpForce: 7
   dobleSalto: 1
   dashSpeed: 20
   dashDuration: 0.2
   crouchHeight: 0.5
-  meleeAttacks:
-  - attackName: Ataque con Martillo
-    damage: 0
-    cooldown: 0
-    range: 2
-    animation: {fileID: 0}
-    sound: {fileID: 0}
-    impactEffectPrefab: {fileID: 0}
-    canChainCombo: 0
-    nextComboIndex: 0
-    requiredLevel: 5
-  rangedAttacks:
-  - attackName: Disparo
-    damage: 50
-    cooldown: 0.2
-    range: 10
-    animation: {fileID: 0}
-    sound: {fileID: 0}
-    projectilePrefab: {fileID: 1829786823211159021, guid: fc86b118525b2a74e985c28dd2a46bb9, type: 3}
-    requiredLevel: 1
+  meleeAttacks: 1
+  rangedAttacks: 1

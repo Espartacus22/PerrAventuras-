@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3936876273765433833}
   - component: {fileID: 7550150537958901364}
+  - component: {fileID: 9197802269533041775}
   m_Layer: 0
   m_Name: InputsPlayer
   m_TagString: Untagged
@@ -26,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 6065864369360408008}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.2789644, y: 2.2069569, z: 80.51031}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -44,3 +45,45 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 309022745fc9b36408ec00d89d4eeb71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dashKey: 304
+  crouchKey: 306
+  meleeAttackKey: 323
+  rangedAttackKey: 324
+  runKey: 308
+  moveInput: {x: 0, y: 0}
+  jumpPressed: 0
+  dashPressed: 0
+  crouchHeld: 0
+  meleeAttackPressed: 0
+  rangedAttackPressed: 0
+  runHeld: 0
+--- !u!114 &9197802269533041775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6065864369360408008}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Actions: {fileID: -944628639613478452, guid: 71776264e2c6628499780d0ee9caf3c0, type: 3}
+  m_NotificationBehavior: 0
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ControlsChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents: []
+  m_NeverAutoSwitchControlSchemes: 0
+  m_DefaultControlScheme: 
+  m_DefaultActionMap: Player
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 0}
