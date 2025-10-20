@@ -133,13 +133,13 @@ public class PlayerLocal : MonoBehaviour
     {
         if (input.GetCrouch())
         {
-            controller.height = characterData.crouchHeight;
-            controller.center = new Vector3(originalCenter.x, originalCenter.y - (originalHeight - controller.height) / 2f, originalCenter.z);
+            controller.height = Mathf.Lerp(controller.height, 1.0f, Time.deltaTime * 8f);
+            controller.center = new Vector3(0, 0.5f, 0);
         }
         else
         {
-            controller.height = originalHeight;
-            controller.center = originalCenter;
+            controller.height = Mathf.Lerp(controller.height, 2.0f, Time.deltaTime * 8f);
+            controller.center = new Vector3(0, 1.0f, 0);
         }
     }
     #endregion
