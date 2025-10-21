@@ -20,8 +20,8 @@ MonoBehaviour:
   crouchMultiplier: 0.5
   jumpForce: 7
   dobleSalto: 1
-  dashSpeed: 20
-  dashDuration: 0.2
+  dashSpeed: 30
+  dashDuration: 0.3
   crouchHeight: 0.5
   meleeAttacks: 1
   rangedAttacks: 1

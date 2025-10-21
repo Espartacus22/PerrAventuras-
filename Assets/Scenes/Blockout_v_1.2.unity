@@ -719,7 +719,7 @@ Transform:
   m_GameObject: {fileID: 82506536}
   serializedVersion: 2
   m_LocalRotation: {x: 0.25340134, y: 0.000000005431765, z: -0.0000000014228568, w: 0.9673613}
-  m_LocalPosition: {x: -14830.1, y: 14439.13, z: 1786.3}
+  m_LocalPosition: {x: -14830.1, y: 14438.85, z: 1786.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1090,6 +1090,7 @@ GameObject:
   - component: {fileID: 97975716}
   - component: {fileID: 97975715}
   - component: {fileID: 97975719}
+  - component: {fileID: 97975720}
   m_Layer: 0
   m_Name: EnemyFollow
   m_TagString: Untagged
@@ -1233,6 +1234,25 @@ MonoBehaviour:
   attackRange: 2
   player: {fileID: 301505714}
   gravity: -9.81
+--- !u!114 &97975720
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 97975712}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60a335d93583e374faba1a8abc13b632, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 30
+  currentHealth: 0
+  maxShield: 50
+  currentShield: 50
+  shieldDamageAbsorb: 1
+  shieldRegenDelay: 3
+  shieldRegenRate: 8
 --- !u!1 &110532939
 GameObject:
   m_ObjectHideFlags: 0
@@ -1828,7 +1848,7 @@ CharacterController:
   m_Enabled: 1
   serializedVersion: 3
   m_Height: 2
-  m_Radius: 2.09
+  m_Radius: 1.9
   m_SlopeLimit: 45
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
@@ -1919,7 +1939,7 @@ Transform:
   m_GameObject: {fileID: 301505707}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -14830.1, y: 14436.88, z: 1790.3}
+  m_LocalPosition: {x: -14830.1, y: 14436.6, z: 1790.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1957,7 +1977,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   currentHealth: 0
-  invulnerabilityTime: 0.5
+  maxShield: 50
+  currentShield: 50
+  shieldDamageAbsorb: 1
+  shieldRegenDelay: 3
+  shieldRegenRate: 8
 --- !u!1 &303598894
 GameObject:
   m_ObjectHideFlags: 0
@@ -8423,7 +8447,7 @@ Transform:
   m_GameObject: {fileID: 1785673985}
   serializedVersion: 2
   m_LocalRotation: {x: 0.25340134, y: 0.0000000056583387, z: -0.0000000022878033, w: 0.9673613}
-  m_LocalPosition: {x: -14830.1, y: 14439.13, z: 1786.3}
+  m_LocalPosition: {x: -14830.1, y: 14438.85, z: 1786.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9476,13 +9500,13 @@ SceneRoots:
   m_Roots:
   - {fileID: 262660018}
   - {fileID: 82506537}
+  - {fileID: 1785673991}
   - {fileID: 519386293}
   - {fileID: 1588243167}
   - {fileID: 301505714}
   - {fileID: 623993392}
   - {fileID: 1766328461}
   - {fileID: 700111254}
-  - {fileID: 1785673991}
   - {fileID: 1792765048}
   - {fileID: 1090152876}
   - {fileID: 97975713}
