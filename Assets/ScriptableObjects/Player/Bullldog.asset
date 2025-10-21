@@ -18,7 +18,7 @@ MonoBehaviour:
   runMultiplier: 5
   rotationSpeed: 10
   crouchMultiplier: 0.5
-  jumpForce: 7
+  jumpForce: 8
   dobleSalto: 1
   dashSpeed: 30
   dashDuration: 0.3
