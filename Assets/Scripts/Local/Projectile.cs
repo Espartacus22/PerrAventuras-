@@ -2,38 +2,33 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
-    [Header("Configuraci�n general")]
     public float speed = 20f;
-    public float lifetime = 3f;
-    public int damage = 10;
-    public string targetTag = "Player"; // Cambialo a "Enemy" si lo usas para el jugador
-
-    private Rigidbody rb;
+    public float lifetime = 5f;
+    public int damage = 1;
+    public string targetTag = "Enemy"; // por defecto apunta a enemigos
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        rb.linearVelocity = transform.forward * speed;
         Destroy(gameObject, lifetime);
+    }
+
+    void Update()
+    {
+        transform.Translate(Vector3.forward * speed * Time.deltaTime);
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag(targetTag))
         {
-            // Intentar aplicar da�o si el objetivo tiene PlayerHealthLocal
-            var health = other.GetComponent<PlayerHealthLocal>();
-            if (health != null)
-            {
-                health.TakeDamage(damage);
-            }
+            Debug.Log($"{name} impactó contra {targetTag}");
+            Destroy(gameObject);
+        }
+    }
 
-            Destroy(gameObject);
-        }
-        else if (!other.isTrigger)
-        {
-            // Si impacta con algo que no es un trigger (pared, suelo, etc.)
-            Destroy(gameObject);
-        }
+    // Permite definir dinámicamente a quién apunta (Player o Enemy)
+    public void SetTargetTag(string newTag)
+    {
+        targetTag = newTag;
     }
 }
