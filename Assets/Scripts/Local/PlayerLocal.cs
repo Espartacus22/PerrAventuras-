@@ -82,20 +82,27 @@ public class PlayerLocal : MonoBehaviour
         controller.Move(desiredMove * baseSpeed * Time.deltaTime);
     }
 
+    private bool IsGrounded()
+    {
+        // Lanza un rayo corto hacia abajo desde el centro del personaje
+        return Physics.Raycast(transform.position, Vector3.down, 1.1f);
+    }
     private void ApplyGravity()
     {
-        isGrounded = controller.isGrounded;
-        if (isGrounded && verticalVelocity < 0) verticalVelocity = -2f;
-
+        
         verticalVelocity += Physics.gravity.y * Time.deltaTime;
         controller.Move(Vector3.up * verticalVelocity * Time.deltaTime);
     }
+
     #endregion
+    
+   
+
 
     #region Saltar
     private void HandleJump()
     {
-        if (input.GetJump() && isGrounded)
+        if (input.GetJump() && IsGrounded())
         {
             verticalVelocity = characterData.jumpForce;
         }

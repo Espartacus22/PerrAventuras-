@@ -7,180 +7,122 @@ public class SkaterCatEnemy : MonoBehaviour
     [Header("Patrulla")]
     public Transform[] patrolPoints;
     public float patrolSpeed = 3f;
-    private int idx = 0;
+    private int currentPoint = 0;
 
-    [Header("Detección")]
+    [Header("Detección del jugador")]
     public Transform player;
-    public float outerDetectionRange = 16f;     // rango para empezar a perseguir/disparar
-    public float innerDetectionRange = 6f;      // rango que activa countdown (ventana)
-    public float initialDelayInInner = 2.5f;    // segundos de ventaja antes de disparar al entrar al inner range
+    public float outerDetectionRange = 18f;
+    public float innerDetectionRange = 6f;
+    public float initialDelayInInner = 2.5f;
     public float preferredDistance = 10f;
 
     [Header("Disparo")]
     public GameObject projectilePrefab;
     public Transform projectileSpawn;
-    public float shootInterval = 2f;
+    public float shootInterval = 1f;
+    private bool canShoot = true;
 
     [Header("HP / Furia")]
     public int maxHP = 1;
-    private int hp;
-    private bool inFury = false;
     public float furyTimeout = 3f;
+    private int currentHP;
 
-    // internals
     private CharacterController controller;
-    private float lastShotTime = 0f;
-    private bool isCountingDown = false;
-    private bool playerInOuter = false;
-    private Vector3 gravityVel;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private Vector3 moveDir;
+
+    private bool playerDetected;
+    private bool playerInInnerRange;
+
     void Start()
     {
         controller = GetComponent<CharacterController>();
-        hp = maxHP;
+        currentHP = maxHP;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if (player == null)
-        {
-            Patrol();
-            return;
-        }
+        if (player == null) return;
 
-        float dist = Vector3.Distance(transform.position, player.position);
-        playerInOuter = dist <= outerDetectionRange;
+        float distance = Vector3.Distance(transform.position, player.position);
 
-        if (dist <= innerDetectionRange)
+        //Modo ataque
+        if (distance < innerDetectionRange)
         {
-            if (!isCountingDown)
-            {
-                StartCoroutine(InnerRangeCountdown());
-            }
-            // while counting down, don't immediately fire - gives player time to act
-            MaintainDistance(dist);
+            playerInInnerRange = true;
+            StartCoroutine(InnerRangeBehavior());
         }
-        else if (playerInOuter)
+        else if (distance < outerDetectionRange)
         {
-            // comportamiento normal: mantener distancia y disparar según intervalos
-            MaintainDistance(dist);
-            float currentInterval = inFury ? (shootInterval * 0.5f) : shootInterval;
-            if (Time.time - lastShotTime > currentInterval)
-            {
-                Shoot();
-                lastShotTime = Time.time;
-            }
+            playerDetected = true;
+            HandleShooting();
         }
         else
         {
+            playerDetected = false;
             Patrol();
         }
-
-        ApplyGravity();
     }
 
-    private IEnumerator InnerRangeCountdown()
+    #region MÉTODOS DE PATRULLA
+
+    private void Patrol()
     {
-        isCountingDown = true;
-        float t0 = Time.time;
-        // espera inicial — da ventaja para rematar
-        while (Time.time - t0 < initialDelayInInner)
+        if (patrolPoints.Length == 0) return;
+
+        Vector3 target = patrolPoints[currentPoint].position;
+        Vector3 direction = (target - transform.position).normalized;
+
+        // Movimiento con CharacterController
+        controller.Move(direction * patrolSpeed * Time.deltaTime);
+
+        // Rotar hacia el punto
+        if (direction.magnitude > 0.1f)
+            transform.rotation = Quaternion.LookRotation(direction);
+
+        // Pasar al siguiente punto
+        if (Vector3.Distance(transform.position, target) < 0.5f)
+            currentPoint = (currentPoint + 1) % patrolPoints.Length;
+    }
+    #endregion
+
+    #region MÉTODOS DE ATAQUE
+    private void HandleShooting()
+    {
+        if (projectilePrefab == null || projectileSpawn == null) return;
+
+        if (canShoot)
         {
-            // si el enemigo muere durante este tiempo, lo paramos
-            if (hp <= 0) break;
-            yield return null;
+            canShoot = false;
+            Instantiate(projectilePrefab, projectileSpawn.position, projectileSpawn.rotation);
+            StartCoroutine(ResetShootCooldown());
         }
-
-        // si sigue vivo: empieza a disparar (furia parcial o normal)
-        isCountingDown = false;
-        lastShotTime = Time.time; // disparará según shootInterval
+    }
+    
+    IEnumerator ResetShootCooldown()
+    {
+        yield return new WaitForSeconds(shootInterval);
+        canShoot = true;
     }
 
-    void MaintainDistance(float dist)
+    IEnumerator InnerRangeBehavior()
     {
-        // mover para mantenerse sobre preferredDistance
-        if (dist < preferredDistance - 0.5f)
-            MoveAwayFrom(player.position);
-        else if (dist > preferredDistance + 0.5f)
-            MoveTowards(player.position);
-        else
-            FaceTarget(player.position);
-    }
-
-    void Patrol()
-    {
-        if (patrolPoints == null || patrolPoints.Length == 0) return;
-        Transform target = patrolPoints[idx];
-        Vector3 dir = (target.position - transform.position);
-        dir.y = 0;
-        if (dir.magnitude < 0.6f)
+        if (playerInInnerRange)
         {
-            idx = (idx + 1) % patrolPoints.Length;
-            return;
+            yield return new WaitForSeconds(initialDelayInInner);
+            HandleShooting();
         }
-        controller.Move(dir.normalized * patrolSpeed * Time.deltaTime);
-        FaceTarget(target.position);
+        playerInInnerRange = false;
     }
+    #endregion
 
-    void MoveTowards(Vector3 pos)
+    #region MÉTODOS DE DAÑO
+    public void TakeDamage(int damage)
     {
-        Vector3 dir = (pos - transform.position);
-        dir.y = 0;
-        controller.Move(dir.normalized * patrolSpeed * Time.deltaTime);
-        FaceTarget(pos);
-    }
-
-    void MoveAwayFrom(Vector3 pos)
-    {
-        Vector3 dir = (transform.position - pos);
-        dir.y = 0;
-        controller.Move(dir.normalized * patrolSpeed * Time.deltaTime);
-        FaceTarget(pos);
-    }
-
-    void FaceTarget(Vector3 pos)
-    {
-        Vector3 dir = pos - transform.position; dir.y = 0;
-        if (dir.sqrMagnitude > 0.001f) transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), 0.15f);
-    }
-
-    void Shoot()
-    {
-        if (projectilePrefab == null || projectileSpawn == null || player == null) return;
-        GameObject p = Instantiate(projectilePrefab, projectileSpawn.position, Quaternion.identity);
-        ProjectileLocal proj = p.GetComponent<ProjectileLocal>();
-        if (proj != null)
-            proj.SetDirection((player.position - projectileSpawn.position).normalized);
-    }
-
-    void ApplyGravity()
-    {
-        if (controller.isGrounded && gravityVel.y < 0) gravityVel.y = -2f;
-        gravityVel.y += Physics.gravity.y * Time.deltaTime;
-        controller.Move(gravityVel * Time.deltaTime);
-    }
-
-    public void ReceiveDamage(int damage)
-    {
-        hp -= damage;
-        if (hp <= 0) Die();
-        else StartCoroutine(CheckFuryTimer());
-    }
-
-    IEnumerator CheckFuryTimer()
-    {
-        float t0 = Time.time;
-        while (Time.time - t0 < furyTimeout)
+        currentHP -= damage;
+        if (currentHP <= 0)
         {
-            if (hp <= 0) yield break;
-            yield return null;
+            Destroy(gameObject);
         }
-        inFury = true;
     }
-
-    void Die()
-    {
-        Destroy(gameObject);
-    }
+    #endregion
 }
