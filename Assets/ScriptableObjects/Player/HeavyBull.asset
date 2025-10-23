@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 434580db0ca717d4597483437195595b, type: 3}
+  m_Name: HeavyBull
+  m_EditorClassIdentifier: 
+  characterName: Piki
+  hp: 180
+  walkSpeed: 2
+  runMultiplier: 1.2
+  rotationSpeed: 10
+  crouchMultiplier: 0.5
+  jumpForce: 5
+  dobleSalto: 1
+  dashSpeed: 12
+  dashDuration: 0.15
+  crouchHeight: 0.5
+  meleeAttacks: 1
+  rangedAttacks: 1
