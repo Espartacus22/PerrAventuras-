@@ -9,7 +9,7 @@ public class PlayerLevel : MonoBehaviour
 
     public bool hasShield = false;
 
-    public float GetMaxHP() => characterData.hp + currentLevel * 10;
+    public float GetMaxHP() => characterData.maxHP + currentLevel * 10;
     public int GetDefense() => (hasShield ? 15 : 0) + currentLevel * 2;
     public float GetFinalDamage(float baseDamage) => baseDamage + currentLevel * 0.1f;
 

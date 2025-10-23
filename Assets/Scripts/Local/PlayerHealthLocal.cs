@@ -1,20 +1,24 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerHealthLocal : MonoBehaviour
 {
-    [Header("HP")]
-    public int maxHealth = 100;
-    public int currentHealth;
+    [Header("Referencias")]
+    public CharacterType characterData;
+    public Image healthBar;
+    public Image shieldBar;
 
-    [Header("Shield / Energy")]
-    public int maxShield = 50;            // capacidad del escudo
-    public int currentShield = 50;
+    [Header("HP & Shield")]
+    public int maxHealth;
+    public int currentHealth;
+    public int maxShield;
+    public int currentShield;
+
     [Range(0f, 1f)]
-    public float shieldDamageAbsorb = 1f; // % del daño que el shield absorbe (1 = absorbe totalmente hasta su valor)
-    public float shieldRegenDelay = 3f;   // segundos sin recibir daño antes de empezar a regenerar
-    public float shieldRegenRate = 8f;    // shield por segundo
+    public float shieldDamageAbsorb = 1f;
+    private float shieldRegenDelay;
+    private float shieldRegenRate;
 
     private bool isInvulnerable = false;
     private float lastDamageTime = -100f;
@@ -22,29 +26,37 @@ public class PlayerHealthLocal : MonoBehaviour
 
     void Start()
     {
+        InitializeFromData();
+    }
+
+    void InitializeFromData()
+    {
+        if (characterData != null)
+        {
+            maxHealth = characterData.maxHP;
+            maxShield = characterData.maxShield;
+            shieldRegenDelay = characterData.shieldRegenDelay;
+            shieldRegenRate = characterData.shieldRegenRate;
+        }
+
         currentHealth = maxHealth;
         currentShield = maxShield;
+        UpdateUI();
     }
 
     public void TakeDamage(int amount)
     {
         if (isInvulnerable) return;
 
-        // Si hay shield, lo usamos primero (considerando shieldDamageAbsorb)
         if (currentShield > 0)
         {
-            // Cuánto del daño puede absorber el shield
-            float effectiveShieldAbsorb = amount * shieldDamageAbsorb;
-            int shieldAbsorbInt = Mathf.Min(currentShield, Mathf.CeilToInt(effectiveShieldAbsorb));
-
+            float effectiveAbsorb = amount * shieldDamageAbsorb;
+            int shieldAbsorbInt = Mathf.Min(currentShield, Mathf.CeilToInt(effectiveAbsorb));
             currentShield -= shieldAbsorbInt;
 
-            // Si el shield no cubrió todo el daño, el remanente afecta la vida
             int remainder = amount - Mathf.RoundToInt(shieldAbsorbInt / Mathf.Max(0.0001f, shieldDamageAbsorb));
             if (remainder > 0)
-            {
                 currentHealth -= remainder;
-            }
         }
         else
         {
@@ -52,35 +64,49 @@ public class PlayerHealthLocal : MonoBehaviour
         }
 
         lastDamageTime = Time.time;
-        if (regenCoroutine != null) StopCoroutine(regenCoroutine);
+        if (regenCoroutine != null)
+            StopCoroutine(regenCoroutine);
+
         regenCoroutine = StartCoroutine(ShieldRegenDelayCoroutine());
 
+        UpdateUI();
+
         if (currentHealth <= 0)
-        {
             Die();
-        }
     }
 
-    // Aplicar daño que ignora el escudo (por ejemplo, ataques muy fuertes)
     public void ApplyDirectDamage(int amount)
     {
         if (isInvulnerable) return;
+
         currentHealth -= amount;
         lastDamageTime = Time.time;
-        if (regenCoroutine != null) StopCoroutine(regenCoroutine);
+
+        if (regenCoroutine != null)
+            StopCoroutine(regenCoroutine);
+
         regenCoroutine = StartCoroutine(ShieldRegenDelayCoroutine());
-        if (currentHealth <= 0) Die();
+        UpdateUI();
+
+        if (currentHealth <= 0)
+            Die();
     }
 
     IEnumerator ShieldRegenDelayCoroutine()
     {
         yield return new WaitForSeconds(shieldRegenDelay);
-        // regeneración continua
         while (currentShield < maxShield)
         {
             currentShield = Mathf.Min(maxShield, currentShield + Mathf.CeilToInt(shieldRegenRate * Time.deltaTime));
+            UpdateUI();
             yield return null;
         }
+    }
+
+    public void AddShield(int amount)
+    {
+        currentShield = Mathf.Min(maxShield, currentShield + amount);
+        UpdateUI();
     }
 
     IEnumerator InvulnerabilityFlash(float duration)
@@ -90,15 +116,19 @@ public class PlayerHealthLocal : MonoBehaviour
         isInvulnerable = false;
     }
 
-    public void AddShield(int amount)
+    public void UpdateUI()
     {
-        currentShield = Mathf.Min(maxShield, currentShield + amount);
+        if (healthBar != null)
+            healthBar.fillAmount = (float)currentHealth / maxHealth;
+
+        if (shieldBar != null)
+            shieldBar.fillAmount = (float)currentShield / maxShield;
     }
 
     void Die()
     {
-        Debug.Log($"{gameObject.name} died.");
-        // acá podes spawnear anim, sonido o reiniciar
+        Debug.Log($"{gameObject.name} murió.");
+        // Acá podés añadir animación, respawn o cambio de cámara.
         Destroy(gameObject);
     }
 }

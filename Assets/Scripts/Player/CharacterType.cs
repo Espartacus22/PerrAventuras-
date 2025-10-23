@@ -3,30 +3,63 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "CharacterType", menuName = "Scriptable Objects/CharacterType")]
 public class CharacterType : ScriptableObject
 {
-    [Header("Identidad")]
-    public string characterName = "Piki";
-    public float hp = 100f;
+
+    [Header("General Settings / Configuración general")]
+    public string characterName = "Unnamed";
+    public GameObject characterModel;
 
     [Header("Movimiento")]
-    public float walkSpeed = 3f;
-    public float runMultiplier = 1.5f;
-    public float rotationSpeed = 10f;
-    public float crouchMultiplier = 0.5f;
+    public float walkSpeed = 5f;           // Velocidad base de caminata
+    public float runMultiplier = 1.5f;     // Multiplicador al correr
+    public float jumpForce = 7f;           // Fuerza de salto
 
-    [Header("Salto")]
-    public float jumpForce = 7f;
-    public bool dobleSalto = true;
+    [Tooltip("Fuerza y duración del dash (si aplica)")]
+    public float dashSpeed = 15f;
+    public float dashDuration = 0.25f;
 
-    [Header("Dash")]
-    public float dashSpeed = 20f;
-    public float dashDuration = 0.2f;
+    [Header("Combat / Combate")]
+    [Tooltip("Daño de ataque cuerpo a cuerpo")]
+    public int meleeDamage = 1;
 
-    [Header("Agacharse")]
-    public float crouchHeight = 0.5f;
+    [Tooltip("Daño de ataque a distancia (proyectil)")]
+    public int rangedDamage = 1;
 
-    [Header("Ataques cuerpo a cuerpo")]
-    public int meleeAttacks = 1;
+    [Tooltip("Velocidad del proyectil (si aplica)")]
+    public float projectileSpeed = 12f;
 
-    [Header("Ataques a distancia")]
-    public int rangedAttacks = 1;
+    [Tooltip("Tiempo entre ataques (en segundos)")]
+    public float attackCooldown = 0.5f;
+
+    [Header("Health & Shield / Vida y escudo")]
+    [Tooltip("Cantidad máxima de vida del personaje")]
+    public int maxHP = 5;
+
+    [Tooltip("Cantidad máxima de escudo del personaje")]
+    public int maxShield = 3;
+
+    [Tooltip("Velocidad de regeneración de escudo (puntos por segundo)")]
+    public float shieldRegenRate = 0.5f;
+
+    [Tooltip("Retraso antes de comenzar la regeneración del escudo")]
+    public float shieldRegenDelay = 3f;
+
+    [Header("Abilities / Habilidades especiales")]
+    public bool canDoubleJump = false;
+    public bool canBlock = false;
+    public bool canDash = false;
+
+    [Tooltip("Si puede realizar ataques mágicos o habilidades especiales")]
+    public bool canUseMagic = false;
+
+    [Header("Audio & Visuals / Sonidos y efectos")]
+    public AudioClip attackSound;
+    public AudioClip jumpSound;
+    public AudioClip dashSound;
+    public AudioClip hitSound;
+
+    [Header("Animaciones / Animator Parameters")]
+    public string idleAnim = "Idle";
+    public string walkAnim = "Walk";
+    public string attackAnim = "Attack";
+    public string deathAnim = "Death";
 }

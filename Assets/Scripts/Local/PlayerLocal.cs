@@ -36,6 +36,11 @@ public class PlayerLocal : MonoBehaviour
     // Animator opcional
     public Animator animator;
 
+    [Header("Habilidades desbloqueables")]
+    public bool canDash;
+    public bool canDoubleJump;
+    public bool canBlock;
+
     void Start()
     {
         controller = GetComponent<CharacterController>();
@@ -198,5 +203,26 @@ public class PlayerLocal : MonoBehaviour
         animator.SetFloat("Speed", speed);
         animator.SetBool("IsGrounded", isGrounded);
         // otros parámetros según tus animaciones
+    }
+
+    // Activa o desactiva el dash
+    public void EnableDash(bool enabled)
+    {
+        canDash = enabled;
+        Debug.Log(enabled ? "Dash habilitado" : "Dash deshabilitado");
+    }
+
+    // Activa o desactiva el doble salto
+    public void EnableDoubleJump(bool enabled)
+    {
+        canDoubleJump = enabled;
+        Debug.Log(enabled ? "Doble salto habilitado" : "Doble salto deshabilitado");
+    }
+
+    // Activa o desactiva el bloqueo/escudo
+    public void EnableBlock(bool enabled)
+    {
+        canBlock = enabled;
+        Debug.Log(enabled ? "Bloqueo habilitado" : "Bloqueo deshabilitado");
     }
 }
