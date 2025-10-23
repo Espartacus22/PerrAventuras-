@@ -13,15 +13,29 @@ MonoBehaviour:
   m_Name: Bullldog
   m_EditorClassIdentifier: 
   characterName: Bulldog
-  hp: 100
+  characterModel: {fileID: 0}
   walkSpeed: 10
   runMultiplier: 5
-  rotationSpeed: 10
-  crouchMultiplier: 0.5
   jumpForce: 8
-  dobleSalto: 1
   dashSpeed: 30
   dashDuration: 0.3
-  crouchHeight: 0.5
-  meleeAttacks: 1
-  rangedAttacks: 1
+  meleeDamage: 1
+  rangedDamage: 1
+  projectileSpeed: 12
+  attackCooldown: 0.5
+  maxHP: 100
+  maxShield: 0
+  shieldRegenRate: 0.5
+  shieldRegenDelay: 3
+  canDoubleJump: 1
+  canBlock: 0
+  canDash: 1
+  canUseMagic: 0
+  attackSound: {fileID: 0}
+  jumpSound: {fileID: 0}
+  dashSound: {fileID: 0}
+  hitSound: {fileID: 0}
+  idleAnim: Idle
+  walkAnim: Walk
+  attackAnim: Attack
+  deathAnim: Death

@@ -1,61 +1,150 @@
 using UnityEngine;
+using System;
 
+/// <summary>
+/// Sistema de nivel y experiencia del jugador.
+/// Escala vida, escudo, daño y desbloquea habilidades según el nivel.
+/// Compatible con CharacterType y PlayerHealthLocal.
+/// </summary>
 public class PlayerLevel : MonoBehaviour
 {
-    public CharacterType characterData;
+    [Header("Referencias")]
+    public CharacterType characterData;           // Datos base del personaje
+    public PlayerHealthLocal playerHealth;        // Para actualizar HP y escudo
+    public PlayerLocal playerController;          // Para desbloquear habilidades
+
+    [Header("Nivel y Experiencia")]
     public int currentLevel = 1;
     public int currentXP = 0;
-    public int[] xpRequiredPerLevel = { 0, 100, 250, 500, 800, 1200 };
+    public int[] xpRequiredPerLevel = { 0, 100, 250, 500, 1000, 2000 };
 
-    public bool hasShield = false;
+    [Header("Multiplicadores de mejora")]
+    [Tooltip("Cuánto aumenta la vida máxima por nivel")]
+    public float hpPerLevel = 10f;
+    [Tooltip("Cuánto aumenta el daño base por nivel")]
+    public float damageMultiplier = 0.15f;
+    [Tooltip("Cuánto aumenta la defensa por nivel")]
+    public float defensePerLevel = 2f;
 
-    public float GetMaxHP() => characterData.maxHP + currentLevel * 10;
-    public int GetDefense() => (hasShield ? 15 : 0) + currentLevel * 2;
-    public float GetFinalDamage(float baseDamage) => baseDamage + currentLevel * 0.1f;
+    [Header("Eventos")]
+    public Action<int> OnLevelUp; // Evento que notifica al subir de nivel
 
-    void Update()
+    private void Start()
     {
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            GainXP(100); // Ganás 100 XP al presionar X
-        }
+        if (characterData == null)
+            Debug.LogWarning("CharacterData no asignado en PlayerLevel");
+
+        if (playerHealth == null)
+            playerHealth = GetComponent<PlayerHealthLocal>();
+
+        if (playerController == null)
+            playerController = GetComponent<PlayerLocal>();
+
+        ApplyLevelStats();
     }
+
+    /// <summary>
+    /// Añade experiencia al jugador y controla la subida de nivel.
+    /// </summary>
     public void GainXP(int amount)
     {
         currentXP += amount;
-        Debug.Log($"XP actual: {currentXP}, Nivel actual: {currentLevel}");
+        Debug.Log($"Ganaste {amount} XP. Total actual: {currentXP}");
+
+        // Subir de nivel si supera el XP necesario
         while (currentLevel < xpRequiredPerLevel.Length - 1 &&
                currentXP >= xpRequiredPerLevel[currentLevel + 1])
         {
             currentLevel++;
-            Debug.Log($"Subiste a nivel {currentLevel}");
+            Debug.Log($"Subiste a nivel {currentLevel}!");
+            OnLevelUp?.Invoke(currentLevel);
+            ApplyLevelStats();
+            UnlockAbilities();
         }
     }
 
-    [ContextMenu("Test XP Gain")]
-    public void TestGainXP()
+    /// <summary>
+    /// Aplica mejoras de estadísticas basadas en el nivel actual.
+    /// </summary>
+    public void ApplyLevelStats()
     {
-        GainXP(0); // Esto fuerza la evaluación sin sumar XP
+        if (characterData == null || playerHealth == null) return;
+
+        // Vida escalada
+        playerHealth.maxHealth = Mathf.RoundToInt(characterData.maxHP + (currentLevel - 1) * hpPerLevel);
+        playerHealth.currentHealth = playerHealth.maxHealth;
+
+        // Escudo escalado (si aplica)
+        playerHealth.maxShield = Mathf.RoundToInt(characterData.maxShield + (currentLevel - 1) * defensePerLevel);
+        playerHealth.currentShield = playerHealth.maxShield;
+
+        playerHealth.UpdateUI();
     }
 
-    [ContextMenu("Forzar evaluación de leveo")]
-    public void ForceLevelCheck()
+    /// <summary>
+    /// Retorna el daño escalado en base al nivel actual.
+    /// </summary>
+    public float GetScaledDamage(float baseDamage)
     {
-        while (currentLevel < xpRequiredPerLevel.Length - 1 &&
-               currentXP >= xpRequiredPerLevel[currentLevel + 1])
+        return baseDamage + (baseDamage * (currentLevel * damageMultiplier));
+    }
+
+    /// <summary>
+    /// Determina si una habilidad está disponible según el nivel.
+    /// </summary>
+    public bool IsAbilityUnlocked(int requiredLevel)
+    {
+        return currentLevel >= requiredLevel;
+    }
+
+    /// <summary>
+    /// Desbloquea habilidades progresivamente.
+    /// </summary>
+    private void UnlockAbilities()
+    {
+        if (playerController == null || characterData == null) return;
+
+        // Ejemplo: desbloqueo progresivo
+        if (currentLevel >= 2 && characterData.canDash)
         {
-            currentLevel++;
-            Debug.Log($"Subiste a nivel {currentLevel}");
+            playerController.EnableDash(true);
+            Debug.Log("Dash desbloqueado!");
+        }
+
+        if (currentLevel >= 3 && characterData.canDoubleJump)
+        {
+            playerController.EnableDoubleJump(true);
+            Debug.Log("Doble salto desbloqueado!");
+        }
+
+        if (currentLevel >= 4 && characterData.canBlock)
+        {
+            playerController.EnableBlock(true);
+            Debug.Log("Bloqueo desbloqueado!");
         }
     }
 
-    [ContextMenu("Resetear XP y nivel")]
-    public void ResetLevel()
+    /// <summary>
+    /// Aumenta el daño recibido según el nivel (enemigos).
+    /// </summary>
+    public float GetDamageReductionFactor()
     {
-        currentLevel = 1;
-        currentXP = 0;
-        Debug.Log("Nivel y XP reseteados");
+        // Reduce daño hasta un 30% máximo
+        return 1f - Mathf.Min(0.3f, currentLevel * 0.02f);
     }
 
-    public bool IsAttackUnlocked(int requiredLevel) => currentLevel >= requiredLevel;
+#if UNITY_EDITOR
+    [ContextMenu("Agregar 100 XP")]
+    private void DebugAddXP()
+    {
+        GainXP(100);
+    }
+
+    [ContextMenu("Subir un nivel manualmente")]
+    private void DebugLevelUp()
+    {
+        currentXP = xpRequiredPerLevel[Mathf.Min(currentLevel + 1, xpRequiredPerLevel.Length - 1)];
+        GainXP(0);
+    }
+#endif
 }
