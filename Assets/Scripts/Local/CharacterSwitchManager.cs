@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.Reflection;
+using Unity.Cinemachine;
 
 public class CharacterSwitchManager : MonoBehaviour
 {
@@ -89,43 +90,31 @@ public class CharacterSwitchManager : MonoBehaviour
 
     void UpdateCameraTarget(Transform targetTransform)
     {
-
         if (cinemachineCameraObject != null)
         {
-            Component cineComp = cinemachineCameraObject.GetComponent("CinemachineCamera") as Component;
-            if (cineComp != null)
+            // Compatibilidad con Unity 6000 y nuevas APIs
+            var cam = cinemachineCameraObject.GetComponent<CinemachineCamera>();
+            var freeLook = cinemachineCameraObject.GetComponent<CinemachineFreeLook>();
+
+            if (cam != null)
             {
-                try
-                {
-                    // obtener propiedad "Target"
-                    var targetProp = cineComp.GetType().GetProperty("Target", BindingFlags.Public | BindingFlags.Instance);
-                    if (targetProp != null)
-                    {
-                        var targetObj = targetProp.GetValue(cineComp, null);
-                        if (targetObj != null)
-                        {
-                            // intentar asignar TrackingTarget
-                            var trackingProp = targetObj.GetType().GetProperty("TrackingTarget", BindingFlags.Public | BindingFlags.Instance);
-                            if (trackingProp != null && trackingProp.CanWrite)
-                            {
-                                trackingProp.SetValue(targetObj, targetTransform, null);
-                                return;
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogWarning("CharacterSwitchManager: error al intentar asignar target a CinemachineCamera via reflexión: " + ex.Message);
-                }
+                cam.Follow = targetTransform;
+                cam.LookAt = targetTransform;
+                return;
+            }
+
+            if (freeLook != null)
+            {
+                freeLook.Follow = targetTransform;
+                freeLook.LookAt = targetTransform;
+                return;
             }
         }
 
-        // 3) Fallback: parentear la mainCamera al personaje
-        if (mainCamera != null && targetTransform != null)
+        // Fallback manual si no hay Cinemachine
+        if (mainCamera != null)
         {
             mainCamera.transform.SetParent(targetTransform);
-            // Posición y rotación local por defecto — ajustá los valores
             mainCamera.transform.localPosition = new Vector3(0f, 2.5f, -4f);
             mainCamera.transform.localEulerAngles = Vector3.zero;
         }

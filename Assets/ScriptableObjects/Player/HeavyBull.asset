@@ -14,14 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Chimba
   characterModel: {fileID: 0}
-  walkSpeed: 2
-  runMultiplier: 1.2
-  jumpForce: 5
-  dashSpeed: 12
-  dashDuration: 0.15
-  meleeDamage: 1
-  rangedDamage: 1
-  projectileSpeed: 12
+  walkSpeed: 8
+  runMultiplier: 3
+  jumpForce: 8
+  dashSpeed: 25
+  dashDuration: 0.2
+  meleeDamage: 30
+  rangedDamage: 5
+  projectileSpeed: 40
   attackCooldown: 0.5
   maxHP: 180
   maxShield: 50

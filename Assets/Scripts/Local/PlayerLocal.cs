@@ -26,6 +26,10 @@ public class PlayerLocal : MonoBehaviour
     private float verticalVelocity;
     private bool isGrounded;
 
+    [SerializeField]private float groundCheckDistance = 0.2f;
+    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private float groundOffsetY = 0.5f;
+
     // Dash
     private bool isDashing = false;
 
@@ -89,8 +93,8 @@ public class PlayerLocal : MonoBehaviour
 
     private bool IsGrounded()
     {
-        // Lanza un rayo corto hacia abajo desde el centro del personaje
-        return Physics.Raycast(transform.position, Vector3.down, 1.1f);
+        Vector3 origin = transform.position + Vector3.up * groundOffsetY;
+        return Physics.Raycast(origin, Vector3.down, groundCheckDistance + groundOffsetY, groundLayer);
     }
     private void ApplyGravity()
     {
