@@ -25,10 +25,11 @@ public class PlayerLocal : MonoBehaviour
     private Vector3 velocity;
     private float verticalVelocity;
     private bool isGrounded;
+    private bool hasDoubleJumped;
 
-    [SerializeField]private float groundCheckDistance = 0.2f;
+    [SerializeField] private float jumpForce = 8f;
+    [SerializeField] private float groundCheckDistance = 0.2f;
     [SerializeField] private LayerMask groundLayer;
-    [SerializeField] private float groundOffsetY = 0.5f;
 
     // Dash
     private bool isDashing = false;
@@ -61,8 +62,9 @@ public class PlayerLocal : MonoBehaviour
     {
         if (characterData == null || input == null) return;
 
+        isGrounded = IsGrounded();
         HandleMovement();
-        HandleJump();
+        HandleJumpInput();
         HandleDash();
         HandleCrouch();
         HandleAttacks();
@@ -93,8 +95,8 @@ public class PlayerLocal : MonoBehaviour
 
     private bool IsGrounded()
     {
-        Vector3 origin = transform.position + Vector3.up * groundOffsetY;
-        return Physics.Raycast(origin, Vector3.down, groundCheckDistance + groundOffsetY, groundLayer);
+        Vector3 origin = transform.position + Vector3.up * 0.1f; // pequeño offset para evitar 'raycast inside collider'
+        return Physics.Raycast(origin, Vector3.down, groundCheckDistance + 0.1f, groundLayer);
     }
     private void ApplyGravity()
     {
@@ -104,17 +106,34 @@ public class PlayerLocal : MonoBehaviour
     }
 
     #endregion
-    
-   
+
+
 
 
     #region Saltar
-    private void HandleJump()
+    private void HandleJumpInput()
     {
-        if (input.GetJump() && IsGrounded())
+        if (isGrounded)
         {
-            verticalVelocity = characterData.jumpForce;
+            hasDoubleJumped = false; // Reset al tocar el suelo
         }
+
+        if (input.GetJump() && isGrounded)
+        {
+            Jump();
+        }
+        else if (input.GetJump() && !isGrounded && characterData.canDoubleJump && !hasDoubleJumped)
+        {
+            Jump();
+            hasDoubleJumped = true;
+            Debug.Log("¡Doble salto ejecutado!");
+        }
+    }
+
+    private void Jump()
+    {
+        verticalVelocity = jumpForce;
+        isGrounded = false;
     }
     #endregion
 

@@ -150,6 +150,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 90
-  lifetime: 5
+  lifetime: 1
   damage: 30
   targetTag: Player

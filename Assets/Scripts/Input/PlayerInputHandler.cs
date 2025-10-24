@@ -3,19 +3,19 @@ using UnityEngine;
 public class PlayerInputHandler : MonoBehaviour
 {
     [Header("Configuración de teclas")]
-    private KeyCode dashKey = KeyCode.LeftShift;
-    private KeyCode crouchKey = KeyCode.LeftControl;
-    private KeyCode meleeAttackKey = KeyCode.Mouse0;
-    private KeyCode rangedAttackKey = KeyCode.Mouse1;
-    private KeyCode runKey = KeyCode.LeftAlt;
+    [SerializeField] private KeyCode dashKey = KeyCode.LeftShift;
+    [SerializeField] private KeyCode crouchKey = KeyCode.LeftControl;
+    [SerializeField] private KeyCode meleeAttackKey = KeyCode.Mouse0;
+    [SerializeField] private KeyCode rangedAttackKey = KeyCode.Mouse1;
+    [SerializeField] private KeyCode runKey = KeyCode.LeftAlt;
 
-    public Vector2 moveInput;
-    public bool jumpPressed;
-    public bool dashPressed;
-    public bool crouchHeld;
-    public bool meleeAttackPressed;
-    public bool rangedAttackPressed;
-    public bool runHeld;
+    private Vector2 moveInput;
+    private bool jumpPressed;
+    private bool dashPressed;
+    private bool crouchHeld;
+    private bool meleeAttackPressed;
+    private bool rangedAttackPressed;
+    private bool runHeld;
 
     void Update()
     {
@@ -39,7 +39,7 @@ public class PlayerInputHandler : MonoBehaviour
         rangedAttackPressed = Input.GetKeyDown(rangedAttackKey);
     }
 
-    // Métodos para acceder desde PlayerLocal
+    // Métodos públicos para acceder desde PlayerLocal
     public Vector2 GetMovement() => moveInput;
     public bool GetJump() => jumpPressed;
     public bool GetDash() => dashPressed;
