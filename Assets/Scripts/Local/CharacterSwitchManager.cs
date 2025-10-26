@@ -41,7 +41,9 @@ public class CharacterSwitchManager : MonoBehaviour
         // Activar solo el primero y desactivar los demás
         for (int i = 0; i < players.Count; i++)
         {
-            players[i].SetActive(i == currentIndex);
+            var pl = players[i].GetComponent<PlayerLocal>();
+            if (pl != null) pl.enabled = (i == currentIndex);
+            players[i].SetActive(true); // todos activos visualmente
         }
 
         // Intentar configurar la cámara para el primer personaje
@@ -58,8 +60,6 @@ public class CharacterSwitchManager : MonoBehaviour
 
     void Swap()
     {
-        // Desactivar actual
-        players[currentIndex].SetActive(false);
 
         // Avanzar al siguiente
         currentIndex = (currentIndex + 1) % players.Count;
