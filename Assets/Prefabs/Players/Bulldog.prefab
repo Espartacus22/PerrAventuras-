@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 7720055331850950135}
   - component: {fileID: 8757477201111415271}
   - component: {fileID: 8514508554761520884}
-  - component: {fileID: 890049972972407569}
   - component: {fileID: 3291506073526208114}
   - component: {fileID: 7829789614349306860}
   - component: {fileID: 6233440917332724808}
@@ -92,29 +91,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &890049972972407569
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3270781930418487124}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!143 &3291506073526208114
 CharacterController:
   m_ObjectHideFlags: 0
@@ -176,6 +152,7 @@ MonoBehaviour:
   input: {fileID: 0}
   projectilePrefab: {fileID: 3776335016409907967, guid: fedd7e666a0b36f419349b9d4d9c21c7, type: 3}
   projectileSpawnPoint: {fileID: 216489991579865911}
+  jumpForce: 8
   groundCheckDistance: 1.1
   groundLayer:
     serializedVersion: 2
