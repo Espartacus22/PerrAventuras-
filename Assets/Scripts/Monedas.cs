@@ -1,31 +1,47 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+
 public class Monedas : MonoBehaviour
 {
     public int numCurrency;
     public TextMeshProUGUI textMiss;
     public GameObject ButtonMiss;
+
     void Start()
     {
-        numCurrency - GameObject.FindGameObjectsWithTag("Objetos").Length;
-        textMiss.text = "Obten las esfweras rojas" + " Restantes;" + numCurrency;
+        // Inicializa numCurrency con la cantidad de objetos con tag "objetivo"
+        numCurrency = GameObject.FindGameObjectsWithTag("objetivo").Length;
+        UpdateMissionText();
     }
 
-    // Update is called once per frame
-    void Update()
+    // Se llama cuando un objeto entra en el trigger
+    void OnTriggerEnter(Collider col)
     {
-
-    }
-    void OriggerEnter(Collider col)
-    {
-        if (col.gameObject.tag == "objetivo")
+        if (col.gameObject.CompareTag("objetivo"))
         {
-            Destroy(col.gameObject.tag == "objetivo");
+            Destroy(col.gameObject); // Destruye el GameObject que entró en el trigger
             numCurrency--;
-            textMiss.text = "Obten las esferas rojas" + " Restantes" + numCurrency;
+            UpdateMissionText();
 
-            if (numCurrency) ;
+            if (numCurrency <= 0)
+            {
+                textMiss.text = "Misión completada";
+                ButtonMiss.SetActive(true);
+            }
+        }
+    }
+
+    // Método para actualizar el texto de la misión
+    void UpdateMissionText()
+    {
+        if (textMiss != null)
+        {
+            textMiss.text = $"Obtén las esferas rojas. Restantes: {numCurrency}";
+        }
+        else
+        {
+            Debug.LogError("textMiss no está asignado en el Inspector");
         }
     }
 }

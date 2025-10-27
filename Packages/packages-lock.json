@@ -44,6 +44,7 @@
       "source": "builtin",
       "dependencies": {}
     },
+<<<<<<< HEAD
     "com.unity.ide.rider": {
       "version": "3.0.37",
       "depth": 0,
@@ -53,6 +54,8 @@
       },
       "url": "https://packages.unity.com"
     },
+=======
+>>>>>>> 76ccff40415ab9e58a9ca15de7edf61a439fd996
     "com.unity.ide.visualstudio": {
       "version": "2.0.23",
       "depth": 0,
