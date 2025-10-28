@@ -110,7 +110,7 @@ CharacterController:
   m_Enabled: 1
   serializedVersion: 3
   m_Height: 2
-  m_Radius: 2
+  m_Radius: 1.1
   m_SlopeLimit: 45
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
@@ -148,19 +148,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f59d51f367d287a4f9b718c11fee0482, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterData: {fileID: 11400000, guid: 57094d7e95b45e54db697615c651fe85, type: 2}
+  controller: {fileID: 0}
   input: {fileID: 0}
-  projectilePrefab: {fileID: 3776335016409907967, guid: fedd7e666a0b36f419349b9d4d9c21c7, type: 3}
-  projectileSpawnPoint: {fileID: 216489991579865911}
-  jumpForce: 8
-  groundCheckDistance: 1.1
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  animator: {fileID: 0}
-  canDash: 1
+  characterData: {fileID: 11400000, guid: 57094d7e95b45e54db697615c651fe85, type: 2}
+  moveSpeed: 12
+  jumpForce: 10
+  gravity: -9.8
+  isGrounded: 1
+  velocity: {x: 0, y: 0, z: 0}
   canDoubleJump: 1
-  canBlock: 0
+  dashUnlocked: 1
+  doubleJumpUnlocked: 1
+  blockUnlocked: 0
 --- !u!1 &5948238042014243181
 GameObject:
   m_ObjectHideFlags: 0

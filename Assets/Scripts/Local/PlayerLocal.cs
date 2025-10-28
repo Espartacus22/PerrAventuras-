@@ -14,7 +14,7 @@ public class PlayerLocal : MonoBehaviour
     public PlayerInputHandler input;
     public CharacterType characterData;
 
-    [Header("Parámetros físicos")]
+    [Header("Parámetros")]
     public float moveSpeed = 5f;
     public float jumpForce = 7f;
     public float gravity = -9.8f;
@@ -25,6 +25,10 @@ public class PlayerLocal : MonoBehaviour
 
     public StateMachine StateMachine { get; private set; }
 
+    // Habilidades disponibles
+    public bool dashUnlocked = false;
+    public bool doubleJumpUnlocked = false;
+    public bool blockUnlocked = false;
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
@@ -67,5 +71,24 @@ public class PlayerLocal : MonoBehaviour
     public void Jump()
     {
         velocity.y = jumpForce;
+    }
+
+    // --- Desbloqueo de habilidades ---
+    public void EnableDash(bool value)
+    {
+        dashUnlocked = value;
+        Debug.Log($"Dash {(value ? "habilitado" : "deshabilitado")}");
+    }
+
+    public void EnableDoubleJump(bool value)
+    {
+        doubleJumpUnlocked = value;
+        Debug.Log($"Doble salto {(value ? "habilitado" : "deshabilitado")}");
+    }
+
+    public void EnableBlock(bool value)
+    {
+        blockUnlocked = value;
+        Debug.Log($"Bloqueo {(value ? "habilitado" : "deshabilitado")}");
     }
 }

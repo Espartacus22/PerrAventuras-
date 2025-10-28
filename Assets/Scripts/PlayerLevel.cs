@@ -18,7 +18,7 @@ public class PlayerLevel : MonoBehaviour
     public int currentXP = 0;
     public int[] xpRequiredPerLevel = { 0, 100, 250, 500, 1000, 2000 };
 
-    [Header("Multiplicadores de mejora")]
+    [Header("Multiplicadores")]
     [Tooltip("Cuánto aumenta la vida máxima por nivel")]
     public float hpPerLevel = 10f;
     [Tooltip("Cuánto aumenta el daño base por nivel")]
@@ -43,9 +43,8 @@ public class PlayerLevel : MonoBehaviour
         ApplyLevelStats();
     }
 
-    /// <summary>
-    /// Añade experiencia al jugador y controla la subida de nivel.
-    /// </summary>
+
+    // Añade experiencia al jugador y controla la subida de nivel.
     public void GainXP(int amount)
     {
         currentXP += amount;
@@ -63,9 +62,8 @@ public class PlayerLevel : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Aplica mejoras de estadísticas basadas en el nivel actual.
-    /// </summary>
+
+    // Aplica mejoras de estadísticas basadas en el nivel actual.
     public void ApplyLevelStats()
     {
         if (characterData == null || playerHealth == null) return;
@@ -81,17 +79,15 @@ public class PlayerLevel : MonoBehaviour
         playerHealth.UpdateUI();
     }
 
-    /// <summary>
-    /// Retorna el daño escalado en base al nivel actual.
-    /// </summary>
+
+    // Retorna el daño escalado en base al nivel actual.
     public float GetScaledDamage(float baseDamage)
     {
         return baseDamage + (baseDamage * (currentLevel * damageMultiplier));
     }
 
-    /// <summary>
-    /// Determina si una habilidad está disponible según el nivel.
-    /// </summary>
+
+    // Determina si una habilidad está disponible según el nivel.
     public bool IsAbilityUnlocked(int requiredLevel)
     {
         return currentLevel >= requiredLevel;

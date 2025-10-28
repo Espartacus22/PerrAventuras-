@@ -13,6 +13,8 @@ public class PlayerMoveState : IPlayerState
 
     public void Tick()
     {
+        if (ctx == null || ctx.input == null) return;
+
         Vector2 moveInput = ctx.input.GetMovement();
         ctx.Move(moveInput);
 
