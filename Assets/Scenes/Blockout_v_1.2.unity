@@ -239,12 +239,12 @@ GameObject:
   - component: {fileID: 15098092}
   - component: {fileID: 15098091}
   - component: {fileID: 15098090}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &15098089
 Transform:
@@ -1636,12 +1636,12 @@ GameObject:
   - component: {fileID: 217623962}
   - component: {fileID: 217623961}
   - component: {fileID: 217623960}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Plane (10)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &217623959
 Transform:
@@ -2894,12 +2894,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 623993392}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &623993392
 Transform:
@@ -2940,12 +2940,12 @@ GameObject:
   - component: {fileID: 624555256}
   - component: {fileID: 624555255}
   - component: {fileID: 624555254}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Plane (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!64 &624555254
 MeshCollider:
@@ -3861,6 +3861,43 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 534928476504266177, guid: 018208be0bf41be48b122c444015e964, type: 3}
   m_PrefabInstance: {fileID: 2729776624609138052}
   m_PrefabAsset: {fileID: 0}
+--- !u!195 &759825005
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 759824996}
+  m_Enabled: 1
+  m_AgentTypeID: 1479372276
+  m_Radius: 0.5
+  m_Speed: 12
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 1
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
+--- !u!114 &759825006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 759824996}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e8e131fe54745c4fa3b1e5b27029e64, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetToFollow: {fileID: 301505714}
+  followDistance: 3
+  canFollow: 1
 --- !u!1 &789939905
 GameObject:
   m_ObjectHideFlags: 0
@@ -4089,12 +4126,12 @@ GameObject:
   - component: {fileID: 847057778}
   - component: {fileID: 847057777}
   - component: {fileID: 847057776}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Plane (8)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &847057775
 Transform:
@@ -4666,12 +4703,12 @@ GameObject:
   - component: {fileID: 1035467953}
   - component: {fileID: 1035467952}
   - component: {fileID: 1035467951}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Plane (12)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1035467950
 Transform:
@@ -5914,12 +5951,12 @@ GameObject:
   - component: {fileID: 1272168208}
   - component: {fileID: 1272168207}
   - component: {fileID: 1272168206}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1272168205
 Transform:
@@ -6022,12 +6059,12 @@ GameObject:
   - component: {fileID: 1295928538}
   - component: {fileID: 1295928537}
   - component: {fileID: 1295928536}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Plane (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1295928535
 Transform:
@@ -6240,12 +6277,12 @@ GameObject:
   - component: {fileID: 1361197789}
   - component: {fileID: 1361197788}
   - component: {fileID: 1361197787}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!64 &1361197787
 MeshCollider:
@@ -6380,12 +6417,12 @@ GameObject:
   - component: {fileID: 1416332381}
   - component: {fileID: 1416332380}
   - component: {fileID: 1416332379}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Plane (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1416332378
 Transform:
@@ -6628,12 +6665,12 @@ GameObject:
   - component: {fileID: 1453035244}
   - component: {fileID: 1453035243}
   - component: {fileID: 1453035242}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1453035241
 Transform:
@@ -6951,6 +6988,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1500847963}
   - component: {fileID: 1500847962}
+  - component: {fileID: 1500847964}
   m_Layer: 0
   m_Name: NavMesh_Manager
   m_TagString: Untagged
@@ -7005,6 +7043,38 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1500847964
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1500847961}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SerializedVersion: 0
+  m_AgentTypeID: 1479372276
+  m_CollectObjects: 0
+  m_Size: {x: 10, y: 10, z: 10}
+  m_Center: {x: 0, y: 2, z: 0}
+  m_LayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_UseGeometry: 0
+  m_DefaultArea: 0
+  m_GenerateLinks: 0
+  m_IgnoreNavMeshAgent: 1
+  m_IgnoreNavMeshObstacle: 1
+  m_OverrideTileSize: 0
+  m_TileSize: 256
+  m_OverrideVoxelSize: 0
+  m_VoxelSize: 0.16666667
+  m_MinRegionArea: 2
+  m_NavMeshData: {fileID: 23800000, guid: e81e9544385bf3c4c832000017dc6466, type: 2}
+  m_BuildHeightMesh: 0
 --- !u!1 &1522040476
 GameObject:
   m_ObjectHideFlags: 0
@@ -7017,12 +7087,12 @@ GameObject:
   - component: {fileID: 1522040480}
   - component: {fileID: 1522040479}
   - component: {fileID: 1522040478}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1522040477
 Transform:
@@ -7563,12 +7633,12 @@ GameObject:
   - component: {fileID: 1610426925}
   - component: {fileID: 1610426924}
   - component: {fileID: 1610426923}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1610426922
 Transform:
@@ -7702,12 +7772,12 @@ GameObject:
   - component: {fileID: 1640829649}
   - component: {fileID: 1640829648}
   - component: {fileID: 1640829647}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Plane (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1640829646
 Transform:
@@ -7811,12 +7881,12 @@ GameObject:
   - component: {fileID: 1672507208}
   - component: {fileID: 1672507207}
   - component: {fileID: 1672507206}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Plane (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1672507205
 Transform:
@@ -8072,12 +8142,12 @@ GameObject:
   - component: {fileID: 1762401021}
   - component: {fileID: 1762401020}
   - component: {fileID: 1762401019}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Plane (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1762401018
 Transform:
@@ -8318,12 +8388,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1766328461}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Laberynth
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1766328461
 Transform:
@@ -8904,12 +8974,12 @@ GameObject:
   - component: {fileID: 1845904780}
   - component: {fileID: 1845904779}
   - component: {fileID: 1845904778}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Plane (9)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1845904777
 Transform:
@@ -9440,12 +9510,12 @@ GameObject:
   - component: {fileID: 2065732997}
   - component: {fileID: 2065732996}
   - component: {fileID: 2065732995}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Plane (11)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &2065732994
 Transform:
@@ -9721,12 +9791,12 @@ GameObject:
   - component: {fileID: 2143623950}
   - component: {fileID: 2143623949}
   - component: {fileID: 2143623948}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &2143623947
 Transform:
@@ -9896,7 +9966,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5885017305683878058, guid: 018208be0bf41be48b122c444015e964, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 759825006}
+    - targetCorrespondingSourceObject: {fileID: 5885017305683878058, guid: 018208be0bf41be48b122c444015e964, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 759825005}
   m_SourcePrefab: {fileID: 100100000, guid: 018208be0bf41be48b122c444015e964, type: 3}
 --- !u!1001 &3857465138187788437
 PrefabInstance:
@@ -10077,6 +10153,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Bulldog
       objectReference: {fileID: 0}
+    - target: {fileID: 3291506073526208114, guid: 6ef75c6087c391a4bb1495f2071e859e, type: 3}
+      propertyPath: m_Radius
+      value: 1.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 3291506073526208114, guid: 6ef75c6087c391a4bb1495f2071e859e, type: 3}
+      propertyPath: m_Center.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3956570498241406910, guid: 6ef75c6087c391a4bb1495f2071e859e, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.3495987
@@ -10173,20 +10257,20 @@ SceneRoots:
   - {fileID: 262660018}
   - {fileID: 82506537}
   - {fileID: 1785673991}
-  - {fileID: 519386293}
-  - {fileID: 1588243167}
   - {fileID: 8809525918635570878}
+  - {fileID: 2729776624609138052}
+  - {fileID: 3857465138187788437}
+  - {fileID: 1893954346}
+  - {fileID: 1090152876}
+  - {fileID: 97975713}
+  - {fileID: 1588243167}
+  - {fileID: 519386293}
   - {fileID: 623993392}
   - {fileID: 1766328461}
   - {fileID: 700111254}
   - {fileID: 1792765048}
-  - {fileID: 1090152876}
-  - {fileID: 97975713}
   - {fileID: 1362911405}
   - {fileID: 1890301678}
   - {fileID: 55940891}
-  - {fileID: 3857465138187788437}
-  - {fileID: 1893954346}
   - {fileID: 1500847963}
-  - {fileID: 2729776624609138052}
   - {fileID: 1768199763}
