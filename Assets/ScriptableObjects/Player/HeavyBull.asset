@@ -16,7 +16,7 @@ MonoBehaviour:
   characterModel: {fileID: 0}
   walkSpeed: 8
   runMultiplier: 3
-  jumpForce: 8
+  jumpForce: 4
   dashSpeed: 25
   dashDuration: 0.2
   meleeDamage: 30

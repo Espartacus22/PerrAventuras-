@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Bulldog
   characterModel: {fileID: 0}
-  walkSpeed: 10
-  runMultiplier: 5
-  jumpForce: 8
+  walkSpeed: 8
+  runMultiplier: 4
+  jumpForce: 5
   dashSpeed: 30
   dashDuration: 0.3
   meleeDamage: 1

@@ -1,46 +1,40 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// ProjectileLocal: Maneja proyectiles en modo offline.
-/// Se instancia con Instantiate y destruye al colisionar.
-/// </summary>
+[RequireComponent(typeof(Transform))]
 public class ProjectileLocal : MonoBehaviour
 {
-    [Header("Configuración")]
-    public float speed = 10f;
-    public int damage = 10;
-    public float lifetime = 5f;
+    [Header("Configuración de disparo")]
+    public GameObject projectilePrefab;
+    public Transform firePoint;
+    public float shootCooldown = 0.5f;
+    private float lastShootTime;
 
-    private Vector3 direction;
-
-    private void Start()
+    public void Shoot()
     {
-        Destroy(gameObject, lifetime);
-    }
-
-    public void SetDirection(Vector3 dir)
-    {
-        direction = dir.normalized;
-    }
-
-    private void Update()
-    {
-        transform.position += direction * speed * Time.deltaTime;
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Player"))
+        if (Time.time - lastShootTime < shootCooldown)
         {
-            PlayerHealthLocal health = other.GetComponent<PlayerHealthLocal>();
-            if (health != null)
-            {
-                health.TakeDamage(damage);
-            }
+            Debug.Log("Cooldown activo, no puede disparar todavía.");
+            return;
         }
 
-        Destroy(gameObject);
+        if (projectilePrefab == null || firePoint == null)
+        {
+            Debug.LogWarning("ProjectileLocal: Falta prefab o firePoint en " + gameObject.name);
+            return;
+        }
+
+        Debug.Log("Disparando proyectil desde " + gameObject.name + " en posición: " + firePoint.position);
+
+        GameObject proj = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+        if (proj == null)
+        {
+            Debug.LogError("El proyectil no se instanció correctamente!");
+        }
+        else
+        {
+            Debug.Log("Proyectil instanciado correctamente: " + proj.name);
+        }
+
+        lastShootTime = Time.time;
     }
 }

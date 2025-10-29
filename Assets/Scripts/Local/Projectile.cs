@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Transform))]
 public class Projectile : MonoBehaviour
 {
     [Header("Configuración del proyectil")]

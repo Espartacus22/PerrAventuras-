@@ -2,53 +2,28 @@ using UnityEngine;
 
 public class ProjectileBehavior : MonoBehaviour
 {
-    public float speed = 10f;
-
-    private float damage;
-    private float maxRange;
-    private Vector3 startPosition;
-
-    public void SetRange(float range)
-    {
-        maxRange = range;
-    }
-
-    public void SetDamage(float value)
-    {
-        damage = value;
-    }
+    public float speed = 25f;
+    public float lifetime = 5f;
+    public string targetTag = "Enemy";
 
     void Start()
     {
-        startPosition = transform.position;
+        Destroy(gameObject, lifetime);
     }
 
     void Update()
     {
         transform.Translate(Vector3.forward * speed * Time.deltaTime);
-
-        float distanceTraveled = Vector3.Distance(startPosition, transform.position);
-        if (distanceTraveled > maxRange)
-        {
-            Debug.Log("Proyectil destruido por superar el rango.");
-            Destroy(gameObject);
-        }
     }
 
-    void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Enemy"))
+        if (other.CompareTag(targetTag))
         {
-            Debug.Log($"Impactó a: {other.name} con {damage} de daño.");
-            // Aplicar daño si tenés un sistema de salud
-            // other.GetComponent<EnemyHealth>()?.TakeDamage(damage);
+            Debug.Log("Impacto con " + other.name);
+        }
 
-            Destroy(gameObject);
-        }
-        else if (!other.CompareTag("Player"))
-        {
-            Destroy(gameObject);
-        }
+        Destroy(gameObject);
     }
 }
 
