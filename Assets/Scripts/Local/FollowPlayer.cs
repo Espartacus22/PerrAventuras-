@@ -4,8 +4,7 @@ using UnityEngine.AI;
 public class FollowPlayer : MonoBehaviour
 {
     public Transform targetToFollow;
-    public float followDistance = 3f;
-    public bool canFollow = true;
+    public float followDistance = 2f;
 
     private NavMeshAgent agent;
 
@@ -16,7 +15,7 @@ public class FollowPlayer : MonoBehaviour
 
     void Update()
     {
-        if (!canFollow || targetToFollow == null) return;
+        if (targetToFollow == null) return;
 
         float distance = Vector3.Distance(transform.position, targetToFollow.position);
 
@@ -26,7 +25,7 @@ public class FollowPlayer : MonoBehaviour
         }
         else
         {
-            agent.ResetPath();
+            agent.ResetPath(); // se frena
         }
     }
 }

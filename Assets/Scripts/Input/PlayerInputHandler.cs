@@ -1,50 +1,40 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerInputHandler : MonoBehaviour
 {
-    [Header("Configuración de teclas")]
-    [SerializeField] private KeyCode dashKey = KeyCode.LeftShift;
-    [SerializeField] private KeyCode crouchKey = KeyCode.LeftControl;
-    [SerializeField] private KeyCode meleeAttackKey = KeyCode.Mouse0;
-    [SerializeField] private KeyCode rangedAttackKey = KeyCode.Mouse1;
-    [SerializeField] private KeyCode runKey = KeyCode.LeftAlt;
+    public InputsPlayer inputs;           // ScriptableObject de teclas
+    public Transform cameraTransform;     // Asignar Main Camera
 
-    private Vector2 moveInput;
-    private bool jumpPressed;
-    private bool dashPressed;
-    private bool crouchHeld;
-    private bool meleeAttackPressed;
-    private bool rangedAttackPressed;
-    private bool runHeld;
+    // Valores públicos leídos cada frame
+    [HideInInspector] public Vector2 moveInput;
+    [HideInInspector] public bool jumpPressed;
+    [HideInInspector] public bool dashPressed;
+    [HideInInspector] public bool isRunning;
+    [HideInInspector] public bool isCrouching;
 
     void Update()
     {
-        // Movimiento base
         moveInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-
-        // Saltar
-        jumpPressed = Input.GetButtonDown("Jump");
-
-        // Correr
-        runHeld = Input.GetKey(runKey);
-
-        // Dash
-        dashPressed = Input.GetKeyDown(dashKey);
-
-        // Agacharse
-        crouchHeld = Input.GetKey(crouchKey);
-
-        // Ataques
-        meleeAttackPressed = Input.GetKeyDown(meleeAttackKey);
-        rangedAttackPressed = Input.GetKeyDown(rangedAttackKey);
+        isRunning = inputs != null && Input.GetKey(inputs.runKey);
+        isCrouching = inputs != null && Input.GetKey(inputs.crouchKey);
+        dashPressed = inputs != null && Input.GetKeyDown(inputs.dashKey);
+        jumpPressed = inputs != null && Input.GetKeyDown(inputs.jumpKey);
     }
 
-    // Métodos públicos para acceder desde PlayerLocal
-    public Vector2 GetMovement() => moveInput;
-    public bool GetJump() => jumpPressed;
-    public bool GetDash() => dashPressed;
-    public bool GetCrouch() => crouchHeld;
-    public bool GetRun() => runHeld;
-    public bool GetAttackMelee() => meleeAttackPressed;
-    public bool GetAttackRanged() => rangedAttackPressed;
+    // Devuelve dirección en mundo relativa a la cámara (y plana en Y)
+    public Vector3 GetMoveDirectionRelativeToCamera()
+    {
+        if (cameraTransform == null) return Vector3.zero;
+
+        Vector3 forward = cameraTransform.forward;
+        Vector3 right = cameraTransform.right;
+        forward.y = 0f;
+        right.y = 0f;
+
+        forward.Normalize();
+        right.Normalize();
+
+        return (forward * moveInput.y + right * moveInput.x).normalized;
+    }
 }

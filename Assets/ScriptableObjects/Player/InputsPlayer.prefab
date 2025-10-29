@@ -45,18 +45,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 309022745fc9b36408ec00d89d4eeb71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dashKey: 304
-  crouchKey: 306
-  meleeAttackKey: 323
-  rangedAttackKey: 324
-  runKey: 308
+  inputs: {fileID: 0}
+  cameraTransform: {fileID: 0}
   moveInput: {x: 0, y: 0}
-  jumpPressed: 0
-  dashPressed: 0
-  crouchHeld: 0
-  meleeAttackPressed: 0
-  rangedAttackPressed: 0
-  runHeld: 0
+  isRunning: 1
+  isCrouching: 1
+  dashPressed: 1
+  jumpPressed: 1
 --- !u!114 &9197802269533041775
 MonoBehaviour:
   m_ObjectHideFlags: 0

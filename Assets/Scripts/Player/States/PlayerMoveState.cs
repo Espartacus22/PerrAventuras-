@@ -13,15 +13,14 @@ public class PlayerMoveState : IPlayerState
 
     public void Tick()
     {
-        if (ctx == null || ctx.input == null) return;
-
-        Vector2 moveInput = ctx.input.GetMovement();
+        Vector2 moveInput = ctx.input.moveInput;
         ctx.Move(moveInput);
 
-        if (ctx.input.GetJump() && ctx.isGrounded)
-        {
+        if (ctx.input.jumpPressed && ctx.isGrounded)
             ctx.StateMachine.ChangeState(new PlayerJumpState(ctx));
-        }
+
+        if (ctx.input.dashPressed)
+            ctx.StartCoroutine(ctx.Dash());
 
         ctx.ApplyGravity();
     }
