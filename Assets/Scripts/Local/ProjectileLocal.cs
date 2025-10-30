@@ -1,40 +1,26 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Transform))]
 public class ProjectileLocal : MonoBehaviour
 {
-    [Header("Configuración de disparo")]
     public GameObject projectilePrefab;
     public Transform firePoint;
-    public float shootCooldown = 0.5f;
-    private float lastShootTime;
+    public float shootForce = 25f;
+    public float shootCooldown = 0.4f;
+    private float lastShootTime = -99f;
 
     public void Shoot()
     {
-        if (Time.time - lastShootTime < shootCooldown)
-        {
-            Debug.Log("Cooldown activo, no puede disparar todavía.");
-            return;
-        }
-
+        if (Time.time - lastShootTime < shootCooldown) return;
         if (projectilePrefab == null || firePoint == null)
         {
-            Debug.LogWarning("ProjectileLocal: Falta prefab o firePoint en " + gameObject.name);
+            Debug.LogWarning("ProjectileLocal: missing prefab or firePoint on " + gameObject.name);
             return;
         }
 
-        Debug.Log("Disparando proyectil desde " + gameObject.name + " en posición: " + firePoint.position);
-
-        GameObject proj = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
-        if (proj == null)
-        {
-            Debug.LogError("El proyectil no se instanció correctamente!");
-        }
-        else
-        {
-            Debug.Log("Proyectil instanciado correctamente: " + proj.name);
-        }
-
+        Debug.Log("ProjectileLocal: Shooting from " + gameObject.name);
+        GameObject p = GameObject.Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+        Rigidbody rb = p.GetComponent<Rigidbody>();
+        if (rb != null) rb.linearVelocity = firePoint.forward * shootForce;
         lastShootTime = Time.time;
     }
 }

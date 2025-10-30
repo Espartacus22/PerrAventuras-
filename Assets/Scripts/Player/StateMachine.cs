@@ -4,17 +4,20 @@ public class StateMachine
 {
     private IPlayerState currentState;
 
-    public void Initialize(IPlayerState startState)
+    public void Initialize(IPlayerState startingState)
     {
-        currentState = startState;
-        currentState.Enter();
+        currentState = startingState;
+        currentState?.Enter();
     }
 
     public void ChangeState(IPlayerState newState)
     {
-        currentState?.Exit();
+        if (currentState != null)
+        {
+            currentState.Exit();
+        }
         currentState = newState;
-        currentState.Enter();
+        currentState?.Enter();
     }
 
     public void Update()

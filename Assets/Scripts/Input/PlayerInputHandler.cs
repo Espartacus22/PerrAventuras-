@@ -1,40 +1,58 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+
+[RequireComponent(typeof(Transform))]
 public class PlayerInputHandler : MonoBehaviour
 {
-    public InputsPlayer inputs;           // ScriptableObject de teclas
-    public Transform cameraTransform;     // Asignar Main Camera
+    public InputsPlayer inputsAsset;   // opcional ScriptableObject con keybinds
+    public Transform cameraTransform;  // asignar Main Camera (opcional)
 
-    // Valores públicos leídos cada frame
-    [HideInInspector] public Vector2 moveInput;
-    [HideInInspector] public bool jumpPressed;
-    [HideInInspector] public bool dashPressed;
-    [HideInInspector] public bool isRunning;
-    [HideInInspector] public bool isCrouching;
-
-    void Update()
+    void Update() // actualiza cada frame
     {
-        moveInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-        isRunning = inputs != null && Input.GetKey(inputs.runKey);
-        isCrouching = inputs != null && Input.GetKey(inputs.crouchKey);
-        dashPressed = inputs != null && Input.GetKeyDown(inputs.dashKey);
-        jumpPressed = inputs != null && Input.GetKeyDown(inputs.jumpKey);
+        // nothing stored here intentionally — usamos métodos públicos para leer on-demand
     }
 
-    // Devuelve dirección en mundo relativa a la cámara (y plana en Y)
-    public Vector3 GetMoveDirectionRelativeToCamera()
+    // returns movement vector (x = horizontal A/D, y = vertical W/S)
+    public Vector2 GetMovement()
     {
-        if (cameraTransform == null) return Vector3.zero;
+        return new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+    }
 
-        Vector3 forward = cameraTransform.forward;
-        Vector3 right = cameraTransform.right;
-        forward.y = 0f;
-        right.y = 0f;
+    // true on jump press (edge)
+    public bool GetJump()
+    {
+        if (inputsAsset != null) return Input.GetKeyDown(inputsAsset.jumpKey);
+        return Input.GetButtonDown("Jump");
+    }
 
-        forward.Normalize();
-        right.Normalize();
+    // true on dash press (edge)
+    public bool GetDash()
+    {
+        if (inputsAsset != null) return Input.GetKeyDown(inputsAsset.dashKey);
+        return Input.GetKeyDown(KeyCode.LeftShift);
+    }
 
-        return (forward * moveInput.y + right * moveInput.x).normalized;
+    // convenience
+    public bool GetRun()
+    {
+        if (inputsAsset != null) return Input.GetKey(inputsAsset.runKey);
+        return Input.GetKey(KeyCode.LeftAlt);
+    }
+
+    public bool GetCrouch()
+    {
+        if (inputsAsset != null) return Input.GetKey(inputsAsset.crouchKey);
+        return Input.GetKey(KeyCode.LeftControl);
+    }
+
+    // For camera-aligned movement (optional helper)
+    public Vector3 GetMoveDirectionRelativeToCamera(Vector2 moveInput)
+    {
+        Transform cam = cameraTransform != null ? cameraTransform : Camera.main?.transform;
+        if (cam == null) return new Vector3(moveInput.x, 0f, moveInput.y);
+        Vector3 forward = cam.forward; forward.y = 0; forward.Normalize();
+        Vector3 right = cam.right; right.y = 0; right.Normalize();
+        return right * moveInput.x + forward * moveInput.y;
     }
 }

@@ -3,7 +3,6 @@ using UnityEngine;
 public class PlayerJumpState : IPlayerState
 {
     private PlayerLocal ctx;
-    private bool usedDouble;
 
     public PlayerJumpState(PlayerLocal context)
     {
@@ -12,35 +11,43 @@ public class PlayerJumpState : IPlayerState
 
     public void Enter()
     {
-        ctx.Jump();
-        usedDouble = false;
+        // perform initial jump
+        if (ctx == null) return;
+
+        // allow jump only if under max jumps
+        if (ctx.jumpCount < ctx.maxJumps)
+            ctx.Jump();
     }
 
     public void Tick()
     {
         if (ctx == null || ctx.input == null) return;
 
-        // Movimiento mientras está en el aire
-        Vector2 moveInput = ctx.input.moveInput;
+        // air control
+        Vector2 moveInput = ctx.input.GetMovement();
         ctx.Move(moveInput);
 
-        // Permitir doble salto si está habilitado/desbloqueado
-        if (ctx.input.jumpPressed)
+        // double-jump
+        if (ctx.input.GetJump() && ctx.jumpCount < ctx.maxJumps)
         {
-            if (ctx.isGrounded)
-                ctx.Jump();
-            else if (ctx.doubleJumpUnlocked || (ctx.characterData != null && ctx.characterData.canDoubleJump))
-            {
-                ctx.Jump();
-                ctx.doubleJumpUnlocked = false;
-            }
+            ctx.Jump();
+        }
+
+        // dash in air if allowed
+        if (ctx.characterData != null && ctx.characterData.canDash && ctx.input.GetDash())
+        {
+            ctx.StateMachine.ChangeState(new PlayerDashState(ctx));
+            return;
+        }
+
+        // fall back to move state when grounded
+        if (ctx.isGrounded)
+        {
+            ctx.StateMachine.ChangeState(new PlayerMoveState(ctx));
+            return;
         }
 
         ctx.ApplyGravity();
-
-        // Si aterriza, vuelve al estado de movimiento
-        if (ctx.isGrounded)
-            ctx.StateMachine.ChangeState(new PlayerMoveState(ctx));
     }
 
     public void Exit() { }

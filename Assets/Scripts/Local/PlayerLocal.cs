@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -9,101 +9,129 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerHealthLocal))]
 public class PlayerLocal : MonoBehaviour
 {
-    [Header("Componentes")]
-    public CharacterController controller;
-    public PlayerInputHandler input;
+    [Header("References")]
     public CharacterType characterData;
-    public StateMachine StateMachine;
+    [HideInInspector] public CharacterController controller;
+    [HideInInspector] public PlayerInputHandler input;
+    [HideInInspector] public ProjectileLocal projectile;
 
-    [Header("Parámetros")]
-    public float moveSpeed = 5f;
-    public float jumpForce = 7f;
-    public float gravity = -9.8f;
-    public bool isGrounded;
+    [Header("Movement")]
+    public float moveSpeed = 6f;
+    public float jumpForce = 9f;
+    public float gravity = -20f;
+    public float dashSpeed = 20f;
+    public float dashDuration = 0.2f;
 
+    [Header("Ground Raycast")]
+    public float groundDistance = 1.0f;
+    public LayerMask groundMask;
+    [HideInInspector] public bool isGrounded;
+
+    // state
+    public StateMachine StateMachine { get; private set; }
+
+    // internal
     [HideInInspector] public Vector3 velocity;
-    [HideInInspector] public bool canDoubleJump;
+    [HideInInspector] public int jumpCount = 0;
+    public int maxJumps = 2;
 
-
-    [Header("Habilidades desbloqueadas")]
+    [Header("Habilidades Desbloqueadas (runtime)")]
     public bool dashUnlocked = false;
     public bool doubleJumpUnlocked = false;
     public bool blockUnlocked = false;
-    private void Awake()
-    {
-        controller = GetComponent<CharacterController>();
-        input = GetComponent<PlayerInputHandler>();
-        StateMachine = new StateMachine();
-    }
 
-    private void Start()
+    void Start()
     {
-        StateMachine = new StateMachine();
+        // inicializa los estados
         StateMachine.Initialize(new PlayerMoveState(this));
     }
 
-    private void Update()
+    /// <summary>Habilita o deshabilita dash desde PlayerLevel</summary>
+    public void EnableDash(bool value)
     {
+        dashUnlocked = value;
+        Debug.Log($"EnableDash: {value}");
+    }
+
+    /// <summary>Habilita o deshabilita doble salto desde PlayerLevel</summary>
+    public void EnableDoubleJump(bool value)
+    {
+        doubleJumpUnlocked = value;
+        Debug.Log($"EnableDoubleJump: {value}");
+    }
+
+    /// <summary>Habilita o deshabilita bloqueo desde PlayerLevel</summary>
+    public void EnableBlock(bool value)
+    {
+        blockUnlocked = value;
+        Debug.Log($"EnableBlock: {value}");
+    }
+
+    void Awake()
+    {
+        controller = GetComponent<CharacterController>();
+        input = GetComponent<PlayerInputHandler>();
+        projectile = GetComponent<ProjectileLocal>();
+
+        StateMachine = new StateMachine();
+    }
+
+    
+
+    void Update()
+    {
+        CheckGround();
         StateMachine.Update();
     }
 
-    // Métodos auxiliares usados por los estados
-    public void Move(Vector2 inputMove)
+    public void Move(Vector2 moveInput)
     {
-        Vector3 moveDir = input.GetMoveDirectionRelativeToCamera();
-        float speed = moveSpeed;
+        Vector3 moveDir = input != null ? input.GetMoveDirectionRelativeToCamera(moveInput)
+                                        : new Vector3(moveInput.x, 0f, moveInput.y);
 
-        if (input.isRunning)
-            speed *= characterData.runMultiplier;
-
-        if (input.isCrouching)
-            speed *= 0.5f;
-
-        controller.Move(moveDir * speed * Time.deltaTime);
+        controller.Move(moveDir * moveSpeed * Time.deltaTime);
     }
 
-    // Dash: puede llamarse desde estado o directamente
-    public IEnumerator Dash()
-    {
-        if (!dashUnlocked && (characterData == null || !characterData.canDash)) yield break;
-
-        float startTime = Time.time;
-        Vector3 dashDir = input.GetMoveDirectionRelativeToCamera();
-        if (dashDir == Vector3.zero)
-            dashDir = transform.forward;
-
-        while (Time.time < startTime + characterData.dashDuration)
-        {
-            controller.Move(dashDir * characterData.dashSpeed * Time.deltaTime);
-            yield return null;
-        }
-    }
-
-    //Double Jump & Gravity
     public void ApplyGravity()
     {
+        if (isGrounded && velocity.y < 0)
+            velocity.y = -2f;
+
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
     }
 
     public void Jump()
     {
-        // Solo permite doble salto si está desbloqueado o habilitado
-        if (isGrounded)
+        velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
+        jumpCount++;
+    }
+
+    public void ResetJumps()
+    {
+        jumpCount = 0;
+    }
+
+    public void CheckGround()
+    {
+        isGrounded = Physics.Raycast(transform.position, Vector3.down, groundDistance, groundMask);
+        if (isGrounded) ResetJumps();
+        Debug.DrawRay(transform.position, Vector3.down * groundDistance, isGrounded ? Color.green : Color.red);
+    }
+
+    // Dash helper that can be started from a state
+    public System.Collections.IEnumerator DashCoroutine(float duration, float speed)
+    {
+        float t = 0f;
+        Vector3 dir = (input != null) ? input.GetMoveDirectionRelativeToCamera(input.GetMovement()) : transform.forward;
+        if (dir.sqrMagnitude < 0.001f) dir = transform.forward;
+        dir.Normalize();
+
+        while (t < duration)
         {
-            velocity.y = Mathf.Sqrt(characterData.jumpForce * -2f * gravity);
+            controller.Move(dir * speed * Time.deltaTime);
+            t += Time.deltaTime;
+            yield return null;
         }
     }
-
-    private void CheckGround()
-    {
-        isGrounded = controller.isGrounded;
-        if (isGrounded && velocity.y < 0)
-            velocity.y = -2f;
-    }
-
-    // --- Desbloqueo de habilidades ---
-    public void EnableDash(bool value) => dashUnlocked = value;
-    public void EnableDoubleJump(bool value) => doubleJumpUnlocked = value;
-    public void EnableBlock(bool value) => blockUnlocked = value;
 }
