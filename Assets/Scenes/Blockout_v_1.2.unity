@@ -2043,7 +2043,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 309022745fc9b36408ec00d89d4eeb71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputsAsset: {fileID: 11400000, guid: 3125788e936894445bb5d17e519276ce, type: 2}
   cameraTransform: {fileID: 82506537}
 --- !u!114 &301505726
 MonoBehaviour:
@@ -2082,33 +2081,8 @@ MonoBehaviour:
   firePoint: {fileID: 1745056212}
   shootForce: 25
   shootCooldown: 0.5
---- !u!54 &301505728
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 69471056}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
+  maxProjectiles: 5
+  playerLevelRef: {fileID: 301505726}
 --- !u!114 &301505731
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2121,9 +2095,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce7a8bcc6c7d1c94db54806db09343e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numCurrency: 0
-  textMiss: {fileID: 0}
-  ButtonMiss: {fileID: 0}
+  numCurrency: 1
+  textMiss: {fileID: 1428286663}
+  ButtonMiss: {fileID: 1738024415}
 --- !u!1 &303598894
 GameObject:
   m_ObjectHideFlags: 0
@@ -4263,7 +4237,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 309022745fc9b36408ec00d89d4eeb71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputsAsset: {fileID: 0}
   cameraTransform: {fileID: 82506537}
 --- !u!114 &759825021
 MonoBehaviour:
@@ -4297,6 +4270,8 @@ MonoBehaviour:
   firePoint: {fileID: 438204016}
   shootForce: 25
   shootCooldown: 0.5
+  maxProjectiles: 5
+  playerLevelRef: {fileID: 0}
 --- !u!1 &789939905
 GameObject:
   m_ObjectHideFlags: 0
@@ -11187,6 +11162,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2053564949842102637, guid: 018208be0bf41be48b122c444015e964, type: 3}
+      propertyPath: groundDistance
+      value: 1.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 2053564949842102637, guid: 018208be0bf41be48b122c444015e964, type: 3}
       propertyPath: groundCheckDistance
       value: 1.5
       objectReference: {fileID: 0}
@@ -11462,6 +11441,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6233440917332724808, guid: 6ef75c6087c391a4bb1495f2071e859e, type: 3}
+      propertyPath: projectile
+      value: 
+      objectReference: {fileID: 301505727}
+    - target: {fileID: 6233440917332724808, guid: 6ef75c6087c391a4bb1495f2071e859e, type: 3}
       propertyPath: dashDuration
       value: 0.5
       objectReference: {fileID: 0}
@@ -11590,9 +11573,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3270781930418487124, guid: 6ef75c6087c391a4bb1495f2071e859e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 301505727}
-    - targetCorrespondingSourceObject: {fileID: 3270781930418487124, guid: 6ef75c6087c391a4bb1495f2071e859e, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 301505728}
     - targetCorrespondingSourceObject: {fileID: 3270781930418487124, guid: 6ef75c6087c391a4bb1495f2071e859e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 301505731}

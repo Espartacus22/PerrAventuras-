@@ -97,3 +97,8 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+Assets/Prefabs/Projectiles/PlayerProjectile.prefab
+Assets/Scenes/Blockout_v_1.2.unity
+Assets/Scripts/Local/ProjectileLocal.cs
+Assets/Scripts/Player/States/PlayerJumpState.cs
+Assets/Scripts/Player/States/PlayerMoveState.cs

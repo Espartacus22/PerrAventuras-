@@ -179,23 +179,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f59d51f367d287a4f9b718c11fee0482, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  controller: {fileID: 0}
-  input: {fileID: 0}
   characterData: {fileID: 11400000, guid: 57094d7e95b45e54db697615c651fe85, type: 2}
+  input: {fileID: 0}
+  projectile: {fileID: 0}
+  controller: {fileID: 0}
   moveSpeed: 12
+  runMultiplier: 1.5
+  crouchSpeed: 5
   jumpForce: 10
   gravity: -9.8
-  isGrounded: 1
-  groundDistance: 0.3
+  dashSpeed: 25
+  dashDuration: 0.5
+  groundDistance: 1.1
   groundMask:
     serializedVersion: 2
-    m_Bits: 0
-  velocity: {x: 0, y: 0, z: 0}
-  canDoubleJump: 1
+    m_Bits: 64
+  isGrounded: 1
   dashUnlocked: 1
   doubleJumpUnlocked: 1
   blockUnlocked: 0
-  JumpForce: 10
+  currentSpeed: 0
+  hasDoubleJumped: 0
 --- !u!1 &5948238042014243181
 GameObject:
   m_ObjectHideFlags: 0

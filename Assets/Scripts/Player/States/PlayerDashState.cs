@@ -20,18 +20,19 @@ public class PlayerDashState : IPlayerState
 
     public void Tick()
     {
-        // Mientras dashing se dejó la lógica en la corrutina.
-        // Aquí revisamos transiciones y permitimos disparo si quierés.
-        if (!isDashing)
+        // mientras dash se ejecuta por corrutina no hacemos control normal
+        // pero permitimos disparar si se desea
+        if (Input.GetMouseButtonDown(0) && ctx.projectile != null)
         {
-            if (ctx.isGrounded)
-                ctx.StateMachine.ChangeState(new PlayerMoveState(ctx));
-            else
-                ctx.StateMachine.ChangeState(new PlayerJumpState(ctx));
+            ctx.Shoot();
         }
 
-        if (Input.GetMouseButtonDown(0) && ctx.projectile != null)
-            ctx.projectile.Shoot();
+        // si la corrutina terminó, volver al estado apropiado
+        if (!isDashing)
+        {
+            if (ctx.isGrounded) ctx.StateMachine.ChangeState(new PlayerMoveState(ctx));
+            else ctx.StateMachine.ChangeState(new PlayerJumpState(ctx));
+        }
     }
 
     public void Exit()
@@ -41,17 +42,17 @@ public class PlayerDashState : IPlayerState
 
     private IEnumerator DashRoutine()
     {
-        // Usa los valores de ctx (asegurate que public float dashDuration/dashSpeed existen)
-        float duration = ctx.dashDuration;
-        float speed = ctx.dashSpeed;
-
-        // Dirección: preferir input -> si no, forward
-        Vector3 dir = (ctx.input != null) ? ctx.input.GetMoveDirectionRelativeToCamera(ctx.input.GetMovement()) : ctx.transform.forward;
-        if (dir.sqrMagnitude < 0.001f) dir = ctx.transform.forward;
+        // determino dirección preferida por input/cámara
+        Vector2 m = ctx.input != null ? ctx.input.GetMovement() : Vector2.zero;
+        Vector3 dir = (m.sqrMagnitude > 0.001f) ? ctx.input.GetMoveDirectionRelativeToCamera(m) : ctx.transform.forward;
         dir.y = 0;
+        if (dir.sqrMagnitude < 0.001f) dir = ctx.transform.forward;
         dir.Normalize();
 
         float elapsed = 0f;
+        float duration = ctx.dashDuration;
+        float speed = ctx.dashSpeed;
+
         while (elapsed < duration)
         {
             ctx.controller.Move(dir * speed * Time.deltaTime);

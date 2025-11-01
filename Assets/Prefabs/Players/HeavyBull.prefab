@@ -205,16 +205,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterData: {fileID: 11400000, guid: 95fc1dc83a622ea4cbfae4fa80b49d52, type: 2}
   input: {fileID: 0}
-  projectilePrefab: {fileID: 3776335016409907967, guid: fedd7e666a0b36f419349b9d4d9c21c7, type: 3}
-  projectileSpawnPoint: {fileID: 2097343401416467184}
-  groundCheckDistance: 1.5
-  groundLayer:
+  projectile: {fileID: 0}
+  controller: {fileID: 0}
+  moveSpeed: 7
+  runMultiplier: 1.5
+  crouchSpeed: 5
+  jumpForce: 8
+  gravity: -9.8
+  dashSpeed: 25
+  dashDuration: 0.5
+  groundDistance: 1.35
+  groundMask:
     serializedVersion: 2
     m_Bits: 64
-  animator: {fileID: 0}
-  canDash: 1
-  canDoubleJump: 1
-  canBlock: 1
+  isGrounded: 1
+  dashUnlocked: 1
+  doubleJumpUnlocked: 0
+  blockUnlocked: 1
+  currentSpeed: 0
+  hasDoubleJumped: 0
 --- !u!1 &8283983068522163353
 GameObject:
   m_ObjectHideFlags: 0

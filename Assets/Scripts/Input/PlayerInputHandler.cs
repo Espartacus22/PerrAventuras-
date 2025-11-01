@@ -5,54 +5,84 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Transform))]
 public class PlayerInputHandler : MonoBehaviour
 {
-    public InputsPlayer inputsAsset;   // opcional ScriptableObject con keybinds
-    public Transform cameraTransform;  // asignar Main Camera (opcional)
+    private PlayerInput playerInput;
+    private InputAction moveAction;
+    private InputAction jumpAction;
+    private InputAction dashAction;
+    private InputAction runAction;
+    private InputAction crouchAction;
+    private InputAction shootAction;
 
-    void Update() // actualiza cada frame
+    public Transform cameraTransform; // asignar Main Camera en el inspector si querés
+
+    private void Awake()
     {
-        // nothing stored here intentionally — usamos métodos públicos para leer on-demand
+        playerInput = GetComponent<PlayerInput>();
+
+        if (playerInput == null)
+        {
+            Debug.LogWarning("PlayerInput no encontrado en PlayerInputHandler, usando Input.GetAxis fallback.");
+            return;
+        }
+
+        // Nombres deben coincidir con tu InputActions asset
+        moveAction = playerInput.actions["Move"];
+        jumpAction = playerInput.actions["Jump"];
+        dashAction = playerInput.actions["Dash"];
+        runAction = playerInput.actions["Run"];
+        crouchAction = playerInput.actions["Crouch"];
+        shootAction = playerInput.actions["Shoot"];
     }
 
-    // returns movement vector (x = horizontal A/D, y = vertical W/S)
+    // --- Lecturas de input (API pública, usar desde estados) ---
     public Vector2 GetMovement()
     {
+        if (playerInput != null && moveAction != null) return moveAction.ReadValue<Vector2>();
         return new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
     }
 
-    // true on jump press (edge)
     public bool GetJump()
     {
-        if (inputsAsset != null) return Input.GetKeyDown(inputsAsset.jumpKey);
+        if (playerInput != null && jumpAction != null) return jumpAction.triggered;
         return Input.GetButtonDown("Jump");
     }
 
-    // true on dash press (edge)
     public bool GetDash()
     {
-        if (inputsAsset != null) return Input.GetKeyDown(inputsAsset.dashKey);
+        if (playerInput != null && dashAction != null) return dashAction.triggered;
         return Input.GetKeyDown(KeyCode.LeftShift);
     }
 
-    // convenience
     public bool GetRun()
     {
-        if (inputsAsset != null) return Input.GetKey(inputsAsset.runKey);
+        if (playerInput != null && runAction != null) return runAction.IsPressed();
         return Input.GetKey(KeyCode.LeftAlt);
     }
 
     public bool GetCrouch()
     {
-        if (inputsAsset != null) return Input.GetKey(inputsAsset.crouchKey);
+        if (playerInput != null && crouchAction != null) return crouchAction.IsPressed();
         return Input.GetKey(KeyCode.LeftControl);
     }
 
-    // For camera-aligned movement (optional helper)
+    public bool GetShoot()
+    {
+        if (playerInput != null && shootAction != null) return shootAction.triggered;
+        return Input.GetMouseButtonDown(0);
+    }
+
+    // Helper que ya pediste: devuelve vector world-aligned respecto a la cámara
     public Vector3 GetMoveDirectionRelativeToCamera(Vector2 moveInput)
     {
         Transform cam = cameraTransform != null ? cameraTransform : Camera.main?.transform;
-        if (cam == null) return new Vector3(moveInput.x, 0f, moveInput.y);
-        Vector3 forward = cam.forward; forward.y = 0; forward.Normalize();
-        Vector3 right = cam.right; right.y = 0; right.Normalize();
+        if (cam == null)
+        {
+            // fallback: mover relativo al transform del jugador (caller puede añadir transform.right/forward)
+            return new Vector3(moveInput.x, 0f, moveInput.y);
+        }
+
+        Vector3 forward = cam.forward; forward.y = 0f; forward.Normalize();
+        Vector3 right = cam.right; right.y = 0f; right.Normalize();
         return right * moveInput.x + forward * moveInput.y;
     }
 }
