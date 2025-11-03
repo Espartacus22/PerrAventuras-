@@ -1,5 +1,5 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
+
 
 /// <summary>
 /// PlayerLocal: control offline del jugador (movimiento, salto, dash, agacharse, correr, ataques).
@@ -9,129 +9,239 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerHealthLocal))]
 public class PlayerLocal : MonoBehaviour
 {
-    [Header("References")]
+    [Header("Referencias")]
     public CharacterType characterData;
-    [HideInInspector] public CharacterController controller;
-    [HideInInspector] public PlayerInputHandler input;
-    [HideInInspector] public ProjectileLocal projectile;
+    public PlayerInputHandler input;
+    public ProjectileLocal projectile;
+    public CharacterController controller;
 
-    [Header("Movement")]
-    public float moveSpeed = 6f;
-    public float jumpForce = 9f;
-    public float gravity = -20f;
-    public float dashSpeed = 20f;
-    public float dashDuration = 0.2f;
+    [Header("Movimiento")]
+    public float moveSpeed = 10f;
+    public float runMultiplier = 1.5f;
+    public float crouchSpeed = 5f;
+    public float jumpForce = 8f;
+    public float gravity = -9.8f;
+    public float dashSpeed = 25f;
+    public float dashDuration = 0.5f;
 
-    [Header("Ground Raycast")]
-    public float groundDistance = 1.0f;
+    [Header("Ground Detection")]
+    public float groundDistance = 1.1f;
     public LayerMask groundMask;
-    [HideInInspector] public bool isGrounded;
+    public bool isGrounded;
 
-    // state
-    public StateMachine StateMachine { get; private set; }
-
-    // internal
-    [HideInInspector] public Vector3 velocity;
-    [HideInInspector] public int jumpCount = 0;
-    public int maxJumps = 2;
-
-    [Header("Habilidades Desbloqueadas (runtime)")]
-    public bool dashUnlocked = false;
+    [Header("Habilidades Desbloqueadas")]
+    public bool dashUnlocked = true;
     public bool doubleJumpUnlocked = false;
     public bool blockUnlocked = false;
 
-    void Start()
-    {
-        // inicializa los estados
-        StateMachine.Initialize(new PlayerMoveState(this));
-    }
+    [Header("Special Movement")]
+    public bool canLevitate = false; // Solo el personaje 1 por el momento
 
-    /// <summary>Habilita o deshabilita dash desde PlayerLevel</summary>
-    public void EnableDash(bool value)
-    {
-        dashUnlocked = value;
-        Debug.Log($"EnableDash: {value}");
-    }
+    [HideInInspector] public int jumpCount = 0;
 
-    /// <summary>Habilita o deshabilita doble salto desde PlayerLevel</summary>
-    public void EnableDoubleJump(bool value)
-    {
-        doubleJumpUnlocked = value;
-        Debug.Log($"EnableDoubleJump: {value}");
-    }
+    [HideInInspector] public float currentSpeed;
+    [HideInInspector] public bool hasDoubleJumped;
 
-    /// <summary>Habilita o deshabilita bloqueo desde PlayerLevel</summary>
-    public void EnableBlock(bool value)
-    {
-        blockUnlocked = value;
-        Debug.Log($"EnableBlock: {value}");
-    }
+    public StateMachine StateMachine { get; private set; }
 
-    void Awake()
+    private Vector3 velocity; // acumulador vertical (y)
+    private Vector2 lastMoveInput;
+
+    private void Awake()
     {
-        controller = GetComponent<CharacterController>();
         input = GetComponent<PlayerInputHandler>();
         projectile = GetComponent<ProjectileLocal>();
-
+        controller = GetComponent<CharacterController>();
         StateMachine = new StateMachine();
+        currentSpeed = moveSpeed;
     }
 
-    
+    private void Start()
+    {
+        StateMachine.ChangeState(new PlayerMoveState(this));
+    }
 
-    void Update()
+    private void Update()
     {
         CheckGround();
+        ApplyGravity();
         StateMachine.Update();
     }
 
-    public void Move(Vector2 moveInput)
+    // -------- MOVE --------
+    public void Move(Vector2 inputMove)
     {
-        Vector3 moveDir = input != null ? input.GetMoveDirectionRelativeToCamera(moveInput)
-                                        : new Vector3(moveInput.x, 0f, moveInput.y);
+        lastMoveInput = inputMove;
 
-        controller.Move(moveDir * moveSpeed * Time.deltaTime);
+        // Dirección calculada de forma segura (usa input helper si existe)
+        Vector3 moveDir = GetMoveDirection(inputMove);
+        // normalizar sólo si hay input para evitar borrar vertical
+        if (moveDir.sqrMagnitude > 1e-4f) moveDir.Normalize();
+
+        // Aplicar movimiento horizontal + vertical en un solo controller.Move
+        Vector3 motion = moveDir * currentSpeed;
+        controller.Move(motion * Time.deltaTime);
     }
 
-    public void ApplyGravity()
+    private Vector3 GetMoveDirection(Vector2 inputMove)
     {
-        if (isGrounded && velocity.y < 0)
-            velocity.y = -2f;
+        if (input != null)
+        {
+            
+            try
+            {
+                return input.GetMoveDirectionRelativeToCamera(inputMove);
+            }
+            catch (System.Exception)
+            {
+                // fallback abajo
+            }
+        }
 
-        velocity.y += gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
+        // fallback: calcula respecto a la cámara principal
+        Transform cam = Camera.main != null ? Camera.main.transform : null;
+        if (cam == null)
+        {
+            return new Vector3(inputMove.x, 0f, inputMove.y);
+        }
+
+        Vector3 forward = cam.forward; forward.y = 0f; forward.Normalize();
+        Vector3 right = cam.right; right.y = 0f; right.Normalize();
+        return right * inputMove.x + forward * inputMove.y;
     }
 
+    public Vector3 GetDirectionFromMovement(Vector2 moveInput)
+    {
+        // Si existe input handler con helper, usalo
+        if (input != null)
+        {
+            try
+            {
+                return input.GetMoveDirectionRelativeToCamera(moveInput).normalized;
+            }
+            catch (System.Exception)
+            {
+                // fallback abajo
+            }
+        }
+
+        // fallback: usar camera main
+        Transform cam = Camera.main != null ? Camera.main.transform : null;
+        if (cam == null)
+            return new Vector3(moveInput.x, 0f, moveInput.y).normalized;
+
+        Vector3 forward = cam.forward; forward.y = 0f; forward.Normalize();
+        Vector3 right = cam.right; right.y = 0f; right.Normalize();
+        Vector3 dir = right * moveInput.x + forward * moveInput.y;
+        if (dir.sqrMagnitude < 1e-6f) dir = transform.forward;
+        dir.y = 0f;
+        return dir.normalized;
+    }
+
+    // -------- JUMP --------
     public void Jump()
     {
-        velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
-        jumpCount++;
-    }
-
-    public void ResetJumps()
-    {
-        jumpCount = 0;
-    }
-
-    public void CheckGround()
-    {
-        isGrounded = Physics.Raycast(transform.position, Vector3.down, groundDistance, groundMask);
-        if (isGrounded) ResetJumps();
-        Debug.DrawRay(transform.position, Vector3.down * groundDistance, isGrounded ? Color.green : Color.red);
-    }
-
-    // Dash helper that can be started from a state
-    public System.Collections.IEnumerator DashCoroutine(float duration, float speed)
-    {
-        float t = 0f;
-        Vector3 dir = (input != null) ? input.GetMoveDirectionRelativeToCamera(input.GetMovement()) : transform.forward;
-        if (dir.sqrMagnitude < 0.001f) dir = transform.forward;
-        dir.Normalize();
-
-        while (t < duration)
+        // Si estamos en el suelo, iniciamos el primer salto
+        if (isGrounded)
         {
-            controller.Move(dir * speed * Time.deltaTime);
-            t += Time.deltaTime;
-            yield return null;
+            jumpCount = 1;
+            velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
+            hasDoubleJumped = false;
+            Debug.Log($"{gameObject.name} Salto inicial (jumpCount={jumpCount})");
+        }
+        // Si no estamos en suelo, solo permitimos doble salto si está desbloqueado y aún no lo usó
+        else if (doubleJumpUnlocked && jumpCount < 2)
+        {
+            jumpCount = 2;
+            velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
+            hasDoubleJumped = true;
+            Debug.Log($"{gameObject.name} Doble salto (jumpCount={jumpCount})");
         }
     }
+
+    // -------- Crouch --------
+    public void Crouch(bool isCrouching)
+    {
+        float targetHeight = isCrouching ? 1.2f : 2f;
+        float smooth = 10f;
+
+        float oldHeight = controller.height;
+        Vector3 oldCenter = controller.center;
+
+        // Punto inferior del collider (el pie) — calculado desde oldCenter/oldHeight
+        float bottomY = oldCenter.y - (oldHeight / 2f);
+
+        // Suavizar cambio de altura
+        float newHeight = Mathf.Lerp(oldHeight, targetHeight, Time.deltaTime * smooth);
+        controller.height = newHeight;
+
+        // Recalcular y reasignar center para mantener la base fija (evita hundimiento)
+        Vector3 newCenter = oldCenter;
+        newCenter.y = bottomY + newHeight / 2f;
+        controller.center = newCenter;
+
+        currentSpeed = isCrouching ? crouchSpeed : moveSpeed;
+    }
+
+    // -------- RUN --------
+    public void Run(bool isRunning)
+    {
+        currentSpeed = isRunning ? moveSpeed * runMultiplier : moveSpeed;
+    }
+
+    // -------- GRAVITY --------
+    public void ApplyGravity()
+    {
+        if (isGrounded)
+        {
+            // si está en suelo, fijamos una pequeña velocidad hacia abajo para mantener contacto
+            if (velocity.y < 0f) velocity.y = -5f;
+
+            // reset del contador de saltos al tocar suelo
+            jumpCount = 0;
+            hasDoubleJumped = false;
+        }
+        else
+        {
+            // aplicar gravedad
+            velocity.y += gravity * Time.deltaTime;
+
+            // si NO puede levitar, forzamos una caída más realista con tope
+            if (!canLevitate && velocity.y < -30f)
+                velocity.y = -30f;
+        }
+
+        // Aplicar vertical únicamente si no hay movimiento horizontal ya aplicado en Move()
+        // Si Move(...) fue llamado este frame, ésta moverá solo vertical adicional.
+        controller.Move(new Vector3(0f, velocity.y, 0f) * Time.deltaTime);
+    }
+
+    // -------- CHECK GROUND --------
+    public void CheckGround()
+    {
+        // origin un poco arriba para evitar raycast chocar con el suelo por skin width
+        Vector3 rayOrigin = transform.position + Vector3.up * 0.1f;
+        bool grounded = Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, groundDistance, groundMask);
+        isGrounded = grounded;
+        Debug.DrawRay(rayOrigin, Vector3.down * groundDistance, grounded ? Color.green : Color.red);
+
+        if (isGrounded)
+        {
+            hasDoubleJumped = false;
+            // velocity.y = -2f; // lo dejamos para ApplyGravity (evitar duplicados)
+        }
+    }
+
+    // -------- SHOOT --------
+    public void Shoot()
+    {
+        if (projectile != null)
+            projectile.Shoot();
+    }
+
+    // -------- Ability (PlayerLevel) --------
+    public void EnableDash(bool value) => dashUnlocked = value;
+    public void EnableDoubleJump(bool value) => doubleJumpUnlocked = value;
+    public void EnableBlock(bool value) => blockUnlocked = value;
+
 }

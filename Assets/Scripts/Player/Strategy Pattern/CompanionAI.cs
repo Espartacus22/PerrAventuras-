@@ -1,72 +1,62 @@
 ﻿using UnityEngine;
+using UnityEngine.AI;
 
 [RequireComponent(typeof(FollowPlayer))]
 [RequireComponent(typeof(ProjectileLocal))]
 public class CompanionAI : MonoBehaviour
 {
     public Transform target;
-    public bool stayCommand = false;
-    public bool isAggressive = false;
-    public bool isDefensive = false;
+    public float followDistance = 2.5f;
+    public float attackRange = 2f;
+    public float moveSpeed = 3.5f;
+    public float runSpeed = 6f;
 
-    private IAttackStrategy attackStrategy;
-    private ProjectileLocal shooter;
-    private FollowPlayer follow;
+    private NavMeshAgent agent;
+    private Animator animator;
+    private bool isRunning;
 
     void Start()
     {
-        shooter = GetComponent<ProjectileLocal>();
-        follow = GetComponent<FollowPlayer>();
-        UpdateStrategy();
+        agent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();
     }
 
     void Update()
     {
-        // Toggle quedarse quieto (F)
-        if (Input.GetKeyDown(KeyCode.F))
+        if (!target) return;
+
+        float distance = Vector3.Distance(transform.position, target.position);
+
+        bool targetIsRunning = Input.GetKey(KeyCode.LeftShift); // si PJ1 corre → él también
+        agent.speed = targetIsRunning ? runSpeed : moveSpeed;
+        isRunning = targetIsRunning;
+
+        if (distance > followDistance)
         {
-            stayCommand = !stayCommand;
-            Debug.Log("StayCommand: " + stayCommand);
+            agent.SetDestination(target.position);
+            animator.SetBool("isMoving", true);
+        }
+        else
+        {
+            agent.ResetPath();
+            animator.SetBool("isMoving", false);
         }
 
-        // Cambiar modos de IA
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        // Si hay enemigo cerca → atacar
+        Collider[] hits = Physics.OverlapSphere(transform.position, attackRange);
+        foreach (var h in hits)
         {
-            isAggressive = true;
-            isDefensive = false;
-            attackStrategy = new ShortRangeAttackStrategy();
-            Debug.Log("Modo: Corto alcance");
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            isAggressive = true;
-            isDefensive = false;
-            attackStrategy = new LongRangeAttackStrategy();
-            Debug.Log("Modo: Largo alcance");
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            isAggressive = false;
-            isDefensive = true;
-            attackStrategy = new DefenseStrategy();
-            Debug.Log("Modo: Defensa");
-        }
-
-        // Si está quieto y agresivo, actúa
-        if (stayCommand && isAggressive && attackStrategy != null && target != null)
-        {
-            Debug.Log("Ejecuto estrategia: " + attackStrategy.GetType().Name);
-            attackStrategy.Execute(shooter, target);
+            if (h.CompareTag("Enemy"))
+            {
+                Attack(h.transform);
+            }
         }
     }
 
-    void UpdateStrategy()
+    private void Attack(Transform enemy)
     {
-        if (isAggressive)
-            attackStrategy = new ShortRangeAttackStrategy();
-        else if (isDefensive)
-            attackStrategy = new DefenseStrategy();
-        else
-            attackStrategy = null;
+        transform.LookAt(enemy);
+        Debug.Log("Companion ataca al enemigo!");
+        // TODO: envestida real + daño
     }
 }

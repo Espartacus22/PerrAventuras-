@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerJumpState : IPlayerState
 {
@@ -11,43 +11,23 @@ public class PlayerJumpState : IPlayerState
 
     public void Enter()
     {
-        // perform initial jump
-        if (ctx == null) return;
-
-        // allow jump only if under max jumps
-        if (ctx.jumpCount < ctx.maxJumps)
-            ctx.Jump();
+        ctx.Jump();
     }
 
     public void Tick()
     {
-        if (ctx == null || ctx.input == null) return;
-
-        // air control
         Vector2 moveInput = ctx.input.GetMovement();
         ctx.Move(moveInput);
 
-        // double-jump
-        if (ctx.input.GetJump() && ctx.jumpCount < ctx.maxJumps)
-        {
-            ctx.Jump();
-        }
+        if (ctx.input.GetShoot())
+            ctx.Shoot();
 
-        // dash in air if allowed
-        if (ctx.characterData != null && ctx.characterData.canDash && ctx.input.GetDash())
-        {
+        if (ctx.input.GetDash() && ctx.dashUnlocked)
             ctx.StateMachine.ChangeState(new PlayerDashState(ctx));
-            return;
-        }
 
-        // fall back to move state when grounded
+        // Si cae al suelo → Move
         if (ctx.isGrounded)
-        {
             ctx.StateMachine.ChangeState(new PlayerMoveState(ctx));
-            return;
-        }
-
-        ctx.ApplyGravity();
     }
 
     public void Exit() { }

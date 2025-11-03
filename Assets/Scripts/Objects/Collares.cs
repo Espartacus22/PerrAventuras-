@@ -10,14 +10,14 @@ public class Collares : MonoBehaviour
     void Start()
     {
         // Inicializa numCurrency con la cantidad de objetos con tag "objetivo"
-        numCurrency = GameObject.FindGameObjectsWithTag("objetivo").Length;
+        numCurrency = GameObject.FindGameObjectsWithTag("Objetivo").Length;
         UpdateMissionText();
     }
 
     // Se llama cuando un objeto entra en el trigger
     void OnTriggerEnter(Collider col)
     {
-        if (col.gameObject.CompareTag("objetivo"))
+        if (col.gameObject.CompareTag("Objetivo"))
         {
             Destroy(col.gameObject); // Destruye el GameObject que entró en el trigger
             numCurrency--;
