@@ -34,12 +34,18 @@ public class PlayerLocal : MonoBehaviour
     public bool doubleJumpUnlocked = false;
     public bool blockUnlocked = false;
 
+    [Header("Special Movement")]
+    public bool canLevitate = false; // Solo el personaje 1 por el momento
+
+    [HideInInspector] public int jumpCount = 0;
+
     [HideInInspector] public float currentSpeed;
     [HideInInspector] public bool hasDoubleJumped;
 
     public StateMachine StateMachine { get; private set; }
 
-    private Vector3 velocity;
+    private Vector3 velocity; // acumulador vertical (y)
+    private Vector2 lastMoveInput;
 
     private void Awake()
     {
@@ -58,114 +64,184 @@ public class PlayerLocal : MonoBehaviour
     private void Update()
     {
         CheckGround();
-        StateMachine.Update();
         ApplyGravity();
+        StateMachine.Update();
     }
 
-    // -------- MOVIMIENTO GENERAL --------
+    // -------- MOVE --------
     public void Move(Vector2 inputMove)
     {
-        if (input == null) return;
+        lastMoveInput = inputMove;
 
-        // dirección según cámara
-        Vector3 moveDir = input.GetMoveDirectionRelativeToCamera(inputMove);
-        moveDir.Normalize();
+        // Dirección calculada de forma segura (usa input helper si existe)
+        Vector3 moveDir = GetMoveDirection(inputMove);
+        // normalizar sólo si hay input para evitar borrar vertical
+        if (moveDir.sqrMagnitude > 1e-4f) moveDir.Normalize();
 
-        controller.Move(moveDir * currentSpeed * Time.deltaTime);
+        // Aplicar movimiento horizontal + vertical en un solo controller.Move
+        Vector3 motion = moveDir * currentSpeed;
+        controller.Move(motion * Time.deltaTime);
     }
 
-    // -------- SALTO --------
+    private Vector3 GetMoveDirection(Vector2 inputMove)
+    {
+        if (input != null)
+        {
+            
+            try
+            {
+                return input.GetMoveDirectionRelativeToCamera(inputMove);
+            }
+            catch (System.Exception)
+            {
+                // fallback abajo
+            }
+        }
+
+        // fallback: calcula respecto a la cámara principal
+        Transform cam = Camera.main != null ? Camera.main.transform : null;
+        if (cam == null)
+        {
+            return new Vector3(inputMove.x, 0f, inputMove.y);
+        }
+
+        Vector3 forward = cam.forward; forward.y = 0f; forward.Normalize();
+        Vector3 right = cam.right; right.y = 0f; right.Normalize();
+        return right * inputMove.x + forward * inputMove.y;
+    }
+
+    public Vector3 GetDirectionFromMovement(Vector2 moveInput)
+    {
+        // Si existe input handler con helper, usalo
+        if (input != null)
+        {
+            try
+            {
+                return input.GetMoveDirectionRelativeToCamera(moveInput).normalized;
+            }
+            catch (System.Exception)
+            {
+                // fallback abajo
+            }
+        }
+
+        // fallback: usar camera main
+        Transform cam = Camera.main != null ? Camera.main.transform : null;
+        if (cam == null)
+            return new Vector3(moveInput.x, 0f, moveInput.y).normalized;
+
+        Vector3 forward = cam.forward; forward.y = 0f; forward.Normalize();
+        Vector3 right = cam.right; right.y = 0f; right.Normalize();
+        Vector3 dir = right * moveInput.x + forward * moveInput.y;
+        if (dir.sqrMagnitude < 1e-6f) dir = transform.forward;
+        dir.y = 0f;
+        return dir.normalized;
+    }
+
+    // -------- JUMP --------
     public void Jump()
     {
+        // Si estamos en el suelo, iniciamos el primer salto
         if (isGrounded)
         {
+            jumpCount = 1;
             velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
             hasDoubleJumped = false;
-            Debug.Log($"{gameObject.name} Salto inicial");
+            Debug.Log($"{gameObject.name} Salto inicial (jumpCount={jumpCount})");
         }
-        else if (doubleJumpUnlocked && !hasDoubleJumped)
+        // Si no estamos en suelo, solo permitimos doble salto si está desbloqueado y aún no lo usó
+        else if (doubleJumpUnlocked && jumpCount < 2)
         {
+            jumpCount = 2;
             velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
             hasDoubleJumped = true;
-            Debug.Log($"{gameObject.name} Doble salto");
+            Debug.Log($"{gameObject.name} Doble salto (jumpCount={jumpCount})");
         }
     }
 
-    // -------- AGACHARSE --------
+    // -------- Crouch --------
     public void Crouch(bool isCrouching)
     {
-        if (isCrouching)
-        {
-            currentSpeed = crouchSpeed;
+        float targetHeight = isCrouching ? 1.2f : 2f;
+        float smooth = 10f;
 
-            // Ajusta altura sin hundir al personaje
-            float targetHeight = 1.2f;
-            float currentHeight = controller.height;
-            controller.height = Mathf.Lerp(currentHeight, targetHeight, Time.deltaTime * 10f);
+        float oldHeight = controller.height;
+        Vector3 oldCenter = controller.center;
 
-            // Ajusta el centro sin empujar hacia abajo
-            controller.center = new Vector3(0, controller.height / 2f, 0);
-        }
-        else
-        {
-            currentSpeed = moveSpeed;
-            float targetHeight = 2f;
-            controller.height = Mathf.Lerp(controller.height, targetHeight, Time.deltaTime * 10f);
-            controller.center = new Vector3(0, controller.height / 2f, 0);
-        }
+        // Punto inferior del collider (el pie) — calculado desde oldCenter/oldHeight
+        float bottomY = oldCenter.y - (oldHeight / 2f);
+
+        // Suavizar cambio de altura
+        float newHeight = Mathf.Lerp(oldHeight, targetHeight, Time.deltaTime * smooth);
+        controller.height = newHeight;
+
+        // Recalcular y reasignar center para mantener la base fija (evita hundimiento)
+        Vector3 newCenter = oldCenter;
+        newCenter.y = bottomY + newHeight / 2f;
+        controller.center = newCenter;
+
+        currentSpeed = isCrouching ? crouchSpeed : moveSpeed;
     }
 
-    // -------- CORRER --------
+    // -------- RUN --------
     public void Run(bool isRunning)
     {
         currentSpeed = isRunning ? moveSpeed * runMultiplier : moveSpeed;
     }
 
-    // -------- GRAVEDAD --------
+    // -------- GRAVITY --------
     public void ApplyGravity()
     {
-        if (isGrounded && velocity.y < 0)
+        if (isGrounded)
         {
-            velocity.y = -4f; // más firme al suelo
+            // si está en suelo, fijamos una pequeña velocidad hacia abajo para mantener contacto
+            if (velocity.y < 0f) velocity.y = -5f;
+
+            // reset del contador de saltos al tocar suelo
+            jumpCount = 0;
+            hasDoubleJumped = false;
         }
         else
         {
+            // aplicar gravedad
             velocity.y += gravity * Time.deltaTime;
+
+            // si NO puede levitar, forzamos una caída más realista con tope
+            if (!canLevitate && velocity.y < -30f)
+                velocity.y = -30f;
         }
 
-        controller.Move(velocity * Time.deltaTime);
+        // Aplicar vertical únicamente si no hay movimiento horizontal ya aplicado en Move()
+        // Si Move(...) fue llamado este frame, ésta moverá solo vertical adicional.
+        controller.Move(new Vector3(0f, velocity.y, 0f) * Time.deltaTime);
     }
 
-    // -------- DETECCIÓN DE SUELO --------
+    // -------- CHECK GROUND --------
     public void CheckGround()
     {
-        bool grounded = Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, groundDistance, groundMask);
+        // origin un poco arriba para evitar raycast chocar con el suelo por skin width
+        Vector3 rayOrigin = transform.position + Vector3.up * 0.1f;
+        bool grounded = Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, groundDistance, groundMask);
         isGrounded = grounded;
-        Debug.DrawRay(transform.position, Vector3.down * groundDistance, grounded ? Color.green : Color.red);
+        Debug.DrawRay(rayOrigin, Vector3.down * groundDistance, grounded ? Color.green : Color.red);
 
-        // Reiniciar doble salto solo si está tocando suelo
         if (isGrounded)
         {
             hasDoubleJumped = false;
-            velocity.y = -2f;
-        }
-        else
-        {
-            // Aplica gravedad si no hay suelo
-            velocity.y += gravity * Time.deltaTime;
-            controller.Move(velocity * Time.deltaTime);
+            // velocity.y = -2f; // lo dejamos para ApplyGravity (evitar duplicados)
         }
     }
 
-    // -------- DISPARO --------
+    // -------- SHOOT --------
     public void Shoot()
     {
         if (projectile != null)
             projectile.Shoot();
     }
 
-    // -------- HABILIDADES (PlayerLevel) --------
+    // -------- Ability (PlayerLevel) --------
     public void EnableDash(bool value) => dashUnlocked = value;
     public void EnableDoubleJump(bool value) => doubleJumpUnlocked = value;
     public void EnableBlock(bool value) => blockUnlocked = value;
+
 }

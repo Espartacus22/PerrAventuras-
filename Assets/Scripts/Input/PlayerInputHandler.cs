@@ -15,6 +15,8 @@ public class PlayerInputHandler : MonoBehaviour
 
     public Transform cameraTransform; // asignar Main Camera en el inspector si querés
 
+
+
     private void Awake()
     {
         playerInput = GetComponent<PlayerInput>();

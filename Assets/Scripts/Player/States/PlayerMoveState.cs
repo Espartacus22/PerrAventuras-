@@ -22,14 +22,14 @@ public class PlayerMoveState : IPlayerState
         if (ctx.input.GetCrouch())
             ctx.StateMachine.ChangeState(new PlayerCrouchState(ctx));
 
-        if (ctx.input.GetJump() && ctx.isGrounded)
-            ctx.StateMachine.ChangeState(new PlayerJumpState(ctx));
+        if (ctx.input.GetShoot())
+            ctx.Shoot();
 
         if (ctx.input.GetDash() && ctx.dashUnlocked)
             ctx.StateMachine.ChangeState(new PlayerDashState(ctx));
 
-        if (ctx.input.GetShoot())
-            ctx.Shoot();
+        if (ctx.input.GetJump() && ctx.isGrounded)
+            ctx.StateMachine.ChangeState(new PlayerJumpState(ctx));
     }
 
     public void Exit() { }

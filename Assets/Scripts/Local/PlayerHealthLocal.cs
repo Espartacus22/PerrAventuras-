@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PlayerHealthLocal : MonoBehaviour
+public class PlayerHealthLocal : MonoBehaviour, IDamageable
 {
     [Header("Referencias")]
     public CharacterType characterData;
@@ -23,6 +23,8 @@ public class PlayerHealthLocal : MonoBehaviour
     private bool isInvulnerable = false;
     private float lastDamageTime = -100f;
     private Coroutine regenCoroutine;
+
+    public bool isBlocking = false;
 
     void Start()
     {
