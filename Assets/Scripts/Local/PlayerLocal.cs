@@ -41,6 +41,8 @@ public class PlayerLocal : MonoBehaviour
 
     [HideInInspector] public float currentSpeed;
     [HideInInspector] public bool hasDoubleJumped;
+    [HideInInspector] public float verticalVelocity = 0f;
+    public float JumpForce = 5f;
 
     public StateMachine StateMachine { get; private set; }
 
@@ -195,7 +197,8 @@ public class PlayerLocal : MonoBehaviour
         if (isGrounded)
         {
             // si está en suelo, fijamos una pequeña velocidad hacia abajo para mantener contacto
-            if (velocity.y < 0f) velocity.y = -5f;
+            if (velocity.y < 0f)
+                velocity.y = -5f;
 
             // reset del contador de saltos al tocar suelo
             jumpCount = 0;
@@ -219,16 +222,17 @@ public class PlayerLocal : MonoBehaviour
     // -------- CHECK GROUND --------
     public void CheckGround()
     {
-        // origin un poco arriba para evitar raycast chocar con el suelo por skin width
-        Vector3 rayOrigin = transform.position + Vector3.up * 0.1f;
-        bool grounded = Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, groundDistance, groundMask);
-        isGrounded = grounded;
-        Debug.DrawRay(rayOrigin, Vector3.down * groundDistance, grounded ? Color.green : Color.red);
+        Ray ray = new Ray(transform.position + Vector3.up * 0.1f, Vector3.down);
+        RaycastHit hit;
 
-        if (isGrounded)
+        if (Physics.Raycast(ray, out hit, groundDistance + 0.1f, groundMask))
         {
-            hasDoubleJumped = false;
-            // velocity.y = -2f; // lo dejamos para ApplyGravity (evitar duplicados)
+            isGrounded = true;
+            jumpCount = 0;
+        }
+        else
+        {
+            isGrounded = false;
         }
     }
 

@@ -66,4 +66,5 @@ public class ProjectileLocal : MonoBehaviour
         Debug.Log($"Disparo desde {gameObject.name} con fuerza {shootForce}");
         Debug.DrawRay(spawnPos, dir * 2f, Color.cyan, 1f);
     }
+
 }

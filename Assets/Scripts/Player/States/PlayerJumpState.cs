@@ -11,23 +11,38 @@ public class PlayerJumpState : IPlayerState
 
     public void Enter()
     {
-        ctx.Jump();
+        ctx.jumpCount++;
+
+        // Aplicar salto
+        ctx.verticalVelocity = Mathf.Sqrt(ctx.jumpForce * -2f * ctx.gravity);
+
+        // Aplicar animación futuro (placeholder)
+        // if(ctx.Animator != null) ctx.Animator.SetTrigger("Jump");
     }
 
     public void Tick()
     {
+        ctx.CheckGround();
+
         Vector2 moveInput = ctx.input.GetMovement();
         ctx.Move(moveInput);
 
-        if (ctx.input.GetShoot())
-            ctx.Shoot();
+        ctx.verticalVelocity += ctx.gravity * Time.deltaTime;
+        ctx.controller.Move(new Vector3(0, ctx.verticalVelocity, 0) * Time.deltaTime);
+
+        if (ctx.isGrounded)
+        {
+            ctx.verticalVelocity = 0;
+
+            if (ctx.input.GetMovement().sqrMagnitude > 0.01f)
+                ctx.StateMachine.ChangeState(new PlayerMoveState(ctx));
+        }
+
+        if (ctx.input.GetJump() && ctx.doubleJumpUnlocked && ctx.jumpCount < 2)
+            ctx.Jump();
 
         if (ctx.input.GetDash() && ctx.dashUnlocked)
             ctx.StateMachine.ChangeState(new PlayerDashState(ctx));
-
-        // Si cae al suelo → Move
-        if (ctx.isGrounded)
-            ctx.StateMachine.ChangeState(new PlayerMoveState(ctx));
     }
 
     public void Exit() { }

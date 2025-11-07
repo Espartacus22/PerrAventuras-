@@ -3,54 +3,57 @@ using UnityEngine;
 
 public class ShortRangeAttackStrategy : IAttackStrategy
 {
+    public float damage = 10f;
     public float range = 2f;
-    public float dashDuration = 0.2f;
+    public float dashForce = 12f;
 
     public void Execute(ProjectileLocal shooter, Transform target = null)
     {
-        if (shooter == null) return;
+        if (shooter == null || shooter.GetComponent<PlayerLocal>() == null) return;
 
-        PlayerLocal ctx = shooter.GetComponent<PlayerLocal>();
-        if (ctx == null) return;
+        var ctx = shooter.GetComponent<PlayerLocal>();
+        if (target == null) target = FindClosestTarget(ctx.transform);
 
-        // Si no hay target buscá el más cercano con tag "Enemy"
-        if (target == null)
-        {
-            target = FindClosestEnemy(ctx.transform);
-            if (target == null) return;
-        }
+        if (target == null) return;
 
         float dist = Vector3.Distance(ctx.transform.position, target.position);
+
         if (dist <= range)
         {
             Vector3 dir = (target.position - ctx.transform.position).normalized;
-            ctx.StartCoroutine(PerformCharge(ctx, dir));
+            ctx.StartCoroutine(ChargeDash(ctx, dir));
         }
     }
 
-    private IEnumerator PerformCharge(PlayerLocal ctx, Vector3 dir)
+    private IEnumerator ChargeDash(PlayerLocal ctx, Vector3 dir)
     {
+        float dashTime = 0.2f;
         float timer = 0f;
-        while (timer < dashDuration)
+        while (timer < dashTime)
         {
-            // mover usando CharacterController (PlayerLocal debe exponer controller)
             ctx.controller.Move(dir * ctx.characterData.dashSpeed * Time.deltaTime);
             timer += Time.deltaTime;
             yield return null;
         }
 
-        // Aquí podrías aplicar daño a quien colisione (si detectás colisión)
+        // Aquí aplicar daño si el objetivo tiene collider con salud
+        // Ejemplo: other.GetComponent<PlayerHealthLocal>()?.TakeDamage(damage);
     }
 
-    private Transform FindClosestEnemy(Transform self)
+    private Transform FindClosestTarget(Transform self)
     {
         var enemies = GameObject.FindGameObjectsWithTag("Enemy");
         Transform closest = null;
         float minDist = float.MaxValue;
+
         foreach (var e in enemies)
         {
-            float d = Vector3.Distance(self.position, e.transform.position);
-            if (d < minDist) { minDist = d; closest = e.transform; }
+            float dist = Vector3.Distance(self.position, e.transform.position);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                closest = e.transform;
+            }
         }
         return closest;
     }
