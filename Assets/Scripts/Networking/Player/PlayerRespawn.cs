@@ -8,7 +8,7 @@ public class PlayerRespawn : MonoBehaviour
     [Header("Checkpoints")]
     public Checkpoint currentCheckpoint;
 
-    [Header("Ca�da del nivel")]
+    [Header("Caida del nivel")]
     public float fallThresholdY = -20f;      // si el player baja de esta Y, respawnea
 
     PlayerLevel playerLevel;

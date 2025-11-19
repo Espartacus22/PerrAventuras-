@@ -21,7 +21,7 @@ public class PlayerMovement : MonoBehaviour
     private AudioSource audioSource;
     private CapsuleCollider capsule;
 
-    private bool isGrounded;
+    public bool isGrounded;
     private bool isDashing;
     private bool isCrouching;
     private float originalHeight;
