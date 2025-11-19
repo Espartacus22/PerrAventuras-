@@ -14,6 +14,9 @@ public class PlayerLevel : MonoBehaviour
 
     public bool hasShield = false;
 
+    [Header("Respawn")]
+    public PlayerRespawn respawn;
+
     public int GetMaxHP() => characterData.hp + currentLevel * 10;
     public int GetDefense() => (hasShield ? 15 : 0) + currentLevel * 2;
     public float GetFinalDamage(float baseDamage) => baseDamage + currentLevel * 0.1f;
@@ -71,17 +74,20 @@ public class PlayerLevel : MonoBehaviour
 
     public bool IsAttackUnlocked(int requiredLevel) => currentLevel >= requiredLevel;
 
-   public void TakeDamage(int damage)
+   public void TakeDamage(int amount)
     {
-        int defense = GetDefense();
-        int finalDamage = Mathf.Max(1, damage - defense);
+        int finalDamage = Mathf.Max(0, amount - GetDefense());
+        currentHP -= finalDamage;
+        Debug.Log($"Player recibió {finalDamage} de daño. HP actual: {currentHP}");
 
-        currentHP =Mathf.Max(0, currentHP - finalDamage);
-        Debug.Log($"Player Recibe {finalDamage} de daño. HP Actual: {currentHP}");
-
-        if (currentHP == 0)
+        if (currentHP <= 0)
         {
             Debug.Log("Player dead!!!");
+
+            if (respawn != null)
+                respawn.OnPlayerDeath();
+            else
+                Debug.LogWarning("PlayerRespawn no asignado en PlayerLevel");
         }
     }
 }
