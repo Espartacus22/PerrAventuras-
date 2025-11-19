@@ -211,27 +211,47 @@ public class PlayerMovement : MonoBehaviour
 
     void TryMeleeAttack()
     {
-        if (characterData == null || characterData.meleeAttacks.Count <= currentComboIndex) return;
+        if (characterData == null || characterData.meleeAttacks.Count <= currentComboIndex)
+            return;
 
         var attack = characterData.meleeAttacks[currentComboIndex];
-        if (Time.time < lastAttackTime + attack.cooldown) return;
+
+        if (Time.time < lastAttackTime + attack.cooldown)
+            return;
 
         lastAttackTime = Time.time;
 
-        if (attack.animation != null) animator.Play(attack.animation.name);
-        if (attack.sound != null) audioSource.PlayOneShot(attack.sound);
+        // Animación y sonido
+        if (attack.animation != null)
+            animator.Play(attack.animation.name);
+
+        if (attack.sound != null)
+            audioSource.PlayOneShot(attack.sound);
+
         if (attack.impactEffectPrefab != null)
             Instantiate(attack.impactEffectPrefab, transform.position + transform.forward, transform.rotation);
 
-        Collider[] hitEnemies = Physics.OverlapSphere(transform.position + transform.forward * attack.range * 0.5f, attack.range * 0.5f);
-        foreach (Collider enemy in hitEnemies)
+        // Detección y daño real
+        Collider[] hitEnemies = Physics.OverlapSphere(
+            transform.position + transform.forward * attack.range * 0.5f,
+            attack.range * 0.5f
+        );
+
+        foreach (Collider col in hitEnemies)
         {
-            if (enemy.CompareTag("Enemy"))
+            if (col.CompareTag("Enemy"))
             {
-                Debug.Log($"Golpe a: {enemy.name} con {attack.damage} de daño.");
+                EnemyStats enemy = col.GetComponent<EnemyStats>();
+                if (enemy != null)
+                {
+                    int damageDealt = Mathf.RoundToInt(attack.damage);
+                    enemy.TakeDamage(damageDealt);
+                    Debug.Log($"Golpe a {col.name} → {damageDealt} de daño (Ataque: {attack.attackName})");
+                }
             }
         }
 
+        // Gestión de combo
         if (attack.canChainCombo && characterData.meleeAttacks.Count > attack.nextComboIndex)
         {
             currentComboIndex = attack.nextComboIndex;

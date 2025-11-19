@@ -25,9 +25,9 @@ MonoBehaviour:
   crouchHeight: 0.5
   meleeAttacks:
   - attackName: Ataque con Martillo
-    damage: 0
-    cooldown: 0
-    range: 2
+    damage: 20
+    cooldown: 0.2
+    range: 3
     animation: {fileID: 0}
     sound: {fileID: 0}
     impactEffectPrefab: {fileID: 0}

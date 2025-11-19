@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class PlayerLevel : MonoBehaviour
 {
@@ -9,13 +10,17 @@ public class PlayerLevel : MonoBehaviour
 
     //Player Life
     [Header("Life")]
-
     public int currentHP;
-
     public bool hasShield = false;
 
     [Header("Respawn")]
     public PlayerRespawn respawn;
+
+    // PARPADEO ROJO AL RECIBIR DAÑO
+    [Header("Efecto Daño")]
+    private Renderer playerRenderer;
+    private Color originalColor;
+    private Coroutine blinkCoroutine;
 
     public int GetMaxHP() => characterData.hp + currentLevel * 10;
     public int GetDefense() => (hasShield ? 15 : 0) + currentLevel * 2;
@@ -25,7 +30,13 @@ public class PlayerLevel : MonoBehaviour
     {
         //Start with maximum life
         currentHP = GetMaxHP();
+
+        // Guardar color original para parpadeo
+        playerRenderer = GetComponentInChildren<Renderer>();
+        if (playerRenderer != null)
+            originalColor = playerRenderer.material.color;
     }
+
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.X))
@@ -33,6 +44,7 @@ public class PlayerLevel : MonoBehaviour
             GainXP(100); // Ganás 100 XP al presionar X - You gain 100 XP by pressing X
         }
     }
+
     public void GainXP(int amount)
     {
         currentXP += amount;
@@ -74,20 +86,47 @@ public class PlayerLevel : MonoBehaviour
 
     public bool IsAttackUnlocked(int requiredLevel) => currentLevel >= requiredLevel;
 
-   public void TakeDamage(int amount)
+    public void TakeDamage(int amount)
     {
         int finalDamage = Mathf.Max(0, amount - GetDefense());
         currentHP -= finalDamage;
         Debug.Log($"Player recibió {finalDamage} de daño. HP actual: {currentHP}");
 
+        // PARPADEO ROJO AL RECIBIR DAÑO
+        if (playerRenderer != null)
+        {
+            if (blinkCoroutine != null)
+                StopCoroutine(blinkCoroutine);
+            blinkCoroutine = StartCoroutine(BlinkRed());
+        }
+
         if (currentHP <= 0)
         {
+            currentHP = 0;  // ASEGURAR HP = 0 (no negativo)
             Debug.Log("Player dead!!!");
 
             if (respawn != null)
+            {
                 respawn.OnPlayerDeath();
+                currentHP = GetMaxHP();  // VIDA RESTAURADA AL 100%
+                Debug.Log($"Player respawneado! HP restaurado: {currentHP}");
+            }
             else
+            {
                 Debug.LogWarning("PlayerRespawn no asignado en PlayerLevel");
+            }
         }
+    }
+
+    private IEnumerator BlinkRed()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            playerRenderer.material.color = Color.red;
+            yield return new WaitForSeconds(0.08f);
+            playerRenderer.material.color = originalColor;
+            yield return new WaitForSeconds(0.08f);
+        }
+        blinkCoroutine = null;
     }
 }

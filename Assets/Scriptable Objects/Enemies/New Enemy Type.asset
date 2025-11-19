@@ -15,6 +15,11 @@ MonoBehaviour:
   enemyName: 
   maxHealth: 100
   moveSpeed: 5
-  chaseRange: 5
+  chaseRange: 50
   xpReward: 300
   dropPrefab: {fileID: 4288601612095329630, guid: 5cd768c3c99935649a6c4e24cb8b88b9, type: 3}
+  meleeDamage: 30
+  meleeCooldown: 1
+  meleeRange: 2
+  attackAnimation: {fileID: 0}
+  attackSound: {fileID: 0}
