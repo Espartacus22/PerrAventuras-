@@ -152,7 +152,7 @@ NavMeshAgent:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2750055640213073792}
   m_Enabled: 1
-  m_AgentTypeID: 0
+  m_AgentTypeID: -1372625422
   m_Radius: 0.5
   m_Speed: 3.5
   m_Acceleration: 8
@@ -180,8 +180,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 0}
   enemyData: {fileID: 11400000, guid: fbd08f54396cbe14fbc506ee84e9de70, type: 2}
-  patrolPoints: []
-  pointTolerance: 0.3
+  patrolPoints:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  pointTolerance: 0.5
   firePoint: {fileID: 1032003347126509800}
   projectilePrefab: {fileID: 2572775131501275393, guid: d9122d9270545374d9801cc78664c5d6, type: 3}
   sniperRange: 50
