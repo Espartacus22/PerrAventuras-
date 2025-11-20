@@ -31,9 +31,9 @@ MonoBehaviour:
     animation: {fileID: 0}
     sound: {fileID: 0}
     impactEffectPrefab: {fileID: 0}
-    canChainCombo: 0
+    canChainCombo: 1
     nextComboIndex: 0
-    requiredLevel: 5
+    requiredLevel: 0
   rangedAttacks:
   - attackName: Disparo
     damage: 50

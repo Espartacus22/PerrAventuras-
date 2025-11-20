@@ -294,7 +294,6 @@ GameObject:
   - component: {fileID: 5147520452744884153}
   - component: {fileID: 2206797610491184179}
   - component: {fileID: 2203099660460086362}
-  - component: {fileID: 3011719532903695724}
   - component: {fileID: 6614977043159272262}
   m_Layer: 0
   m_Name: 'EnemyTest '
@@ -312,7 +311,7 @@ Transform:
   m_GameObject: {fileID: 5949828187330856686}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -11.709635, y: 5.26, z: -125.53429}
+  m_LocalPosition: {x: -11.709635, y: 2.69, z: -125.53429}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -417,7 +416,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
@@ -551,11 +550,11 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.73
-  m_Speed: 4.27
-  m_Acceleration: 8
+  m_Speed: 14.62
+  m_Acceleration: 10
   avoidancePriority: 50
-  m_AngularSpeed: 120
-  m_StoppingDistance: 0.2
+  m_AngularSpeed: 128.04
+  m_StoppingDistance: 0.14
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 0
   m_AutoRepath: 1
@@ -576,10 +575,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyData: {fileID: 11400000, guid: ae6342742b833e84d8aa9719bb4f7348, type: 2}
-  chaseRange: 15
-  attackRange: 1
+  chaseRange: 50
+  attackRange: 2
   attackDamage: 20
-  attackCooldown: 1.5
+  attackCooldown: 1
 --- !u!114 &2203099660460086362
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -593,24 +592,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyData: {fileID: 11400000, guid: ae6342742b833e84d8aa9719bb4f7348, type: 2}
-  healthSlider: {fileID: 0}
---- !u!114 &3011719532903695724
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5949828187330856686}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6110740b5243087498722f0c19387690, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  enemyData: {fileID: 11400000, guid: ae6342742b833e84d8aa9719bb4f7348, type: 2}
-  chaseRange: 15
-  attackRange: 1.5
-  attackDamage: 10
-  attackCooldown: 1
+  healthSlider: {fileID: 47722981101343283}
 --- !u!114 &6614977043159272262
 MonoBehaviour:
   m_ObjectHideFlags: 0
