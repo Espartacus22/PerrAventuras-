@@ -37,22 +37,42 @@ public class ProjectileBehavior : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Enemy"))
-        {
-            Debug.Log($"Impactó a: {other.name} con {damage} de daño.");
+        // 1) Ignorar al player (para no auto-daños si el collider del arma está cerca)
+        if (other.CompareTag("Player"))
+            return;
 
-            EnemyStats enemy = other.GetComponent<EnemyStats>();
-            if (enemy != null)
-            {
-                enemy.TakeDamage(Mathf.RoundToInt(damage));
-            }
-
-            Destroy(gameObject);
-        }
-        else if (!other.CompareTag("Player"))
+        // 2) Enemigos (EnemyStats)
+        EnemyStats enemy = other.GetComponentInParent<EnemyStats>();
+        if (enemy != null)
         {
+            Debug.Log($"Impactó a ENEMIGO: {enemy.name} con {damage} de daño.");
+            enemy.TakeDamage(Mathf.RoundToInt(damage));
             Destroy(gameObject);
+            return;
         }
+
+        // 3) Núcleo de energía de torretas
+        EnergyCore core = other.GetComponentInParent<EnergyCore>();
+        if (core != null)
+        {
+            Debug.Log($"Impactó a NÚCLEO: {core.name} con {damage} de daño.");
+            core.TakeDamage(Mathf.RoundToInt(damage));
+            Destroy(gameObject);
+            return;
+        }
+
+        // 4) Cofre destructible
+        BreakableChest chest = other.GetComponentInParent<BreakableChest>();
+        if (chest != null)
+        {
+            Debug.Log($"Impactó al COFRE: {chest.name} con {damage} de daño.");
+            chest.TakeDamage(Mathf.RoundToInt(damage));
+            Destroy(gameObject);
+            return;
+        }
+
+        // 5) Cualquier otra cosa: destruir el proyectil
+        Destroy(gameObject);
     }
 }
 

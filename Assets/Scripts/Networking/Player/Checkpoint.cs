@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Collider))]
 public class Checkpoint : MonoBehaviour
 {
     [Header("Opcional: punto exacto de respawn")]

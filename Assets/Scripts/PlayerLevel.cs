@@ -129,4 +129,10 @@ public class PlayerLevel : MonoBehaviour
         }
         blinkCoroutine = null;
     }
+
+    public void Heal(int amount)
+    {
+        currentHP = Mathf.Min(GetMaxHP(), currentHP + amount);
+        Debug.Log($"Player curado por {amount}. HP actual: {currentHP}");
+    }
 }
