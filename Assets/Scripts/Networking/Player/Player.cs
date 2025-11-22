@@ -3,6 +3,7 @@ using Networking;
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(NetworkCharacterController))]
 public class Player : NetworkBehaviour
@@ -23,33 +24,40 @@ public class Player : NetworkBehaviour
     {
         if (HasInputAuthority)
         {
-        
-         _renderer.material.color = Color.yellow;             
+   
+                // Conectar la UI al inventario de este jugador
+                InventoryUI.I.AttachInventory(GetComponent<InventorySystem>());
+         
+
+
+            _renderer.material.color = Color.yellow;             
         
         
         }
         
      
-
         }
     public override void FixedUpdateNetwork()
     {
-
         if (!GetInput(out NetworkInputPlayer inputPlayer)) return;
+
+        inputPlayer.moveDirection.Normalize();
+        _characterController.Move(inputPlayer.moveDirection * Runner.DeltaTime * 5f); 
+
+        if (inputPlayer.buttons.IsSet(NetworkInputPlayer.MOUSE_BUTTON_0) &&
+     HasInputAuthority &&
+     !EventSystem.current.IsPointerOverGameObject())
         {
-
-            inputPlayer.moveDirection.Normalize();
-            _characterController.Move(inputPlayer.moveDirection * Runner.DeltaTime);
-            
-            if (inputPlayer.buttons.IsSet(NetworkInputPlayer.MOUSE_BUTTON_0) && HasStateAuthority)
-            {
-               var spawnedProjectile = Runner.Spawn(_projectilePrefab, _projectileSpawnPoint.position, Quaternion.LookRotation(transform.forward), Object.InputAuthority);
-                spawnedProjectile.GetComponent<Projectile>().InitProjectile();
-            }
-
-  
-    }
+            RPC_RequestFire(_projectileSpawnPoint.position, transform.forward);
+        }
 
     }
 
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_RequestFire(Vector3 position, Vector3 direction)
+    {
+        
+        var proj = Runner.Spawn(_projectilePrefab, position, Quaternion.LookRotation(direction), Object.InputAuthority);
+        proj.GetComponent<Projectile>().InitProjectile();
+    }
 }

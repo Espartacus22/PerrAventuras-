@@ -18,10 +18,16 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
     [SerializeField] private NetworkRunner _networkRunner;
     [SerializeField] private NetworkSceneManagerDefault _networkSceneManagerDefault;
     [SerializeField] private NetworkObject _playerPrefab;
-    private Dictionary<PlayerRef, NetworkObject> _players = new Dictionary<PlayerRef, NetworkObject>(); 
-    
+
+    [Header("Pickups (spawneados por server al crear sala)")]
+    [SerializeField] private NetworkObject[] _pickupPrefabs;     
+    [SerializeField] private int _pickupAmount = 25;
+    [SerializeField] private float _pickupRadius = 12f;
+
+    private Dictionary<PlayerRef, NetworkObject> _players = new Dictionary<PlayerRef, NetworkObject>();
     private bool _mouseButton1Pressed;
     private bool _mouseButton2Pressed;
+    private bool _pickupsSpawned = false;   
 
     private void Start()
     {
@@ -29,28 +35,16 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
         _joinRoomButton.onClick.AddListener(JoinRoom);
     }
 
-
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0)) 
-            {
-
-            _mouseButton1Pressed = true;
-
-            }
-
-
-
-        if (Input.GetMouseButtonDown(1))
-        {
-
-            _mouseButton2Pressed = true;
-
-        }
+        if (Input.GetMouseButtonDown(0)) _mouseButton1Pressed = true;
+        if (Input.GetMouseButtonDown(1)) _mouseButton2Pressed = true;
     }
 
     private async void CreateRoom()
     {
+        Debug.Log("[NETWORK] Creando sala como Host...");
+
         var gameArg = new StartGameArgs()
         {
             GameMode = GameMode.Host,
@@ -63,7 +57,46 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
         if (!result.Ok)
         {
             Debug.LogError($"Failed to create room: {result.ShutdownReason}");
-            Debug.LogError($"Error: {result.ErrorMessage}");
+            return;
+        }
+
+        Debug.Log("[NETWORK] ¡SALA CREADA CON ÉXITO!");
+
+        // Para Forzar EL Spawn de Items
+        if (_networkRunner.IsServer && !_pickupsSpawned)
+        {
+            _pickupsSpawned = true;
+
+            if (_pickupPrefabs == null || _pickupPrefabs.Length == 0)
+            {
+                Debug.LogError("ERROR: No hay prefabs en _pickupPrefabs. Arrastralos en el inspector!");
+                return;
+            }
+
+            Debug.Log($"[SPAWN] Spawneando {_pickupAmount} items...");
+
+            for (int i = 0; i < _pickupAmount; i++)
+            {
+                int randomIndex = Random.Range(0, _pickupPrefabs.Length);
+                NetworkObject prefab = _pickupPrefabs[randomIndex];
+
+                if (prefab == null)
+                {
+                    Debug.LogError($"[SPAWN] Prefab en posición {randomIndex} es NULL!");
+                    continue;
+                }
+
+                Vector3 pos = new Vector3(
+                    Random.Range(-_pickupRadius, _pickupRadius),
+                    0.5f,  
+                    Random.Range(-_pickupRadius, _pickupRadius)
+                );
+
+                _networkRunner.Spawn(prefab, pos, Quaternion.identity);
+                Debug.Log($"[SPAWN] Item {i + 1} spawneado en {pos}");
+            }
+
+            Debug.Log($"[SPAWN] ¡¡TODOS LOS {_pickupAmount} ITEMS SPAWNEADOS CORRECTAMENTE!!");
         }
     }
 
@@ -75,13 +108,48 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
             SessionName = "Room_01",
             SceneManager = _networkSceneManagerDefault
         };
-
         var result = await _networkRunner.StartGame(gameArg);
-
         if (!result.Ok)
         {
             Debug.LogError(result.ShutdownReason);
         }
+    }
+
+    public void OnConnectedToServer(NetworkRunner runner)
+    {
+        if (runner.IsServer && !_pickupsSpawned)
+        {
+            _pickupsSpawned = true;
+            for (int i = 0; i < _pickupAmount; i++)
+            {
+                var prefab = _pickupPrefabs[Random.Range(0, _pickupPrefabs.Length)];
+                Vector3 pos = new Vector3(
+                    Random.Range(-_pickupRadius, _pickupRadius),
+                    0.5f,
+                    Random.Range(-_pickupRadius, _pickupRadius)
+                );
+                runner.Spawn(prefab, pos, Quaternion.identity);
+            }
+            Debug.Log($"[SERVER] Spawned {_pickupAmount} pickups!");
+        }
+    }
+
+    private void SpawnPickups(NetworkRunner runner)
+    {
+        for (int i = 0; i < _pickupAmount; i++)
+        {
+            var prefab = _pickupPrefabs[Random.Range(0, _pickupPrefabs.Length)];
+            Vector3 pos = new Vector3(
+                Random.Range(-_pickupRadius, _pickupRadius),
+                0.5f,
+                Random.Range(-_pickupRadius, _pickupRadius)
+            );
+            runner.Spawn(prefab, pos, Quaternion.identity);
+        }
+        Debug.Log($"[SERVER] Spawned {_pickupAmount} pickups al crear la sala!");
+
+
+
     }
 
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
@@ -89,118 +157,54 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
         Debug.Log("OnPlayerJoined");
         _lobbyPanel.SetActive(false);
 
-        if (!_networkRunner.IsServer) return;
+        if (!runner.IsServer) return;
 
-        var playerSpawned = _networkRunner.Spawn(_playerPrefab, new Vector3(UnityEngine.Random.Range(-3, 3), 0, 0), Quaternion.identity, player);
+        // El servidor spawnea el player y le asigna InputAuthority al cliente
+        var playerSpawned = runner.Spawn(_playerPrefab,
+            new Vector3(Random.Range(-3f, 3f), 0f, Random.Range(-3f, 3f)),
+            Quaternion.identity, player);
+
         _players.Add(player, playerSpawned);
     }
 
     public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
     {
         if (!_networkRunner.IsServer) return;
-        if (_players.Remove(player, out var playerSpawned)) 
+        if (_players.Remove(player, out var playerSpawned))
         {
-            _networkRunner.Despawn(playerSpawned);  
+            _networkRunner.Despawn(playerSpawned);
         }
-       
     }
 
     public void OnInput(NetworkRunner runner, NetworkInput input)
     {
-
         var inputPlayer = new NetworkInputPlayer();
+        if (Input.GetKey(KeyCode.W)) inputPlayer.moveDirection += Vector3.forward;
+        if (Input.GetKey(KeyCode.S)) inputPlayer.moveDirection += Vector3.back;
+        if (Input.GetKey(KeyCode.A)) inputPlayer.moveDirection += Vector3.left;
+        if (Input.GetKey(KeyCode.D)) inputPlayer.moveDirection += Vector3.right;
 
-        if (Input.GetKey(KeyCode.W))
-        {
-            inputPlayer.moveDirection += Vector3.forward;
-        }
-
-        if (Input.GetKey(KeyCode.S))
-        {
-            inputPlayer.moveDirection += Vector3.back;
-        }
-
-        if (Input.GetKey(KeyCode.A))
-        {
-            inputPlayer.moveDirection += Vector3.left;
-        }
-
-        if (Input.GetKey(KeyCode.D))
-        {
-            inputPlayer.moveDirection += Vector3.right;
-        }
         inputPlayer.buttons.Set(NetworkInputPlayer.MOUSE_BUTTON_0, _mouseButton1Pressed);
         inputPlayer.buttons.Set(NetworkInputPlayer.MOUSE_BUTTON_1, _mouseButton2Pressed);
-        input.Set(inputPlayer); 
+        input.Set(inputPlayer);
 
         _mouseButton1Pressed = false;
         _mouseButton2Pressed = false;
     }
 
-
-    //-----------------------------------------------------------------------------------//
-    public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player)
-    {
-    }
-
-    public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player)
-    {
-    }
-
-    public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
-    {
-    }
-
-    public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason)
-    {
-    }
-
-    public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token)
-    {
-    }
-
-    public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason)
-    {
-    }
-
-    public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message)
-    {
-    }
-
-    public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, ArraySegment<byte> data)
-    {
-    }
-
-    public void OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress)
-    {
-    }
-
-    public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input)
-    {
-    }
-
-    public void OnConnectedToServer(NetworkRunner runner)
-    {
-    }
-
-    public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)
-    {
-    }
-
-    public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data)
-    {
-    }
-
-    public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken)
-    {
-    }
-
-    public void OnSceneLoadDone(NetworkRunner runner)
-    {
-    }
-
-    public void OnSceneLoadStart(NetworkRunner runner)
-    {
-    }
+    public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
+    public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
+    public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { }
+    public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason) { }
+    public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) { }
+    public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) { }
+    public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
+    public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, ArraySegment<byte> data) { }
+    public void OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress) { }
+    public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
+    public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList) { }
+    public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }
+    public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
+    public void OnSceneLoadDone(NetworkRunner runner) { }
+    public void OnSceneLoadStart(NetworkRunner runner) { }
 }
-
