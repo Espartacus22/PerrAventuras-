@@ -22,6 +22,8 @@ public class EnergyCore : MonoBehaviour
     public void TakeDamage(int amount)
     {
         currentHP -= amount;
+        Debug.Log("EnergyCore recibió " + amount + " de daño. HP restante: " + currentHP);
+        
         if (currentHP <= 0)
             DestroyCore();
     }
@@ -29,12 +31,6 @@ public class EnergyCore : MonoBehaviour
     void DestroyCore()
     {
         Debug.Log("EnergyCore destruido, apagando torretas…");
-
-        if (activeVfx != null)
-            activeVfx.SetActive(false);
-
-        if (destroyedVfx != null)
-            Instantiate(destroyedVfx, transform.position, Quaternion.identity);
 
         // Apagar todas las torretas vinculadas
         foreach (var t in linkedTurrets)

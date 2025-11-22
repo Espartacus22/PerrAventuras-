@@ -3,6 +3,7 @@ using UnityEngine;
 public class ProjectileBehavior : MonoBehaviour
 {
     public float speed = 10f;
+    public int coreDamage = 10;      // daño al núcleo de energía
 
     private float damage;
     private float maxRange;

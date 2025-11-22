@@ -107,6 +107,6 @@ public class LaserTurret : MonoBehaviour
     public void DisableTurret()
     {
         enabledTurret = false;
-        line.enabled = false;
+        if (line != null) line.enabled = false;
     }
 }
