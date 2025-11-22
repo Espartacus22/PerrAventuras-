@@ -55,7 +55,6 @@ public class ProjectileBehavior : MonoBehaviour
         EnergyCore core = other.GetComponentInParent<EnergyCore>();
         if (core != null)
         {
-            Debug.Log($"Impactó a NÚCLEO: {core.name} con {damage} de daño.");
             core.TakeDamage(Mathf.RoundToInt(damage));
             Destroy(gameObject);
             return;

@@ -28,11 +28,21 @@ public class TrashDroneEnemy : MonoBehaviour
         // Aseguramos que el dron arranque flotando
         Vector3 pos = transform.position;
         transform.position = new Vector3(pos.x, hoverHeight, pos.z);
+
+        // Si hay patrolPoints, arrancar desde el primero
+        if (patrolPoints != null && patrolPoints.Length > 0 && patrolPoints[0] != null)
+        {
+            Vector3 start = patrolPoints[0].position;
+            transform.position = new Vector3(start.x, hoverHeight, start.z);
+        }
     }
 
     void Update()
     {
-        HandlePatrol();
+        if (patrolPoints != null && patrolPoints.Length > 0 && patrolPoints[0] != null)
+            HandlePatrol();   // se mueve de punto a punto
+                              // si no hay puntos, NO llamamos a HandlePatrol y el dron se queda quieto flotando
+
         HandleShooting();
     }
 
@@ -62,19 +72,26 @@ public class TrashDroneEnemy : MonoBehaviour
         if (dist > shootRange) return;
         if (Time.time < nextShootTime) return;
 
-        // Rotar el dron mirando al player (solo en XZ)
-        Vector3 dir = targetPlayer.position - transform.position;
-        dir.y = 0;
-        if (dir.sqrMagnitude > 0.001f)
-            transform.rotation = Quaternion.LookRotation(dir);
+        // 1) Rotar el dron en horizontal hacia el player (opcional, para que "mire" al player)
+        Vector3 flatDir = targetPlayer.position - transform.position;
+        flatDir.y = 0;
+        if (flatDir.sqrMagnitude > 0.001f)
+            transform.rotation = Quaternion.LookRotation(flatDir);
 
-        // Disparar desde todos los firePoints
+        // 2) Disparar desde TODOS los firePoints apuntando EXACTO al player
         if (trashProjectilePrefab != null && firePoints != null)
         {
             foreach (var fp in firePoints)
             {
                 if (fp == null) continue;
-                Instantiate(trashProjectilePrefab, fp.position, fp.rotation);
+
+                // dirección desde este firePoint hacia el jugador (un poco a la altura del pecho)
+                Vector3 toTarget = (targetPlayer.position + Vector3.up * 1.2f) - fp.position;
+                if (toTarget.sqrMagnitude < 0.001f) continue;
+
+                Quaternion rot = Quaternion.LookRotation(toTarget.normalized);
+
+                Instantiate(trashProjectilePrefab, fp.position, rot);
             }
         }
 

@@ -15,6 +15,7 @@ public class EnergyCore : MonoBehaviour
     void Start()
     {
         currentHP = maxHP;
+        Debug.Log($"EnergyCore spawn con {currentHP} HP");
         SetActiveVisual(true);
     }
 
@@ -27,20 +28,22 @@ public class EnergyCore : MonoBehaviour
 
     void DestroyCore()
     {
-        foreach (var t in linkedTurrets)
-        {
-            if (t != null)
-                t.DisableTurret();
-        }
+        Debug.Log("EnergyCore destruido, apagando torretas…");
 
-        SetActiveVisual(false);
+        if (activeVfx != null)
+            activeVfx.SetActive(false);
 
         if (destroyedVfx != null)
-        {
             Instantiate(destroyedVfx, transform.position, Quaternion.identity);
+
+        // Apagar todas las torretas vinculadas
+        foreach (var t in linkedTurrets)
+        {
+            if (t == null) continue;
+            t.DisableTurret();
         }
 
-        // podés dejar el núcleo roto en la escena, o destruirlo:
+        // Opcional: destruir el núcleo
         // Destroy(gameObject);
     }
 

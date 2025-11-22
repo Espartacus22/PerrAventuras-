@@ -20,7 +20,7 @@ public class TrashProjectileBehavior : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            PlayerLevel lvl = other.GetComponent<PlayerLevel>();
+            PlayerLevel lvl = other.GetComponentInParent<PlayerLevel>();
             if (lvl != null)
                 lvl.TakeDamage(damage);
 
