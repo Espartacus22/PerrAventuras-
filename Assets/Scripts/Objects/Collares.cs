@@ -8,17 +8,17 @@ public class Collares : MonoBehaviour
     public string objectiveTag = "Objetivo";
 
     [TextArea]
-    public string missionDescription = "Obtén las esferas rojas.";
+    public string missionDescription = "Obten las esferas rojas.";
 
-    [Tooltip("Si está activo, la misión se inicia sola en Start")]
+    [Tooltip("Si está activo, la mision se inicia sola en Start")]
     public bool autoStart = false;
 
     [Header("UI")]
     public TextMeshProUGUI textMiss;
-    public GameObject buttonMiss;   // Botón de continuar / cerrar misión
+    public GameObject buttonMiss;   // Boton de continuar / cerrar mision
 
     [Header("Opcional")]
-    public NPClogical questGiver;   // NPC que da la misión (para notificarle al completar)
+    public NPCs questGiver;   // NPC que da la misión (para notificarle al completar)
 
     private int numCurrency;
     private bool questActive;
