@@ -1,68 +1,107 @@
+using TMPro;
 using UnityEngine;
 
 public class NPCs : MonoBehaviour
 {
-    public GameObject missSymbol;
-    public PlayerLocal player;
-    public GameObject panelNPC;
-    public GameObject panelNPC2;
-    public GameObject panelMiss;
-    public TextMeshProUGUI textMiss;
-    public GameObject buttonMiss;
-    public GameObject[] goals; // Asigna 5 esferas inactivas
-    public float moveSpeed = 3f; // Velocidad de avance del NPC
+    [Header("Quest")]
+    public Collares quest;           // Referencia a la misión Collares
+    public GameObject[] goals;       // Objetivos que se activan al aceptar (opcional)
+    public int numGoals;
 
-    private string[] instructions;
+    [Header("UI")]
+    public GameObject missSymbol;    // Ícono sobre el NPC
+    public GameObject panelNPC;      // Panel de diálogo principal (¿Quieres ayudarme?)
+    public GameObject panelNPC2;     // Panel secundario (ej: “Pulsa E para hablar” / “Vuelve luego”)
+    public GameObject panelMiss;     // Panel de misión activa
+    public TextMeshProUGUI textMiss; // Texto de la misión
+    public GameObject buttonMiss;    // Botón para cerrar/continuar misión (lo puede usar Collares)
+
+    [Header("Player")]
+    public PlayerMovement player;    // Tu script real de movimiento del jugador
+    public bool playerClose;         // ¿El jugador está en el trigger?
+    public bool acceptMiss;          // ¿Aceptó la misión?
+    public float moveSpeed = 3f;     // Velocidad de avance del NPC cuando la misión está activa
+
+    [Header("Tutorial (opcional)")]
+    [Tooltip("Mensajes que se muestran en el panel de misión. Si está vacío, se usa un texto por defecto.")]
+    public string[] instructions;
+
     private int currentStep = 0;
-    public bool playerClose;
-    public bool acceptMiss;
 
-    void Start()
+    private void Start()
     {
-        // Instrucciones del tutorial (cámbialas en inspector si prefieres array público)
-        instructions = new string[]
-        {
-            "Presiona W para avanzar y recoge el collar",
-            "Usa A y D para moverte a los lados",
-            "Salta con ESPACIO",
-            "Usa el ratón para mirar alrededor",
-            "¡Último collar!"
-        };
+        // Contar objetivos si se usan
+        if (goals != null)
+            numGoals = goals.Length;
 
-        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
-        if (playerObject != null)
+        // Texto por defecto si no cargaste nada en el inspector
+        if (instructions == null || instructions.Length == 0)
         {
-            player = playerObject.GetComponent<PlayerLocal>();
-            Collares collares = playerObject.GetComponent<Collares>();
-            if (collares != null)
+            instructions = new string[]
             {
-                collares.npc = this;
+                "Presiona W para avanzar y recoge el collar",
+                "Usa A y D para moverte a los lados",
+                "Salta con ESPACIO",
+                "Usa el ratón para mirar alrededor",
+                "¡Último collar!"
+            };
+        }
+
+        // Buscar Player si no está asignado
+        if (player == null)
+        {
+            GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+            if (playerObject != null)
+            {
+                player = playerObject.GetComponent<PlayerMovement>();
+                if (player == null)
+                {
+                    Debug.LogError("No se encontró PlayerMovement en el objeto con tag 'Player'.");
+                }
             }
             else
             {
-                Debug.LogError("Collares no encontrado en el Player");
+                Debug.LogError("No se encontró un GameObject con la etiqueta 'Player'.");
             }
-            if (player == null)
-            {
-                Debug.LogError("PlayerLocal no encontrado en el Player");
-            }
-        }
-        else
-        {
-            Debug.LogError("No se encontró el Player");
         }
 
-        missSymbol.SetActive(true);
-        panelNPC.SetActive(false);
-        panelNPC2.SetActive(false);
-        panelMiss.SetActive(false);
+        // Enlazar este NPC como questGiver de Collares
+        if (quest != null)
+        {
+            quest.questGiver = this;
+
+            if (textMiss != null)
+                textMiss.text = quest.missionDescription;
+        }
+
+        // Estado inicial de UI
+        if (missSymbol != null) missSymbol.SetActive(true);
+        if (panelNPC != null) panelNPC.SetActive(false);
+        if (panelNPC2 != null) panelNPC2.SetActive(false);
+        if (panelMiss != null) panelMiss.SetActive(false);
+        if (buttonMiss != null) buttonMiss.SetActive(false);
     }
 
-    void Update()
+    private void Update()
     {
+        // Si el jugador está cerca, no aceptó la misión y toca E
+        if (playerClose && !acceptMiss && Input.GetKeyDown(KeyCode.E) && player != null && player.isGrounded)
+        {
+            // Hacer que mire al NPC
+            Vector3 positionPlayer = new Vector3(transform.position.x, player.transform.position.y, transform.position.z);
+            player.transform.LookAt(positionPlayer);
+
+            // Bloqueamos movimiento mientras habla (si querés)
+            player.enabled = false;
+
+            // Mostrar panel principal de diálogo
+            if (panelNPC != null) panelNPC.SetActive(true);
+            if (panelNPC2 != null) panelNPC2.SetActive(false);
+        }
+
+        // Si la misión está activa, el NPC avanza
         if (acceptMiss)
         {
-            // NPC avanza automáticamente
             transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime, Space.Self);
         }
     }
@@ -72,13 +111,11 @@ public class NPCs : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             playerClose = true;
-            if (!acceptMiss)
+
+            // Hint de “pulsa E para hablar”
+            if (!acceptMiss && panelNPC2 != null)
             {
-                // Hacer que el player mire al NPC
-                Vector3 npcPosFlat = new Vector3(transform.position.x, other.transform.position.y, transform.position.z);
-                other.transform.LookAt(npcPosFlat);
-                panelNPC.SetActive(true);
-                player.enabled = false;
+                panelNPC2.SetActive(true);
             }
         }
     }
@@ -87,77 +124,95 @@ public class NPCs : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            player.enabled = true;
             playerClose = false;
-            if (!acceptMiss)
-            {
-                panelNPC.SetActive(false);
-                panelNPC2.SetActive(true);
-            }
+
+            if (player != null)
+                player.enabled = true;
+
+            if (panelNPC != null) panelNPC.SetActive(false);
+            if (panelNPC2 != null) panelNPC2.SetActive(false);
         }
     }
 
+    // Botón NO en el diálogo
     public void NO()
     {
-        player.enabled = true;
-        panelNPC2.SetActive(false);
-        panelNPC.SetActive(true);
+        if (player != null) player.enabled = true;
+
+        if (panelNPC != null) panelNPC.SetActive(false);
+        if (panelNPC2 != null) panelNPC2.SetActive(true); // “Vuelve si cambias de opinión”
     }
 
+    // Botón YES en el diálogo
     public void YES()
     {
-        player.enabled = true;
+        if (player != null) player.enabled = true;
+
         acceptMiss = true;
-
-        // Desactivar todos los collares por si acaso
-        foreach (GameObject goal in goals)
-        {
-            goal.SetActive(false);
-        }
-
         currentStep = 0;
-        ActivateGoal(currentStep);
-        UpdateUI();
+        UpdateMissionText();
+
+        // Activar objetivos de escena si los usás
+        if (goals != null)
+        {
+            for (int i = 0; i < goals.Length; i++)
+            {
+                if (goals[i] != null)
+                    goals[i].SetActive(true);
+            }
+        }
+
+        // Iniciar la misión de Collares
+        if (quest != null)
+        {
+            quest.StartQuest();
+        }
+
         playerClose = false;
-        missSymbol.SetActive(false);
-        panelNPC.SetActive(false);
-        panelNPC2.SetActive(false);
-        panelMiss.SetActive(true);
+
+        if (missSymbol != null) missSymbol.SetActive(false);
+        if (panelNPC != null) panelNPC.SetActive(false);
+        if (panelNPC2 != null) panelNPC2.SetActive(false);
+        if (panelMiss != null) panelMiss.SetActive(true);
     }
 
-    private void ActivateGoal(int index)
+    // Actualiza el texto de la misión en el panel
+    private void UpdateMissionText()
     {
-        if (index < goals.Length)
+        if (textMiss == null)
+            return;
+
+        if (quest != null && instructions != null && instructions.Length > 0 && currentStep < instructions.Length)
         {
-            goals[index].SetActive(true);
+            textMiss.text = instructions[currentStep] + "\n\n" + quest.missionDescription;
+        }
+        else if (quest != null)
+        {
+            textMiss.text = quest.missionDescription;
         }
     }
 
-    private void UpdateUI()
-    {
-        if (currentStep < instructions.Length)
-        {
-            textMiss.text = instructions[currentStep] + "\nCollares restantes: " + (goals.Length - currentStep);
-        }
-    }
-
-    public void OnCollarCollected()
+    // Si quisieras avanzar pasos de tutorial desde otro lado
+    public void AdvanceStep()
     {
         currentStep++;
-        if (currentStep < goals.Length)
-        {
-            ActivateGoal(currentStep);
-            UpdateUI();
-        }
-        else
-        {
-            CompleteTutorial();
-        }
+        if (currentStep >= instructions.Length)
+            currentStep = instructions.Length - 1;
+
+        UpdateMissionText();
     }
 
-    private void CompleteTutorial()
+    /// <summary>
+    /// Llamado desde Collares cuando la misión se completa.
+    /// </summary>
+    public void OnQuestCompleted()
     {
-        textMiss.text = "¡Misión completada!";
-        buttonMiss.SetActive(true);
+        Debug.Log("Misión completada: el NPC puede dar la recompensa.");
+
+        if (textMiss != null)
+            textMiss.text = "¡Misión completada!";
+
+        if (buttonMiss != null)
+            buttonMiss.SetActive(true);
     }
 }

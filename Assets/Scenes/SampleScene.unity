@@ -4108,7 +4108,7 @@ GameObject:
   - component: {fileID: 1439931312}
   - component: {fileID: 1439931311}
   - component: {fileID: 1439931316}
-  - component: {fileID: 1439931315}
+  - component: {fileID: 1439931317}
   m_Layer: 0
   m_Name: NPC
   m_TagString: Untagged
@@ -4207,18 +4207,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1439931315
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1439931310}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 87c030f70c9979f47b716c247e8c9abb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!136 &1439931316
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -4242,6 +4230,32 @@ CapsuleCollider:
   m_Height: 4
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1439931317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1439931310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87c030f70c9979f47b716c247e8c9abb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  quest: {fileID: 0}
+  goals: []
+  numGoals: 0
+  missSymbol: {fileID: 0}
+  panelNPC: {fileID: 0}
+  panelNPC2: {fileID: 0}
+  panelMiss: {fileID: 0}
+  textMiss: {fileID: 0}
+  buttonMiss: {fileID: 0}
+  player: {fileID: 0}
+  playerClose: 0
+  acceptMiss: 0
+  moveSpeed: 3
+  instructions: []
 --- !u!4 &1448888985 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7483212529227382852, guid: be6d96c6addfae5448e7a95cd71d4517, type: 3}
