@@ -16,7 +16,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!224 &7823363798553826982
 RectTransform:
@@ -89,7 +89,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!224 &5849495697163943875
 RectTransform:
@@ -129,7 +129,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!224 &3262332160729990710
 RectTransform:
@@ -148,7 +148,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0.632}
+  m_AnchoredPosition: {x: 0, y: 0.69}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &1340217404908456283
@@ -241,7 +241,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!224 &6666007336524307492
 RectTransform:
@@ -279,7 +279,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!224 &1486437333628115025
 RectTransform:
@@ -354,7 +354,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!224 &4376816403604605168
 RectTransform:
@@ -428,7 +428,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!224 &8871323078748103116
 RectTransform:
@@ -523,7 +523,7 @@ GameObject:
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &4756658740792122145
 Transform:
@@ -535,7 +535,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 131.37, y: 10.458868, z: -37.303898}
-  m_LocalScale: {x: 3.664243, y: 4.943309, z: 0.72955436}
+  m_LocalScale: {x: 1.2073108, y: 1.0218745, z: 0.38301596}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3262332160729990710}
@@ -627,7 +627,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59107d46ddd1703489805cad2d356186, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHP: 50
+  maxHP: 10
   linkedTurrets:
   - {fileID: 0}
   - {fileID: 0}
@@ -653,7 +653,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34288427ce13af44882bd40963a529d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyData: {fileID: 11400000, guid: ae6342742b833e84d8aa9719bb4f7348, type: 2}
+  enemyData: {fileID: 11400000, guid: b9a0b18a3cfdca145ac7c9221445e67b, type: 2}
   healthSlider: {fileID: 3032762157870868029}
 --- !u!114 &3779899516693620392
 MonoBehaviour:

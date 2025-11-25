@@ -3708,10 +3708,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Level (New Version)
       objectReference: {fileID: 0}
-    - target: {fileID: 1274986133044241877, guid: ae8c6661c1283854fbca9fb098d34e06, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5795546719777776066, guid: ae8c6661c1283854fbca9fb098d34e06, type: 3}
       propertyPath: endGameManager
       value: 

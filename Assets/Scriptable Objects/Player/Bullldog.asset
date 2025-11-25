@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Bullldog
   m_EditorClassIdentifier: 
   characterName: Piki
-  hp: 100
-  walkSpeed: 12
+  hp: 300
+  walkSpeed: 15
   runMultiplier: 3
   crouchMultiplier: 0.5
   rotationSpeed: 50
@@ -40,6 +40,6 @@ MonoBehaviour:
     cooldown: 0.2
     range: 10
     animation: {fileID: 0}
-    sound: {fileID: 0}
+    sound: {fileID: 8300000, guid: 14104e2e592b7f342a40a799a6897619, type: 3}
     projectilePrefab: {fileID: 1829786823211159021, guid: fc86b118525b2a74e985c28dd2a46bb9, type: 3}
     requiredLevel: 1
