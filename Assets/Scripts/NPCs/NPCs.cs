@@ -10,6 +10,7 @@ public class NPCs : MonoBehaviour
 
     [Header("UI")]
     public GameObject missSymbol;    // Ícono sobre el NPC
+    public GameObject panelHint;     // "Hey, hey! Óyeme..."
     public GameObject panelNPC;      // Panel de diálogo principal (¿Quieres ayudarme?)
     public GameObject panelNPC2;     // Panel secundario (ej: “Pulsa E para hablar” / “Vuelve luego”)
     public GameObject panelMiss;     // Panel de misión activa
@@ -27,6 +28,9 @@ public class NPCs : MonoBehaviour
     public string[] instructions;
 
     private int currentStep = 0;
+
+    [SerializeField] private KeyCode interactKey = KeyCode.E;
+    bool playerInRange;
 
     private void Start()
     {
@@ -80,6 +84,7 @@ public class NPCs : MonoBehaviour
         if (panelNPC2 != null) panelNPC2.SetActive(false);
         if (panelMiss != null) panelMiss.SetActive(false);
         if (buttonMiss != null) buttonMiss.SetActive(false);
+        if (panelHint != null) panelHint.SetActive(false);
     }
 
     private void Update()
@@ -104,34 +109,37 @@ public class NPCs : MonoBehaviour
         {
             transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime, Space.Self);
         }
+        if (playerInRange && !acceptMiss && Input.GetKeyDown(interactKey))
+        {
+            OpenDialogue();
+        }
+    }
+
+    void OpenDialogue()
+    {
+        if (panelHint != null) panelHint.SetActive(false);
+        if (panelNPC != null) panelNPC.SetActive(true);
+
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
-        {
-            playerClose = true;
+        if (!other.CompareTag("Player")) return;
 
-            // Hint de “pulsa E para hablar”
-            if (!acceptMiss && panelNPC2 != null)
-            {
-                panelNPC2.SetActive(true);
-            }
-        }
+        playerInRange = true;
+
+        if (!acceptMiss && panelHint != null)
+            panelHint.SetActive(true);
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player"))
-        {
-            playerClose = false;
+        if (!other.CompareTag("Player")) return;
 
-            if (player != null)
-                player.enabled = true;
+        playerInRange = false;
 
-            if (panelNPC != null) panelNPC.SetActive(false);
-            if (panelNPC2 != null) panelNPC2.SetActive(false);
-        }
+        if (panelHint != null) panelHint.SetActive(false);
+        if (panelNPC != null) panelNPC.SetActive(false);
     }
 
     // Botón NO en el diálogo

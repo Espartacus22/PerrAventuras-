@@ -45,7 +45,7 @@ public class EnemyStats : MonoBehaviour
     Vector3 GetOrbSpawnPosition()
     {
         RaycastHit hit;
-        Vector3 origin = transform.position + Vector3.up * 2f;
+        Vector3 origin = transform.position + Vector3.up * 0.5f;
 
         if (Physics.Raycast(origin, Vector3.down, out hit, 5f))
         {
