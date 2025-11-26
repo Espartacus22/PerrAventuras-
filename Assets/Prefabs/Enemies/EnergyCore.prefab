@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7823363798553826982}
   - component: {fileID: 7081967260812158010}
   - component: {fileID: 6239517282797378875}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: Fill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -84,7 +84,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5849495697163943875}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: Handle Slide Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -124,7 +124,7 @@ GameObject:
   - component: {fileID: 1804149605750882528}
   - component: {fileID: 3311520868379423195}
   - component: {fileID: 1609435104963061977}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: HBC_EnergyCore
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -236,7 +236,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6666007336524307492}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: Fill Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -274,7 +274,7 @@ GameObject:
   - component: {fileID: 1486437333628115025}
   - component: {fileID: 7146618415403308658}
   - component: {fileID: 632008173853512588}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -349,7 +349,7 @@ GameObject:
   - component: {fileID: 4376816403604605168}
   - component: {fileID: 2012297494341136626}
   - component: {fileID: 318557134979270003}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -423,7 +423,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8871323078748103116}
   - component: {fileID: 3032762157870868029}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: HealthSlider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -518,7 +518,7 @@ GameObject:
   - component: {fileID: 5069929441061710971}
   - component: {fileID: 8931900379992520846}
   - component: {fileID: 3779899516693620392}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: EnergyCore
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -627,7 +627,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59107d46ddd1703489805cad2d356186, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHP: 10
+  maxHP: 0
   linkedTurrets:
   - {fileID: 0}
   - {fileID: 0}

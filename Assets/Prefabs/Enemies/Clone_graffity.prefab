@@ -12,11 +12,12 @@ GameObject:
   - component: {fileID: 4373396034818861424}
   - component: {fileID: 3142666986331369715}
   - component: {fileID: 18691450344128471}
+  - component: {fileID: -8389462668402431159}
   - component: {fileID: 2755762459001824263}
   - component: {fileID: 380005871478009259}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Clone_graffity
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -111,6 +112,28 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!195 &-8389462668402431159
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 944366312422604859}
+  m_Enabled: 1
+  m_AgentTypeID: 1479372276
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 1
+  m_BaseOffset: 0.5
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
 --- !u!114 &2755762459001824263
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -155,9 +178,33 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2663387519281703874}
     m_Modifications:
+    - target: {fileID: 496349934575995359, guid: f54e54b322254ad4e98fe633b9c2fc6a, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 1624088551666360694, guid: f54e54b322254ad4e98fe633b9c2fc6a, type: 3}
       propertyPath: m_Name
       value: HP_Canvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 1624088551666360694, guid: f54e54b322254ad4e98fe633b9c2fc6a, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2537845265534758412, guid: f54e54b322254ad4e98fe633b9c2fc6a, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2855564146523525488, guid: f54e54b322254ad4e98fe633b9c2fc6a, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 3472210852680556130, guid: f54e54b322254ad4e98fe633b9c2fc6a, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5184119217593032010, guid: f54e54b322254ad4e98fe633b9c2fc6a, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5994231488140829005, guid: f54e54b322254ad4e98fe633b9c2fc6a, type: 3}
       propertyPath: m_AnchorMax.x
@@ -250,6 +297,10 @@ PrefabInstance:
     - target: {fileID: 7269019624946459986, guid: f54e54b322254ad4e98fe633b9c2fc6a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8276252934158824918, guid: f54e54b322254ad4e98fe633b9c2fc6a, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

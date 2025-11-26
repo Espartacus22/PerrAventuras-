@@ -15,10 +15,10 @@ GameObject:
   - component: {fileID: 1371910278836642682}
   m_Layer: 0
   m_Name: WallPaint
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &681640131952994396
 Transform:
@@ -122,4 +122,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHP: 5
-  lifeTime: 3
+  lifeTime: 1

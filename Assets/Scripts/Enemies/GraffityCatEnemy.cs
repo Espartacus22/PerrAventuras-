@@ -1,3 +1,4 @@
+Ôªøusing System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -10,9 +11,28 @@ public class GraffityCatEnemy : MonoBehaviour
 
     [Header("Refs")]
     public NavMeshAgent agent;
-    public Transform modelRoot;          // Opcional, para rotar visualmente al gato
-    public Transform playerTarget;       // Se autocompleta por tag Player si se deja vacÌo
+    public Transform playerTarget;       // Se autocompleta por tag Player si se deja vac√≠o
 
+    // ---------------- PATRULLA ----------------
+    [Header("Patrulla")]
+    [Tooltip("Puntos de patrulla que el gato sigue en bucle")]
+    public Transform[] patrolPoints;
+    [Tooltip("Velocidad relativa mientras patrulla (1 = igual que persecuci√≥n)")]
+    public float patrolSpeedMultiplier = 0.6f;
+    [Tooltip("Distancia m√≠nima para considerar que lleg√≥ a un punto de patrulla")]
+    public float patrolPointTolerance = 0.3f;
+
+    private int _currentPatrolIndex = 0;
+    private bool _hasPatrolRoute = false;
+
+    // Estado de combate
+    private bool _inCombat = false;
+
+    [Header("Distancia con el jugador")]
+    [Tooltip("Distancia que intenta mantener cuando persigue al jugador")]
+    public float desiredCombatDistance = 2f;
+
+    // ---------------- RANGED ----------------
     [Header("Ataque a distancia (latas de pintura)")]
     public GameObject paintProjectilePrefab;
     public Transform firePoint;          // Boca de disparo
@@ -20,6 +40,7 @@ public class GraffityCatEnemy : MonoBehaviour
     public float rangedCooldown = 2f;
     public int rangedDamage = 20;
 
+    // ---------------- MELEE ----------------
     [Header("Ataque melee fuerte")]
     public float meleeRange = 2.5f;
     public float meleeCooldown = 1.5f;
@@ -27,23 +48,45 @@ public class GraffityCatEnemy : MonoBehaviour
     public Transform meleeOrigin;        // centro del golpe (puede ser el mismo que firePoint)
     public LayerMask playerLayer;
 
+    // ---------------- MUROS ----------------
     [Header("Muros de pintura")]
     public GameObject paintWallPrefab;
-    public Transform[] wallSpawnPoints;  // posiciones prefijadas en la arena
-    public float wallCooldown = 8f;
+    [Tooltip("Puntos (hijos del boss o de la escena) donde van a aparecer los muros")]
+    public Transform[] wallSpawnPoints;
+    [Tooltip("Cooldown entre oleadas de muros")]
+    public float wallCooldown = 6f;
+    [Tooltip("Solo lanza muros si el jugador est√° dentro de este rango")]
+    public float wallUseRange = 12f;
 
+    private float _nextWallTime;
+    private readonly List<PaintWall> _activeWalls = new List<PaintWall>();
+
+    // ---------------- CLONES ----------------
     [Header("Clones")]
     public GameObject clonePrefab;
+    [Tooltip("Puntos donde pueden aparecer clones")]
     public Transform[] cloneSpawnPoints;
+    [Tooltip("M√°ximo de clones activos a la vez")]
     public int maxClones = 2;
-    public float cloneCooldown = 12f;
+    [Tooltip("Cooldown entre spawns de clones")]
+    public float cloneCooldown = 10f;
 
-    private float nextRangedTime;
-    private float nextMeleeTime;
-    private float nextWallTime;
-    private float nextCloneTime;
-
+    private float _nextCloneTime;
     private readonly List<GraffityCatCloneEnemy> _aliveClones = new List<GraffityCatCloneEnemy>();
+
+    // ---------------- SALTO ----------------
+    [Header("Salto")]
+    public bool enableJump = true;
+    public float jumpHeight = 2f;
+    public float jumpDuration = 0.5f;
+    public float jumpCooldown = 5f;
+
+    private float _nextJumpTime;
+    private bool _isJumping = false;
+
+    // Timers ataques
+    private float _nextRangedTime;
+    private float _nextMeleeTime;
 
     void Awake()
     {
@@ -62,9 +105,17 @@ public class GraffityCatEnemy : MonoBehaviour
 
         if (enemyData != null && agent != null)
         {
-            agent.speed = enemyData.moveSpeed;     // boss m·s r·pido
-            agent.stoppingDistance = meleeRange * 0.8f;
+            agent.speed = enemyData.moveSpeed;
         }
+
+        if (agent != null)
+        {
+            agent.stoppingDistance = desiredCombatDistance;   // mantiene ~2 unidades
+        }
+
+        // Patrulla
+        _hasPatrolRoute = patrolPoints != null && patrolPoints.Length > 0;
+        _currentPatrolIndex = 0;
     }
 
     void Update()
@@ -73,40 +124,137 @@ public class GraffityCatEnemy : MonoBehaviour
 
         float dist = Vector3.Distance(transform.position, playerTarget.position);
 
-        HandleMovement(dist);
-        HandleAttacks(dist);
-        HandleWalls();
-        HandleClones();
+        bool playerInChaseRange = enemyData != null
+            ? dist <= enemyData.chaseRange
+            : dist <= rangedRange;
+
+        // Una vez que entra en rango, consideramos que est√° en combate
+        if (playerInChaseRange)
+            _inCombat = true;
+
+        HandleMovement(dist, playerInChaseRange);
+
+        if (_inCombat)
+        {
+            HandleAttacks(dist);
+            HandleWalls(dist);
+            HandleClones();
+            HandleJump(dist);
+        }
     }
 
-    void HandleMovement(float dist)
+    // ---------------- MOVIMIENTO ----------------
+    void HandleMovement(float distToPlayer, bool playerInChaseRange)
     {
-        if (enemyData == null || agent == null) return;
+        if (agent == null) return;
+        if (_isJumping) return;    // mientras est√° saltando no le damos √≥rdenes nuevas
 
-        if (dist <= enemyData.chaseRange)
+        // Persecuci√≥n (mantiene "desiredCombatDistance")
+        if (playerInChaseRange)
         {
             agent.isStopped = false;
+            if (enemyData != null)
+                agent.speed = enemyData.moveSpeed;
+
+            agent.stoppingDistance = desiredCombatDistance;
             agent.SetDestination(playerTarget.position);
 
-            // rotar modelo hacia el player (solo en XZ)
+            // Mirar hacia el player (solo en XZ)
             Vector3 lookDir = playerTarget.position - transform.position;
             lookDir.y = 0;
             if (lookDir.sqrMagnitude > 0.001f)
             {
                 Quaternion rot = Quaternion.LookRotation(lookDir);
-                if (modelRoot != null) modelRoot.rotation = rot;
-                else transform.rotation = rot;
+                transform.rotation = rot;
+            }
+        }
+        // Patrulla
+        else if (_hasPatrolRoute)
+        {
+            agent.isStopped = false;
+            if (enemyData != null)
+                agent.speed = enemyData.moveSpeed * patrolSpeedMultiplier;
+
+            Transform targetPoint = patrolPoints[_currentPatrolIndex];
+            if (targetPoint != null)
+            {
+                agent.stoppingDistance = 0f;
+                agent.SetDestination(targetPoint.position);
+
+                Vector3 lookDir = targetPoint.position - transform.position;
+                lookDir.y = 0;
+                if (lookDir.sqrMagnitude > 0.001f)
+                {
+                    Quaternion rot = Quaternion.LookRotation(lookDir);
+                    transform.rotation = rot;
+                }
+
+                float distToPoint = Vector3.Distance(transform.position, targetPoint.position);
+                if (distToPoint <= patrolPointTolerance)
+                {
+                    _currentPatrolIndex++;
+                    if (_currentPatrolIndex >= patrolPoints.Length)
+                        _currentPatrolIndex = 0;
+                }
             }
         }
         else
         {
+            // Sin patrulla ni player cerca -> quieto
             agent.isStopped = true;
         }
     }
 
+    // ---------------- JUMP ----------------
+    void HandleJump(float distToPlayer)
+    {
+        if (!enableJump || agent == null) return;
+        if (!_inCombat) return;
+        if (_isJumping) return;
+        if (Time.time < _nextJumpTime) return;
+
+        // Ejemplo: solo salta si est√° a media distancia
+        if (distToPlayer > meleeRange && distToPlayer < rangedRange)
+        {
+            StartCoroutine(JumpRoutine());
+            _nextJumpTime = Time.time + jumpCooldown;
+        }
+    }
+
+    IEnumerator JumpRoutine()
+    {
+        _isJumping = true;
+        agent.isStopped = true;
+
+        Vector3 startPos = transform.position;
+        float elapsed = 0f;
+
+        while (elapsed < jumpDuration)
+        {
+            float t = elapsed / jumpDuration;
+            // Parabola sencilla 0 -> 1 -> 0
+            float height = 4f * jumpHeight * t * (1f - t);
+
+            Vector3 pos = startPos;
+            pos.y += height;
+            transform.position = pos;
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // Asegurar que vuelve al suelo
+        Vector3 finalPos = transform.position;
+        finalPos.y = startPos.y;
+        transform.position = finalPos;
+
+        agent.isStopped = false;
+        _isJumping = false;
+    }
+
+    // ---------------- ATAQUES ----------------
     void HandleAttacks(float dist)
     {
-        // Prioridad: si est· muy cerca -> melee, si est· a media distancia -> ranged
         if (dist <= meleeRange)
         {
             TryMeleeAttack();
@@ -119,29 +267,27 @@ public class GraffityCatEnemy : MonoBehaviour
 
     void TryRangedAttack()
     {
-        if (Time.time < nextRangedTime) return;
+        if (Time.time < _nextRangedTime) return;
         if (paintProjectilePrefab == null || firePoint == null) return;
 
-        // Apuntar al player
         Vector3 dir = (playerTarget.position - firePoint.position).normalized;
-        dir.y = 0;  // proyectil horizontal (podÈs quitar esto si querÈs arco)
+        dir.y = 0;
 
         Quaternion rot = Quaternion.LookRotation(dir);
         GameObject projGO = Instantiate(paintProjectilePrefab, firePoint.position, rot);
 
-        // Setear daÒo si el script del proyectil lo soporta
         PaintProjectileBehavior proj = projGO.GetComponent<PaintProjectileBehavior>();
         if (proj != null)
         {
             proj.damage = rangedDamage;
         }
 
-        nextRangedTime = Time.time + rangedCooldown;
+        _nextRangedTime = Time.time + rangedCooldown;
     }
 
     void TryMeleeAttack()
     {
-        if (Time.time < nextMeleeTime) return;
+        if (Time.time < _nextMeleeTime) return;
 
         Vector3 origin = meleeOrigin != null ? meleeOrigin.position : transform.position;
         float radius = meleeRange;
@@ -151,36 +297,45 @@ public class GraffityCatEnemy : MonoBehaviour
         {
             if (!hit.CompareTag("Player")) continue;
 
-            //Cambi· estos nombres por tu script real de vida del jugador
-            var hp1 = hit.GetComponent<PlayerLevel>();
-            if (hp1 != null) hp1.TakeDamage(meleeDamage);
-
-            var hp2 = hit.GetComponent<PlayerLevel>();
-            if (hp2 != null) hp2.TakeDamage(meleeDamage);
+            var hp = hit.GetComponent<PlayerLevel>();
+            if (hp != null) hp.TakeDamage(meleeDamage);
 
             Debug.Log($"GraffityCat dio golpe melee al jugador por {meleeDamage}");
             break;
         }
 
-        nextMeleeTime = Time.time + meleeCooldown;
+        _nextMeleeTime = Time.time + meleeCooldown;
     }
 
-    void HandleWalls()
+    // ---------------- MUROS ----------------
+    void HandleWalls(float distToPlayer)
     {
+        if (!_inCombat) return;
         if (paintWallPrefab == null || wallSpawnPoints == null || wallSpawnPoints.Length == 0)
             return;
+        if (Time.time < _nextWallTime) return;
+        if (distToPlayer > wallUseRange) return;
 
-        if (Time.time < nextWallTime) return;
+        // Spawnea muros en todos los puntos configurados (por ejemplo 2 hijos delante del boss)
+        foreach (Transform spawn in wallSpawnPoints)
+        {
+            if (spawn == null) continue;
 
-        // Boss va "grafiteando" un muro en uno de los puntos al azar
-        Transform spawn = wallSpawnPoints[Random.Range(0, wallSpawnPoints.Length)];
-        Instantiate(paintWallPrefab, spawn.position, spawn.rotation);
+            GameObject wallGO = Instantiate(paintWallPrefab, spawn.position, spawn.rotation);
+            PaintWall wall = wallGO.GetComponent<PaintWall>();
+            if (wall != null)
+            {
+                _activeWalls.Add(wall);
+            }
+        }
 
-        nextWallTime = Time.time + wallCooldown;
+        _nextWallTime = Time.time + wallCooldown;
     }
 
+    // ---------------- CLONES ----------------
     void HandleClones()
     {
+        if (!_inCombat) return;
         if (clonePrefab == null || cloneSpawnPoints == null || cloneSpawnPoints.Length == 0)
             return;
 
@@ -188,19 +343,23 @@ public class GraffityCatEnemy : MonoBehaviour
         _aliveClones.RemoveAll(c => c == null);
 
         if (_aliveClones.Count >= maxClones) return;
-        if (Time.time < nextCloneTime) return;
+        if (Time.time < _nextCloneTime) return;
 
+        // Spawn en un punto aleatorio
         Transform spawn = cloneSpawnPoints[Random.Range(0, cloneSpawnPoints.Length)];
-        GameObject cloneGO = Instantiate(clonePrefab, spawn.position, spawn.rotation);
-
-        GraffityCatCloneEnemy clone = cloneGO.GetComponent<GraffityCatCloneEnemy>();
-        if (clone != null)
+        if (spawn != null)
         {
-            clone.InitClone(playerTarget, this);
-            _aliveClones.Add(clone);
+            GameObject cloneGO = Instantiate(clonePrefab, spawn.position, spawn.rotation);
+            GraffityCatCloneEnemy clone = cloneGO.GetComponent<GraffityCatCloneEnemy>();
+            if (clone != null)
+            {
+                // El clon ya tiene l√≥gica para perseguir y atacar al player
+                clone.InitClone(playerTarget, this);
+                _aliveClones.Add(clone);
+            }
         }
 
-        nextCloneTime = Time.time + cloneCooldown;
+        _nextCloneTime = Time.time + cloneCooldown;
     }
 
     // Llamado por los clones si mueren
@@ -209,13 +368,56 @@ public class GraffityCatEnemy : MonoBehaviour
         _aliveClones.Remove(clone);
     }
 
+    // ---------------- CLEANUP AL MORIR ----------------
+    void OnDestroy()
+    {
+        // Destruir clones que queden vivos
+        foreach (var clone in _aliveClones)
+        {
+            if (clone != null)
+                Destroy(clone.gameObject);
+        }
+        _aliveClones.Clear();
+
+        // Destruir muros activos
+        foreach (var wall in _activeWalls)
+        {
+            if (wall != null)
+                Destroy(wall.gameObject);
+        }
+        _activeWalls.Clear();
+    }
+
     void OnDrawGizmosSelected()
     {
-        // Gizmos de ayuda
+        // Gizmo melee
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(meleeOrigin ? meleeOrigin.position : transform.position, meleeRange);
 
+        // Gizmo rango ranged
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, rangedRange);
+
+        // Gizmos de puntos de muros
+        if (wallSpawnPoints != null)
+        {
+            Gizmos.color = Color.cyan;
+            foreach (var t in wallSpawnPoints)
+            {
+                if (t == null) continue;
+                Gizmos.DrawWireSphere(t.position, 0.3f);
+            }
+        }
+
+        // Gizmos de puntos de clones
+        if (cloneSpawnPoints != null)
+        {
+            Gizmos.color = Color.magenta;
+            foreach (var t in cloneSpawnPoints)
+            {
+                if (t == null) continue;
+                Gizmos.DrawWireSphere(t.position, 0.3f);
+            }
+        }
     }
 }
