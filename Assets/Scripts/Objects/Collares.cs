@@ -4,13 +4,13 @@ using UnityEngine;
 public class Collares : MonoBehaviour
 {
     [Header("Config Quest")]
-    [Tooltip("Tag de los objetivos de ESTA misión (ej: Objetivo_PruebaMov)")]
+    [Tooltip("Tag de los objetivos de ESTA misiï¿½n (ej: Objetivo_PruebaMov)")]
     public string objectiveTag = "Objetivo";
 
     [TextArea]
-    public string missionDescription = "Obten las esferas rojas.";
+    public string missionDescription = "Obten los COLLARES.";
 
-    [Tooltip("Si está activo, la mision se inicia sola en Start")]
+    [Tooltip("Si estï¿½ activo, la mision se inicia sola en Start")]
     public bool autoStart = false;
 
     [Header("UI")]
@@ -18,7 +18,7 @@ public class Collares : MonoBehaviour
     public GameObject buttonMiss;   // Boton de continuar / cerrar mision
 
     [Header("Opcional")]
-    public NPCs questGiver;   // NPC que da la misión (para notificarle al completar)
+    public NPCs questGiver;   // NPC que da la misiï¿½n (para notificarle al completar)
 
     private int numCurrency;
     private bool questActive;
@@ -35,14 +35,14 @@ public class Collares : MonoBehaviour
         }
         else
         {
-            // Si no arranca solo, dejamos el texto vacío o algo neutro
+            // Si no arranca solo, dejamos el texto vacï¿½o o algo neutro
             if (textMiss != null)
                 textMiss.text = "";
         }
     }
 
     /// <summary>
-    /// Llamar desde el NPC cuando el jugador acepta la misión.
+    /// Llamar desde el NPC cuando el jugador acepta la misiï¿½n.
     /// </summary>
     public void StartQuest()
     {
@@ -55,7 +55,7 @@ public class Collares : MonoBehaviour
 
         if (numCurrency == 0)
         {
-            Debug.LogWarning($"La misión '{missionDescription}' no tiene objetivos con el tag {objectiveTag}.");
+            Debug.LogWarning($"La misiï¿½n '{missionDescription}' no tiene objetivos con el tag {objectiveTag}.");
         }
     }
 
@@ -82,12 +82,12 @@ public class Collares : MonoBehaviour
         questCompleted = true;
 
         if (textMiss != null)
-            textMiss.text = $"{missionDescription} - Misión completada";
+            textMiss.text = $"{missionDescription} - Misiï¿½n completada";
 
         if (buttonMiss != null)
             buttonMiss.SetActive(true);
 
-        // Avisar al NPC que la misión terminó (opcional)
+        // Avisar al NPC que la misiï¿½n terminï¿½ (opcional)
         if (questGiver != null)
         {
             questGiver.OnQuestCompleted();

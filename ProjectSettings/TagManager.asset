@@ -8,6 +8,7 @@ TagManager:
   - Enemy
   - Objectiv
   - NPC
+  - Objetivo
   layers:
   - Default
   - TransparentFX
