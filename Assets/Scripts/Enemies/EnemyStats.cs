@@ -56,6 +56,14 @@ public class EnemyStats : MonoBehaviour
 
     void Die()
     {
+        // Si este enemigo es un EnergyCore, avisarle antes de destruirlo
+        EnergyCore core = GetComponent<EnergyCore>();
+        if (core != null)
+        {
+            core.OnCoreDestroyed();
+        }
+
+        // Drop de XP / ítem, igual que antes
         if (enemyData.dropPrefab != null)
         {
             Vector3 dropPosition = GetOrbSpawnPosition();

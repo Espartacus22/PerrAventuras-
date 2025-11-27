@@ -15,20 +15,25 @@ public class LaserTurret : MonoBehaviour
 
     LineRenderer line;
     Transform currentTarget;
-    bool enabledTurret = true;
+    bool isActive = true;   // <- ESTADO DE LA TORRETA
 
     void Awake()
     {
         line = GetComponent<LineRenderer>();
-        line.positionCount = 2;
-        line.enabled = false;
+        if (line != null)
+        {
+            line.positionCount = 2;
+            line.enabled = false;
+        }
     }
 
     void Update()
     {
-        if (!enabledTurret)
+        // Si la torreta está apagada, no hace NADA
+        if (!isActive)
         {
-            line.enabled = false;
+            if (line != null && line.enabled)
+                line.enabled = false;
             return;
         }
 
@@ -36,7 +41,8 @@ public class LaserTurret : MonoBehaviour
 
         if (currentTarget == null)
         {
-            line.enabled = false;
+            if (line != null && line.enabled)
+                line.enabled = false;
             return;
         }
 
@@ -48,11 +54,9 @@ public class LaserTurret : MonoBehaviour
     {
         currentTarget = null;
 
-        // Buscar jugador/es en rango
         Collider[] hits = Physics.OverlapSphere(transform.position, range, playerMask);
         if (hits.Length == 0) return;
 
-        // Elegir el más cercano
         float bestDist = Mathf.Infinity;
         for (int i = 0; i < hits.Length; i++)
         {
@@ -69,7 +73,6 @@ public class LaserTurret : MonoBehaviour
     {
         if (currentTarget == null) return;
 
-        // Igual que en el dron: calculamos vector 3D hacia el jugador (un poco más arriba)
         Vector3 toTarget = (currentTarget.position + Vector3.up * 1.2f) - head.position;
         if (toTarget.sqrMagnitude < 0.001f) return;
 
@@ -79,17 +82,17 @@ public class LaserTurret : MonoBehaviour
 
     void FireLaser()
     {
+        if (line == null) return;
+
         RaycastHit hit;
-        Vector3 dir = firePoint.forward; // ahora forward apunta EXACTO al player
+        Vector3 dir = firePoint.forward;
 
         if (Physics.Raycast(firePoint.position, dir, out hit, range))
         {
-            // Dibujar láser
             line.enabled = true;
             line.SetPosition(0, firePoint.position);
             line.SetPosition(1, hit.point);
 
-            // Aplicar daño, aunque el collider sea hijo del player
             PlayerLevel lvl = hit.collider.GetComponentInParent<PlayerLevel>();
             if (lvl != null)
             {
@@ -103,10 +106,16 @@ public class LaserTurret : MonoBehaviour
         }
     }
 
-    // Llamá esto desde EnergyCore cuando se destruye
+    // Llamado por EnergyCore
     public void DisableTurret()
     {
-        enabledTurret = false;
-        if (line != null) line.enabled = false;
+        isActive = false;
+
+        if (line != null)
+            line.enabled = false;
+
+        // también podemos desactivar cualquier collider que tenga
+        Collider col = GetComponent<Collider>();
+        if (col != null) col.enabled = false;
     }
 }

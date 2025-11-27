@@ -38,25 +38,32 @@ public class ProjectileBehavior : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        // 1) Ignorar al player (para no auto-daños si el collider del arma está cerca)
+        // 1) Ignorar al player
         if (other.CompareTag("Player"))
             return;
 
-        // 2) Enemigos (EnemyStats)
+        // 2) Núcleo de energía (PRIMERO)
+        EnergyCore core = other.GetComponentInParent<EnergyCore>();
+        if (core != null)
+        {
+
+            // Opcional: si el núcleo también tiene EnemyStats (para barra de vida, etc.)
+            EnemyStats coreStats = core.GetComponent<EnemyStats>();
+            if (coreStats != null)
+            {
+                coreStats.TakeDamage(Mathf.RoundToInt(damage));
+            }
+
+            Destroy(gameObject);
+            return;
+        }
+
+        // 3) Enemigos genéricos
         EnemyStats enemy = other.GetComponentInParent<EnemyStats>();
         if (enemy != null)
         {
             Debug.Log($"Impactó a ENEMIGO: {enemy.name} con {damage} de daño.");
             enemy.TakeDamage(Mathf.RoundToInt(damage));
-            Destroy(gameObject);
-            return;
-        }
-
-        // 3) Núcleo de energía de torretas
-        EnergyCore core = other.GetComponentInParent<EnergyCore>();
-        if (core != null)
-        {
-            core.TakeDamage(Mathf.RoundToInt(damage));
             Destroy(gameObject);
             return;
         }
@@ -71,7 +78,7 @@ public class ProjectileBehavior : MonoBehaviour
             return;
         }
 
-        // 5) Cualquier otra cosa: destruir el proyectil
+        // 5) Cualquier otra cosa
         Destroy(gameObject);
     }
 }

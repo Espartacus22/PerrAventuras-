@@ -4,13 +4,13 @@ using UnityEngine;
 public class Collares : MonoBehaviour
 {
     [Header("Config Quest")]
-    [Tooltip("Tag de los objetivos de ESTA misi�n (ej: Objetivo_PruebaMov)")]
+    [Tooltip("Tag de los objetivos de ESTA mision (ej: Objetivo_PruebaMov)")]
     public string objectiveTag = "Objetivo";
 
     [TextArea]
     public string missionDescription = "Obten los COLLARES.";
 
-    [Tooltip("Si est� activo, la mision se inicia sola en Start")]
+    [Tooltip("Si esta activo, la mision se inicia sola en Start")]
     public bool autoStart = false;
 
     [Header("UI")]
@@ -18,7 +18,7 @@ public class Collares : MonoBehaviour
     public GameObject buttonMiss;   // Boton de continuar / cerrar mision
 
     [Header("Opcional")]
-    public NPCs questGiver;   // NPC que da la misi�n (para notificarle al completar)
+    public NPCs questGiver;   // NPC que da la mision (para notificarle al completar)
 
     private int numCurrency;
     private bool questActive;
@@ -35,14 +35,14 @@ public class Collares : MonoBehaviour
         }
         else
         {
-            // Si no arranca solo, dejamos el texto vac�o o algo neutro
+            // Si no arranca solo, dejamos el texto vacio o algo neutro
             if (textMiss != null)
                 textMiss.text = "";
         }
     }
 
     /// <summary>
-    /// Llamar desde el NPC cuando el jugador acepta la misi�n.
+    /// Llamar desde el NPC cuando el jugador acepta la mision.
     /// </summary>
     public void StartQuest()
     {
@@ -87,7 +87,7 @@ public class Collares : MonoBehaviour
         if (buttonMiss != null)
             buttonMiss.SetActive(true);
 
-        // Avisar al NPC que la misi�n termin� (opcional)
+        // Avisar al NPC que la mision termino (opcional)
         if (questGiver != null)
         {
             questGiver.OnQuestCompleted();

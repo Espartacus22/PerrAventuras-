@@ -2,45 +2,46 @@ using UnityEngine;
 
 public class EnergyCore : MonoBehaviour
 {
-    public int maxHP = 50;
-    int currentHP;
-
-    [Tooltip("Torretas que dependen de este núcleo.")]
+    [Tooltip("Torretas que dependen de este nucleo.")]
     public LaserTurret[] linkedTurrets;
 
     [Header("Opcional VFX")]
     public GameObject activeVfx;
     public GameObject destroyedVfx;
 
+    bool isDestroyed = false;
+
     void Start()
     {
-        currentHP = maxHP;
-        Debug.Log($"EnergyCore spawn con {currentHP} HP");
         SetActiveVisual(true);
     }
 
-    public void TakeDamage(int amount)
+    // Llamado desde EnemyStats cuando este enemigo muere
+    public void OnCoreDestroyed()
     {
-        currentHP -= amount;
-        Debug.Log("EnergyCore recibió " + amount + " de daño. HP restante: " + currentHP);
-        
-        if (currentHP <= 0)
-            DestroyCore();
-    }
+        if (isDestroyed) return;
+        isDestroyed = true;
 
-    void DestroyCore()
-    {
         Debug.Log("EnergyCore destruido, apagando torretas…");
 
-        // Apagar todas las torretas vinculadas
+        // Apagar torretas
         foreach (var t in linkedTurrets)
         {
             if (t == null) continue;
+
+            // Apagar lógica
             t.DisableTurret();
+
+            // Seguridad extra: desactivar el GO
+            // t.gameObject.SetActive(false);
         }
 
-        // Opcional: destruir el núcleo
-        // Destroy(gameObject);
+        // Visuales
+        SetActiveVisual(false);
+        if (destroyedVfx != null)
+        {
+            Instantiate(destroyedVfx, transform.position, Quaternion.identity);
+        }
     }
 
     void SetActiveVisual(bool active)
