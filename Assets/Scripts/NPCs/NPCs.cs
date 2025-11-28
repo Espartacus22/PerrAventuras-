@@ -10,27 +10,31 @@ public class NPCs : MonoBehaviour
 
     [Header("UI")]
     public GameObject missSymbol;    // Ícono sobre el NPC
-    public GameObject panelHint;     // "Hey, hey! Óyeme..."
+    public GameObject panelHintFar;     // "Hey, hey! Óyeme..."
+    public GameObject panelHintNear;
     public GameObject panelNPC;      // Panel de diálogo principal (¿Quieres ayudarme?)
-    public GameObject panelNPC2;     // Panel secundario (ej: “Pulsa E para hablar” / “Vuelve luego”)
+    public GameObject panelNPC2;     // Panel secundario (ej: “Vuelve luego”)
     public GameObject panelMiss;     // Panel de misión activa
     public TextMeshProUGUI textMiss; // Texto de la misión
-    public GameObject buttonMiss;    // Botón para cerrar/continuar misión (lo puede usar Collares)
+    public GameObject buttonMiss;    // Botón para cerrar/continuar misión
+
+    [Header("Ranges")]
+    public float outerRange = 3f;
+    public float innerRange = 1.5f;
 
     [Header("Player")]
-    public PlayerMovement player;    // Tu script real de movimiento del jugador
-    public bool playerClose;         // ¿El jugador está en el trigger?
-    public bool acceptMiss;          // ¿Aceptó la misión?
-    public float moveSpeed = 3f;     // Velocidad de avance del NPC cuando la misión está activa
+    public PlayerMovement player;    // Script real de movimiento del jugador
+    public float moveSpeed = 3f;     // Velocidad del NPC cuando la misión está activa
 
     [Header("Tutorial (opcional)")]
-    [Tooltip("Mensajes que se muestran en el panel de misión. Si está vacío, se usa un texto por defecto.")]
     public string[] instructions;
 
-    private int currentStep = 0;
-
     [SerializeField] private KeyCode interactKey = KeyCode.E;
-    bool playerInRange;
+
+    // ESTADO INTERNO
+    bool playerInRange = false;  // ¿El jugador está dentro del trigger?
+    bool acceptMiss = false;     // ¿Aceptó la misión?
+    int currentStep = 0;
 
     private void Start()
     {
@@ -84,42 +88,62 @@ public class NPCs : MonoBehaviour
         if (panelNPC2 != null) panelNPC2.SetActive(false);
         if (panelMiss != null) panelMiss.SetActive(false);
         if (buttonMiss != null) buttonMiss.SetActive(false);
-        if (panelHint != null) panelHint.SetActive(false);
+        if (panelHintFar != null) panelHintFar.SetActive(false);
     }
 
     private void Update()
     {
-        // Si el jugador está cerca, no aceptó la misión y toca E
-        if (playerClose && !acceptMiss && Input.GetKeyDown(KeyCode.E) && player != null && player.isGrounded)
+        // 1) Si el jugador está cerca, no aceptó la misión y toca E -> abrir diálogo
+        if (playerInRange && !acceptMiss && Input.GetKeyDown(interactKey) && player != null)
         {
-            // Hacer que mire al NPC
-            Vector3 positionPlayer = new Vector3(transform.position.x, player.transform.position.y, transform.position.z);
-            player.transform.LookAt(positionPlayer);
+            // Hacer que mire al NPC (solo en XZ)
+            Vector3 lookPos = new Vector3(transform.position.x, player.transform.position.y, transform.position.z);
+            player.transform.LookAt(lookPos);
 
-            // Bloqueamos movimiento mientras habla (si querés)
+            // Opcional: bloquear movimiento mientras habla
             player.enabled = false;
 
-            // Mostrar panel principal de diálogo
-            if (panelNPC != null) panelNPC.SetActive(true);
-            if (panelNPC2 != null) panelNPC2.SetActive(false);
+            OpenDialogue();
         }
 
-        // Si la misión está activa, el NPC avanza
-        if (acceptMiss)
+        // 2) Si la misión está activa, el NPC se mueve hacia adelante
+        if (acceptMiss && moveSpeed > 0f)
         {
             transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime, Space.Self);
         }
-        if (playerInRange && !acceptMiss && Input.GetKeyDown(interactKey))
+
+        // Mostrar hints según distancia
+        if (player != null)
         {
-            OpenDialogue();
+            float dist = Vector3.Distance(player.transform.position, transform.position);
+
+            // Muy cerca → mostrar “Presioná E…”
+            if (dist <= innerRange)
+            {
+                if (panelHintNear != null) panelHintNear.SetActive(true);
+                if (panelHintFar != null) panelHintFar.SetActive(false);
+            }
+            // Cerca → mostrar “Hey, hey… Óyeme!”
+            else if (dist <= outerRange)
+            {
+                if (panelHintFar != null) panelHintFar.SetActive(true);
+                if (panelHintNear != null) panelHintNear.SetActive(false);
+            }
+            // Lejos → nada
+            else
+            {
+                if (panelHintFar != null) panelHintFar.SetActive(false);
+                if (panelHintNear != null) panelHintNear.SetActive(false);
+            }
         }
     }
 
     void OpenDialogue()
     {
-        if (panelHint != null) panelHint.SetActive(false);
+        if (panelHintFar != null) panelHintFar.SetActive(false);
+        if (panelHintNear != null) panelHintNear.SetActive(false);
         if (panelNPC != null) panelNPC.SetActive(true);
-
+        if (panelNPC2 != null) panelNPC2.SetActive(false);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -128,8 +152,9 @@ public class NPCs : MonoBehaviour
 
         playerInRange = true;
 
-        if (!acceptMiss && panelHint != null)
-            panelHint.SetActive(true);
+        // Solo mostramos hint si todavía no aceptó la misión
+        if (!acceptMiss && panelHintFar != null)
+            panelHintFar.SetActive(true);
     }
 
     private void OnTriggerExit(Collider other)
@@ -138,8 +163,12 @@ public class NPCs : MonoBehaviour
 
         playerInRange = false;
 
-        if (panelHint != null) panelHint.SetActive(false);
+        if (panelHintFar != null) panelHintFar.SetActive(false);
         if (panelNPC != null) panelNPC.SetActive(false);
+        if (panelNPC2 != null) panelNPC2.SetActive(false);
+
+        // Asegurarnos de que el player vuelva a tener control
+        if (player != null) player.enabled = true;
     }
 
     // Botón NO en el diálogo
@@ -176,12 +205,11 @@ public class NPCs : MonoBehaviour
             quest.StartQuest();
         }
 
-        playerClose = false;
-
         if (missSymbol != null) missSymbol.SetActive(false);
         if (panelNPC != null) panelNPC.SetActive(false);
         if (panelNPC2 != null) panelNPC2.SetActive(false);
         if (panelMiss != null) panelMiss.SetActive(true);
+        if (panelHintFar != null) panelHintFar.SetActive(false);
     }
 
     // Actualiza el texto de la misión en el panel
