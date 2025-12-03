@@ -40,6 +40,9 @@ public class Collares : MonoBehaviour
 
     void Start()
     {
+        if (trainingZone != null)
+            trainingZone.SetActive(false);
+
         if (buttonMiss != null)
             buttonMiss.SetActive(false);
 
@@ -76,7 +79,7 @@ public class Collares : MonoBehaviour
             Debug.LogWarning($"La misión '{missionDescription}' no tiene objetivos con el tag {objectiveTag}.");
         }
 
-        // >>> NUEVO: activar pista y mandar al inicio <<<
+        // activar pista y mandar al inicio
         if (trainingZone != null)
             trainingZone.SetActive(true);
 
@@ -85,6 +88,9 @@ public class Collares : MonoBehaviour
             player.position = trainingStartPoint.position;
             ResetPlayerVelocity();
         }
+
+        if (questGiver != null)
+            questGiver.HideDialogue();
     }
 
     private void OnTriggerEnter(Collider col)
@@ -105,7 +111,7 @@ public class Collares : MonoBehaviour
         }
     }
 
-    private void CompleteQuest()
+    public void CompleteQuest()
     {
         questCompleted = true;
 
@@ -115,7 +121,7 @@ public class Collares : MonoBehaviour
         if (buttonMiss != null)
             buttonMiss.SetActive(true);
 
-        // >>> NUEVO: ocultar pista y devolver al NPC <<<
+        // Ocultar pista y devolver al NPC
         if (trainingZone != null)
             trainingZone.SetActive(false);
 
@@ -130,6 +136,7 @@ public class Collares : MonoBehaviour
         {
             questGiver.OnQuestCompleted();
         }
+
     }
 
     private void UpdateMissionText()

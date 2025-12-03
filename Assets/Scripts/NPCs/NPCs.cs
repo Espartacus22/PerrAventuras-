@@ -103,7 +103,7 @@ public class NPCs : MonoBehaviour
             // Distancia plano entre NPC y Player
             float dist = Vector3.Distance(player.transform.position, transform.position);
 
-            // Interacción: si está dentro del rango de "Presiona E...", ya puede hablar
+            // Interacción: si esta dentro del rango de "Presiona E...", ya puede hablar
             if (!acceptMiss && dist <= innerRange && Input.GetKeyDown(interactKey))
             {
                 // Hacer que mire al NPC (solo en XZ)
@@ -116,16 +116,16 @@ public class NPCs : MonoBehaviour
                 OpenDialogue();
             }
 
-            // Hints según distancia
-            if (panelHintFar != null || panelHintNear != null)
+            // Hints segun distancia, SOLO si aun NO acepto la mision
+            if (!acceptMiss && (panelHintFar != null || panelHintNear != null))
             {
-                // Muy cerca -> "Presioná E para interactuar"
+                // Muy cerca -> "Presiona E para interactuar"
                 if (dist <= innerRange)
                 {
                     if (panelHintNear != null) panelHintNear.SetActive(true);
                     if (panelHintFar != null) panelHintFar.SetActive(false);
                 }
-                // Cerca -> "Hey, hey… ¡Óyeme!"
+                // Cerca -> "Hey, hey… ¡Oyeme!"
                 else if (dist <= outerRange)
                 {
                     if (panelHintFar != null) panelHintFar.SetActive(true);
@@ -161,7 +161,7 @@ public class NPCs : MonoBehaviour
 
         playerInRange = true;
 
-        // Solo mostramos hint si todavía no aceptó la misión
+        // Solo mostramos hint si todavia no acepto la mision
         if (!acceptMiss && panelHintFar != null)
             panelHintFar.SetActive(true);
     }
@@ -186,7 +186,7 @@ public class NPCs : MonoBehaviour
         if (player != null) player.enabled = true;
 
         if (panelNPC != null) panelNPC.SetActive(false);
-        if (panelNPC2 != null) panelNPC2.SetActive(true); // “Vuelve si cambias de opinión”
+        if (panelNPC2 != null) panelNPC2.SetActive(true); // “Vuelve si cambias de opinion”
     }
 
     // Botón YES en el diálogo
@@ -239,7 +239,7 @@ public class NPCs : MonoBehaviour
 
     public void ShowMissionCompleted()
     {
-        // Mostrar panelNPC con texto de “¡Felicitaciones!”
+        // Mostrar panelNPC con texto de “Felicitaciones"
         if (panelNPC != null)
             panelNPC.SetActive(true);
 
@@ -284,5 +284,18 @@ public class NPCs : MonoBehaviour
 
         if (buttonMiss != null)
             buttonMiss.SetActive(true);
+    }
+
+    public void HideDialogue()
+    {
+        // Ocultar TODOS los paneles relacionados al NPC
+        if (panelHintFar != null) panelHintFar.SetActive(false);
+        if (panelHintNear != null) panelHintNear.SetActive(false);
+        if (panelNPC != null) panelNPC.SetActive(false);
+        if (panelNPC2 != null) panelNPC2.SetActive(false);
+        if (panelMiss != null) panelMiss.SetActive(false);
+
+        // Asegurarnos de devolver el control al jugador
+        if (player != null) player.enabled = true;
     }
 }

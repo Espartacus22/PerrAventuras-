@@ -2,8 +2,7 @@ using UnityEngine;
 
 public class TrainingEnd : MonoBehaviour
 {
-    public NPCs npc;
-    public PlayerMovement playerMovement;
+    public Collares mission;   // referencia a Collares
 
     void OnTriggerEnter(Collider other)
     {
@@ -11,14 +10,7 @@ public class TrainingEnd : MonoBehaviour
 
         Debug.Log("Pista completada!");
 
-        // Recompensa
-        if (playerMovement != null)
-            playerMovement.UnlockDoubleJump();
-
-        // Felicitación
-        npc.ShowMissionCompleted();
-
-        // Opcional: volver al lado del NPC
-        // playerMovement.transform.position = npc.transform.position + Vector3.right * 2;
+        if (mission != null)
+            mission.CompleteQuest();   // Avisa a Collares
     }
 }
