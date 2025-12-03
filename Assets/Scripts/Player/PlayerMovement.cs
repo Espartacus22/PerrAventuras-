@@ -11,6 +11,9 @@ public class PlayerMovement : MonoBehaviour
     public int selectedMeleeIndex = 0;
     public int selectedRangedIndex = 0;
 
+    [Header("Saltos")]
+    [SerializeField] private bool hasDoubleJump = false;
+
     private int currentComboIndex = -1;
     private float comboResetTimer = 0f;
     private float comboResetDelay = 1f;
@@ -27,6 +30,7 @@ public class PlayerMovement : MonoBehaviour
     private float originalHeight;
     private Vector3 originalCenter;
 
+    
     private int jumpCount;
     private float lastShiftTime;
     private float doubleTapThreshold = 0.3f;
@@ -47,7 +51,14 @@ public class PlayerMovement : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
 
         if (characterData == null)
+        {
             Debug.LogError("Falta asignar CharacterType en PlayerMovement");
+        }
+        else
+        {
+            // Si en el asset está marcado doble salto, arrancamos con él activo
+            hasDoubleJump = characterData.dobleSalto;
+        }
     }
 
     void Update()
@@ -137,7 +148,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (Input.GetButtonDown("Jump") && !isDashing)
         {
-            int maxJumps = characterData.dobleSalto ? 2 : 1;
+            int maxJumps = hasDoubleJump ? 2 : 1;
             if (jumpCount < maxJumps)
             {
                 rb.linearVelocity = new Vector3(rb.linearVelocity.x, characterData.jumpForce, rb.linearVelocity.z);
@@ -310,7 +321,15 @@ public class PlayerMovement : MonoBehaviour
             Debug.LogWarning("No hay prefab asignado para el ataque a distancia.");
         }
     }
+    public void EnableDoubleJump(bool enabled)
+    {
+        hasDoubleJump = enabled;
+    }
 
+    public void UnlockDoubleJump()
+    {
+        hasDoubleJump = true;
+    }
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Ground"))

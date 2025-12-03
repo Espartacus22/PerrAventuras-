@@ -4,13 +4,10 @@ using UnityEngine;
 public class Collares : MonoBehaviour
 {
     [Header("Config Quest")]
-    [Tooltip("Tag de los objetivos de ESTA mision (ej: Objetivo_PruebaMov)")]
     public string objectiveTag = "Objetivo";
 
     [TextArea]
     public string missionDescription = "Obten los COLLARES.";
-
-    [Tooltip("Si esta activo, la mision se inicia sola en Start")]
     public bool autoStart = false;
 
     [Header("UI")]
@@ -20,6 +17,23 @@ public class Collares : MonoBehaviour
     [Header("Opcional")]
     public NPCs questGiver;   // NPC que da la mision (para notificarle al completar)
 
+    // >>> NUEVO BLOQUE <<<
+    [Header("Training / Pista (opcional)")]
+    [Tooltip("Padre de todas las plataformas, start, end, etc.")]
+    public GameObject trainingZone;
+
+    [Tooltip("Punto donde empieza la pista (StartPoint)")]
+    public Transform trainingStartPoint;
+
+    [Tooltip("Punto al que vuelve el jugador al terminar (ReturnP_NPC)")]
+    public Transform returnPointNPC;
+
+    [Tooltip("Transform del Player")]
+    public Transform player;
+
+    private Rigidbody playerRb;
+    // >>> FIN NUEVO BLOQUE <<<
+
     private int numCurrency;
     private bool questActive;
     private bool questCompleted;
@@ -28,6 +42,10 @@ public class Collares : MonoBehaviour
     {
         if (buttonMiss != null)
             buttonMiss.SetActive(false);
+
+        // cache del rigidbody del player (si existe)
+        if (player != null)
+            playerRb = player.GetComponent<Rigidbody>();
 
         if (autoStart)
         {
@@ -55,7 +73,17 @@ public class Collares : MonoBehaviour
 
         if (numCurrency == 0)
         {
-            Debug.LogWarning($"La misi�n '{missionDescription}' no tiene objetivos con el tag {objectiveTag}.");
+            Debug.LogWarning($"La misión '{missionDescription}' no tiene objetivos con el tag {objectiveTag}.");
+        }
+
+        // >>> NUEVO: activar pista y mandar al inicio <<<
+        if (trainingZone != null)
+            trainingZone.SetActive(true);
+
+        if (player != null && trainingStartPoint != null)
+        {
+            player.position = trainingStartPoint.position;
+            ResetPlayerVelocity();
         }
     }
 
@@ -82,10 +110,20 @@ public class Collares : MonoBehaviour
         questCompleted = true;
 
         if (textMiss != null)
-            textMiss.text = $"{missionDescription} - Misi�n completada";
+            textMiss.text = $"{missionDescription} - Misión completada";
 
         if (buttonMiss != null)
             buttonMiss.SetActive(true);
+
+        // >>> NUEVO: ocultar pista y devolver al NPC <<<
+        if (trainingZone != null)
+            trainingZone.SetActive(false);
+
+        if (player != null && returnPointNPC != null)
+        {
+            player.position = returnPointNPC.position;
+            ResetPlayerVelocity();
+        }
 
         // Avisar al NPC que la mision termino (opcional)
         if (questGiver != null)
@@ -99,6 +137,16 @@ public class Collares : MonoBehaviour
         if (textMiss != null)
         {
             textMiss.text = $"{missionDescription} Restantes: {numCurrency}";
+        }
+    }
+
+    // >>> NUEVO helper para no arrastrar velocidad rara <<<
+    private void ResetPlayerVelocity()
+    {
+        if (playerRb != null)
+        {
+            playerRb.linearVelocity = Vector3.zero;
+            playerRb.angularVelocity = Vector3.zero;
         }
     }
 }

@@ -29,6 +29,11 @@ public class NPCs : MonoBehaviour
     [Header("Tutorial (opcional)")]
     public string[] instructions;
 
+    [Header("Training Mission")]
+    public GameObject trainingZone;        // La pista entera
+    public Transform trainingStartPoint;   // Donde aparece el player al aceptar mision
+    public Transform trainingEndPoint;     // Opcional: punto donde vuelve después
+
     [SerializeField] private KeyCode interactKey = KeyCode.E;
 
     // ESTADO INTERNO
@@ -93,48 +98,52 @@ public class NPCs : MonoBehaviour
 
     private void Update()
     {
-        // 1) Si el jugador está cerca, no aceptó la misión y toca E -> abrir diálogo
-        if (playerInRange && !acceptMiss && Input.GetKeyDown(interactKey) && player != null)
+        if (player != null)
         {
-            // Hacer que mire al NPC (solo en XZ)
-            Vector3 lookPos = new Vector3(transform.position.x, player.transform.position.y, transform.position.z);
-            player.transform.LookAt(lookPos);
+            // Distancia plano entre NPC y Player
+            float dist = Vector3.Distance(player.transform.position, transform.position);
 
-            // Opcional: bloquear movimiento mientras habla
-            player.enabled = false;
+            // Interacción: si está dentro del rango de "Presiona E...", ya puede hablar
+            if (!acceptMiss && dist <= innerRange && Input.GetKeyDown(interactKey))
+            {
+                // Hacer que mire al NPC (solo en XZ)
+                Vector3 lookPos = new Vector3(transform.position.x, player.transform.position.y, transform.position.z);
+                player.transform.LookAt(lookPos);
 
-            OpenDialogue();
+                // Opcional: bloquear movimiento mientras habla
+                player.enabled = false;
+
+                OpenDialogue();
+            }
+
+            // Hints según distancia
+            if (panelHintFar != null || panelHintNear != null)
+            {
+                // Muy cerca -> "Presioná E para interactuar"
+                if (dist <= innerRange)
+                {
+                    if (panelHintNear != null) panelHintNear.SetActive(true);
+                    if (panelHintFar != null) panelHintFar.SetActive(false);
+                }
+                // Cerca -> "Hey, hey… ¡Óyeme!"
+                else if (dist <= outerRange)
+                {
+                    if (panelHintFar != null) panelHintFar.SetActive(true);
+                    if (panelHintNear != null) panelHintNear.SetActive(false);
+                }
+                // Lejos -> nada
+                else
+                {
+                    if (panelHintFar != null) panelHintFar.SetActive(false);
+                    if (panelHintNear != null) panelHintNear.SetActive(false);
+                }
+            }
         }
 
-        // 2) Si la misión está activa, el NPC se mueve hacia adelante
+        // Si la misión está activa, el NPC se mueve hacia adelante
         if (acceptMiss && moveSpeed > 0f)
         {
             transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime, Space.Self);
-        }
-
-        // Mostrar hints según distancia
-        if (player != null)
-        {
-            float dist = Vector3.Distance(player.transform.position, transform.position);
-
-            // Muy cerca → mostrar “Presioná E…”
-            if (dist <= innerRange)
-            {
-                if (panelHintNear != null) panelHintNear.SetActive(true);
-                if (panelHintFar != null) panelHintFar.SetActive(false);
-            }
-            // Cerca → mostrar “Hey, hey… Óyeme!”
-            else if (dist <= outerRange)
-            {
-                if (panelHintFar != null) panelHintFar.SetActive(true);
-                if (panelHintNear != null) panelHintNear.SetActive(false);
-            }
-            // Lejos → nada
-            else
-            {
-                if (panelHintFar != null) panelHintFar.SetActive(false);
-                if (panelHintNear != null) panelHintNear.SetActive(false);
-            }
         }
     }
 
@@ -210,6 +219,31 @@ public class NPCs : MonoBehaviour
         if (panelNPC2 != null) panelNPC2.SetActive(false);
         if (panelMiss != null) panelMiss.SetActive(true);
         if (panelHintFar != null) panelHintFar.SetActive(false);
+    }
+    public void AcceptMission()
+    {
+        // Mostrar panelNPC y ocultar hint
+        if (panelNPC != null) panelNPC.SetActive(true);
+        if (panelHintFar != null) panelHintFar.SetActive(false);
+
+        // Activar pista
+        if (trainingZone != null)
+            trainingZone.SetActive(true);
+
+        // Mover al player a la pista
+        if (trainingStartPoint != null)
+        {
+            player.transform.position = trainingStartPoint.position;
+        }
+    }
+
+    public void ShowMissionCompleted()
+    {
+        // Mostrar panelNPC con texto de “¡Felicitaciones!”
+        if (panelNPC != null)
+            panelNPC.SetActive(true);
+
+        // Cambiar texto...
     }
 
     // Actualiza el texto de la misión en el panel
