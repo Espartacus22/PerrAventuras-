@@ -15,11 +15,8 @@ public class GraffityCatEnemy : MonoBehaviour
 
     // ---------------- PATRULLA ----------------
     [Header("Patrulla")]
-    [Tooltip("Puntos de patrulla que el gato sigue en bucle")]
     public Transform[] patrolPoints;
-    [Tooltip("Velocidad relativa mientras patrulla (1 = igual que persecución)")]
     public float patrolSpeedMultiplier = 0.6f;
-    [Tooltip("Distancia mínima para considerar que llegó a un punto de patrulla")]
     public float patrolPointTolerance = 0.3f;
 
     private int _currentPatrolIndex = 0;
@@ -29,7 +26,6 @@ public class GraffityCatEnemy : MonoBehaviour
     private bool _inCombat = false;
 
     [Header("Distancia con el jugador")]
-    [Tooltip("Distancia que intenta mantener cuando persigue al jugador")]
     public float desiredCombatDistance = 2f;
 
     // ---------------- RANGED ----------------
@@ -51,11 +47,8 @@ public class GraffityCatEnemy : MonoBehaviour
     // ---------------- MUROS ----------------
     [Header("Muros de pintura")]
     public GameObject paintWallPrefab;
-    [Tooltip("Puntos (hijos del boss o de la escena) donde van a aparecer los muros")]
     public Transform[] wallSpawnPoints;
-    [Tooltip("Cooldown entre oleadas de muros")]
     public float wallCooldown = 6f;
-    [Tooltip("Solo lanza muros si el jugador está dentro de este rango")]
     public float wallUseRange = 12f;
 
     private float _nextWallTime;
@@ -64,11 +57,8 @@ public class GraffityCatEnemy : MonoBehaviour
     // ---------------- CLONES ----------------
     [Header("Clones")]
     public GameObject clonePrefab;
-    [Tooltip("Puntos donde pueden aparecer clones")]
     public Transform[] cloneSpawnPoints;
-    [Tooltip("Máximo de clones activos a la vez")]
     public int maxClones = 2;
-    [Tooltip("Cooldown entre spawns de clones")]
     public float cloneCooldown = 10f;
 
     private float _nextCloneTime;

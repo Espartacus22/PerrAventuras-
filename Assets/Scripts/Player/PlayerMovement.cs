@@ -14,6 +14,9 @@ public class PlayerMovement : MonoBehaviour
     [Header("Saltos")]
     [SerializeField] private bool hasDoubleJump = false;
 
+    [Header("Ground")]
+    public LayerMask groundMask;
+
     private int currentComboIndex = -1;
     private float comboResetTimer = 0f;
     private float comboResetDelay = 1f;
@@ -56,8 +59,9 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            // Si en el asset está marcado doble salto, arrancamos con él activo
-            hasDoubleJump = characterData.dobleSalto;
+            // SIEMPRE empezamos sin doble salto.
+            // El nivel 1 lo desbloquea vía PlayerLevel.
+            hasDoubleJump = false;
         }
     }
 
@@ -149,6 +153,8 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetButtonDown("Jump") && !isDashing)
         {
             int maxJumps = hasDoubleJump ? 2 : 1;
+            Debug.Log($"JUMP → hasDoubleJump={hasDoubleJump}, jumpCount={jumpCount}, maxJumps={maxJumps}");
+
             if (jumpCount < maxJumps)
             {
                 rb.linearVelocity = new Vector3(rb.linearVelocity.x, characterData.jumpForce, rb.linearVelocity.z);
@@ -321,6 +327,7 @@ public class PlayerMovement : MonoBehaviour
             Debug.LogWarning("No hay prefab asignado para el ataque a distancia.");
         }
     }
+
     public void EnableDoubleJump(bool enabled)
     {
         hasDoubleJump = enabled;
@@ -330,20 +337,58 @@ public class PlayerMovement : MonoBehaviour
     {
         hasDoubleJump = true;
     }
+
+    // ---------- GROUND / COLISIONES ----------
+
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = true;
-            jumpCount = 0;
-        }
+        CheckGroundCollision(collision);
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        CheckGroundCollision(collision);
     }
 
     void OnCollisionExit(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Ground"))
+        if (IsGroundLayer(collision.gameObject.layer))
         {
             isGrounded = false;
+        }
+    }
+
+    bool IsGroundLayer(int layer)
+    {
+        return (groundMask & (1 << layer)) != 0;
+    }
+
+    void CheckGroundCollision(Collision collision)
+    {
+        // Solo si esta en la layer de suelo
+        if (!IsGroundLayer(collision.gameObject.layer))
+            return;
+
+        // Si estoy subiendo (velocidad Y > 0), NO resetea saltos
+        if (rb.linearVelocity.y > 0.01f)
+            return;
+
+        bool foundGroundContact = false;
+
+        foreach (var contact in collision.contacts)
+        {
+            // Solo piso realmente horizontal
+            if (contact.normal.y >= 0.85f)
+            {
+                foundGroundContact = true;
+                break;
+            }
+        }
+
+        if (foundGroundContact)
+        {
+            isGrounded = true;
+            jumpCount = 0;    // reseteamos conteo de saltos SOLO en suelo real y bajando
         }
     }
 

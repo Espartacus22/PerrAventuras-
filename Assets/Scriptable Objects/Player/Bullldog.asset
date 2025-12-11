@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: Bullldog
   m_EditorClassIdentifier: 
   characterName: Piki
-  hp: 300
+  hp: 100
   walkSpeed: 15
   runMultiplier: 3
   crouchMultiplier: 0.5
   rotationSpeed: 50
   jumpForce: 8.5
-  dobleSalto: 1
+  dobleSalto: 0
   dashSpeed: 30
   dashDuration: 0.5
   crouchHeight: 0.5

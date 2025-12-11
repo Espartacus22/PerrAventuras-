@@ -1,34 +1,41 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections;
 
 public class PlayerLevel : MonoBehaviour
 {
     public CharacterType characterData;
-    public int currentLevel = 1;
+    public int currentLevel = 0;
     public int currentXP = 0;
     public int[] xpRequiredPerLevel = { 0, 100, 250, 500, 800, 1200 };
 
-    //Player Life
+    // Player Life
     [Header("Life")]
     public int currentHP;
     public bool hasShield = false;
 
+    // Vida extra por niveles (ej: +100 en nivel 2)
+    [SerializeField] private int extraMaxHP = 0;
+
     [Header("Respawn")]
     public PlayerRespawn respawn;
 
-    // PARPADEO ROJO AL RECIBIR DAÑO
-    [Header("Efecto Daño")]
+    // PARPADEO ROJO AL RECIBIR DANO
+    [Header("Efecto DaÃ±o")]
     private Renderer playerRenderer;
     private Color originalColor;
     private Coroutine blinkCoroutine;
 
-    public int GetMaxHP() => characterData.hp + currentLevel * 10;
+    // ---------- STATS BASE ----------
+
+    // HP maximo = HP base del CharacterType + bonus por nivel
+    public int GetMaxHP() => characterData.hp + extraMaxHP;
+
     public int GetDefense() => (hasShield ? 15 : 0) + currentLevel * 2;
     public float GetFinalDamage(float baseDamage) => baseDamage + currentLevel * 0.1f;
 
     private void Start()
     {
-        //Start with maximum life
+        // Comenzar siempre con la vida al maximo actual
         currentHP = GetMaxHP();
 
         // Guardar color original para parpadeo
@@ -39,33 +46,64 @@ public class PlayerLevel : MonoBehaviour
 
     void Update()
     {
+        // Debug XP (tecla X)
         if (Input.GetKeyDown(KeyCode.X))
         {
-            GainXP(100); // Ganás 100 XP al presionar X - You gain 100 XP by pressing X
+            GainXP(100); // Ganas 100 XP al presionar X
         }
     }
+
+    // ---------- XP / NIVELES ----------
 
     public void GainXP(int amount)
     {
         currentXP += amount;
         Debug.Log($"XP actual: {currentXP}, Nivel actual: {currentLevel}");
+
         while (currentLevel < xpRequiredPerLevel.Length - 1 &&
                currentXP >= xpRequiredPerLevel[currentLevel + 1])
         {
             currentLevel++;
             Debug.Log($"Subiste a nivel {currentLevel}");
-            // Optional: When leveling up, heal a little
+
+            OnLevelUp(currentLevel);
+
+            // Curacion leve al subir nivel (ademas de posibles efectos en OnLevelUp)
             currentHP = Mathf.Min(GetMaxHP(), currentHP + 10);
         }
+    }
+
+    private void OnLevelUp(int newLevel)
+    {
+        // Nivel 1 â†’ desbloquea doble salto
+        if (newLevel == 1)
+        {
+            var pm = GetComponent<PlayerMovement>();
+            if (pm != null)
+            {
+                pm.UnlockDoubleJump();
+                Debug.Log("DOBLE SALTO desbloqueado por NIVEL 1");
+            }
+        }
+
+        // Nivel 2 â†’ +100 HP mÃ¡ximo
+        if (newLevel == 2)
+        {
+            extraMaxHP += 100;              // ahora el mÃ¡ximo sube (ej: de 100 a 200)
+            currentHP = GetMaxHP();         // rellenamos vida al nuevo mÃ¡ximo
+            Debug.Log($"Nivel 2 alcanzado â†’ HP mÃ¡ximo ahora: {currentHP}");
+        }
+
+        // Futuro: if (newLevel == 3) { ... }
     }
 
     [ContextMenu("Test XP Gain")]
     public void TestGainXP()
     {
-        GainXP(0); // Esto fuerza la evaluación sin sumar XP
+        GainXP(0); // fuerza evaluaciÃ³n sin sumar XP
     }
 
-    [ContextMenu("Forzar evaluación de leveo")]
+    [ContextMenu("Forzar evaluaciÃ³n de leveo")]
     public void ForceLevelCheck()
     {
         while (currentLevel < xpRequiredPerLevel.Length - 1 &&
@@ -73,26 +111,31 @@ public class PlayerLevel : MonoBehaviour
         {
             currentLevel++;
             Debug.Log($"Subiste a nivel {currentLevel}");
+            OnLevelUp(currentLevel);
         }
     }
 
     [ContextMenu("Resetear XP y nivel")]
     public void ResetLevel()
     {
-        currentLevel = 1;
+        currentLevel = 0;
         currentXP = 0;
-        Debug.Log("Nivel y XP reseteados");
+        extraMaxHP = 0;
+        currentHP = GetMaxHP();
+        Debug.Log("Nivel, XP y HP reseteados");
     }
 
     public bool IsAttackUnlocked(int requiredLevel) => currentLevel >= requiredLevel;
+
+    // ---------- DAÃ‘O / CURA ----------
 
     public void TakeDamage(int amount)
     {
         int finalDamage = Mathf.Max(0, amount - GetDefense());
         currentHP -= finalDamage;
-        Debug.Log($"Player recibió {finalDamage} de daño. HP actual: {currentHP}");
+        Debug.Log($"Player recibio {finalDamage} de dano. HP actual: {currentHP}");
 
-        // PARPADEO ROJO AL RECIBIR DAÑO
+        // PARPADEO ROJO AL RECIBIR DANO
         if (playerRenderer != null)
         {
             if (blinkCoroutine != null)
@@ -102,13 +145,13 @@ public class PlayerLevel : MonoBehaviour
 
         if (currentHP <= 0)
         {
-            currentHP = 0;  // ASEGURAR HP = 0 (no negativo)
+            currentHP = 0;  // asegurar HP = 0 (no negativo)
             Debug.Log("Player dead!!!");
 
             if (respawn != null)
             {
                 respawn.OnPlayerDeath();
-                currentHP = GetMaxHP();  // VIDA RESTAURADA AL 100%
+                currentHP = GetMaxHP();  // vida restaurada al 100%
                 Debug.Log($"Player respawneado! HP restaurado: {currentHP}");
             }
             else
