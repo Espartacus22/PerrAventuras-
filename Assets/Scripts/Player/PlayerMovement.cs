@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(CapsuleCollider))]
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Datos del personaje")]
@@ -33,40 +35,44 @@ public class PlayerMovement : MonoBehaviour
     private float originalHeight;
     private Vector3 originalCenter;
 
-    
     private int jumpCount;
     private float lastShiftTime;
     private float doubleTapThreshold = 0.3f;
 
-    void Start()
+    void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        rb.freezeRotation = true;
-
         capsule = GetComponent<CapsuleCollider>();
-        if (capsule != null)
-        {
-            originalHeight = capsule.height;
-            originalCenter = capsule.center;
-        }
-
-        animator = GetComponent<Animator>();
+        animator = GetComponentInChildren<Animator>();
         audioSource = GetComponent<AudioSource>();
 
-        if (characterData == null)
+        if (rb == null)
         {
-            Debug.LogError("Falta asignar CharacterType en PlayerMovement");
+            Debug.LogError($"[{name}] PlayerMovement: Falta Rigidbody.");
+            enabled = false;
+            return;
         }
-        else
+
+        if (capsule == null)
         {
-            // SIEMPRE empezamos sin doble salto.
-            // El nivel 1 lo desbloquea vía PlayerLevel.
-            hasDoubleJump = false;
+            Debug.LogError($"[{name}] PlayerMovement: Falta CapsuleCollider.");
+            enabled = false;
+            return;
         }
+
+        originalHeight = capsule.height;
+        originalCenter = capsule.center;
+
+        rb.freezeRotation = true;
+
+        // Arranca sin doble salto (lo habilita PlayerLevel al subir a nivel 1)
+        hasDoubleJump = false;
     }
 
     void Update()
     {
+        if (characterData == null) return;
+
         HandleMovement();
         HandleJump();
         HandleDash();
@@ -89,36 +95,30 @@ public class PlayerMovement : MonoBehaviour
 
         if (Time.time > comboResetTimer)
             currentComboIndex = -1;
-
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            Debug.Log($"Melee activo: {GetAttackName(characterData.meleeAttacks, selectedMeleeIndex)}");
-            Debug.Log($"Ranged activo: {GetAttackName(characterData.rangedAttacks, selectedRangedIndex)}");
-        }
     }
 
     void HandleMovement()
     {
         if (isDashing) return;
 
-        // Entrada del jugador
         float moveX = Input.GetAxis("Horizontal");
         float moveZ = Input.GetAxis("Vertical");
         Vector3 input = new Vector3(moveX, 0, moveZ);
 
         if (input.sqrMagnitude > 0.01f)
         {
-            // Obtener referencia a la cámara
-            Transform cam = Camera.main.transform;
+            Transform cam = Camera.main != null ? Camera.main.transform : null;
+            Vector3 moveDir = input.normalized;
 
-            // Proyectar forward y right de la cámara en el plano horizontal
-            Vector3 camForward = Vector3.Scale(cam.forward, new Vector3(1, 0, 1)).normalized;
-            Vector3 camRight = Vector3.Scale(cam.right, new Vector3(1, 0, 1)).normalized;
-
-            // Movimiento relativo a la cámara
-            Vector3 moveDir = (camForward * input.z + camRight * input.x).normalized;
+            if (cam != null)
+            {
+                Vector3 camForward = Vector3.Scale(cam.forward, new Vector3(1, 0, 1)).normalized;
+                Vector3 camRight = Vector3.Scale(cam.right, new Vector3(1, 0, 1)).normalized;
+                moveDir = (camForward * input.z + camRight * input.x).normalized;
+            }
 
             float currentSpeed = characterData.walkSpeed;
+
             if (isCrouching)
                 currentSpeed *= characterData.crouchMultiplier;
             else if (Input.GetKey(KeyCode.LeftShift))
@@ -134,8 +134,10 @@ public class PlayerMovement : MonoBehaviour
 
     void RotateTowardsMouse()
     {
+        if (Camera.main == null) return;
+
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit, 100f))
+        if (Physics.Raycast(ray, out RaycastHit hit, 200f))
         {
             Vector3 lookDir = hit.point - transform.position;
             lookDir.y = 0;
@@ -153,7 +155,6 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetButtonDown("Jump") && !isDashing)
         {
             int maxJumps = hasDoubleJump ? 2 : 1;
-            Debug.Log($"JUMP → hasDoubleJump={hasDoubleJump}, jumpCount={jumpCount}, maxJumps={maxJumps}");
 
             if (jumpCount < maxJumps)
             {
@@ -170,6 +171,7 @@ public class PlayerMovement : MonoBehaviour
             float timeSinceLastTap = Time.time - lastShiftTime;
             if (timeSinceLastTap <= doubleTapThreshold && !isDashing)
                 StartCoroutine(Dash());
+
             lastShiftTime = Time.time;
         }
     }
@@ -178,18 +180,20 @@ public class PlayerMovement : MonoBehaviour
     {
         isDashing = true;
 
-        // Entrada del jugador
         float moveX = Input.GetAxisRaw("Horizontal");
         float moveZ = Input.GetAxisRaw("Vertical");
         Vector3 input = new Vector3(moveX, 0, moveZ);
 
-        // Dirección relativa a la cámara
-        Transform cam = Camera.main.transform;
-        Vector3 camForward = Vector3.Scale(cam.forward, new Vector3(1, 0, 1)).normalized;
-        Vector3 camRight = Vector3.Scale(cam.right, new Vector3(1, 0, 1)).normalized;
-        Vector3 dashDir = (camForward * input.z + camRight * input.x).normalized;
+        Transform cam = Camera.main != null ? Camera.main.transform : null;
+        Vector3 dashDir = input.normalized;
 
-        // Si no hay entrada, usar dirección actual del personaje
+        if (cam != null)
+        {
+            Vector3 camForward = Vector3.Scale(cam.forward, new Vector3(1, 0, 1)).normalized;
+            Vector3 camRight = Vector3.Scale(cam.right, new Vector3(1, 0, 1)).normalized;
+            dashDir = (camForward * input.z + camRight * input.x).normalized;
+        }
+
         if (dashDir == Vector3.zero)
             dashDir = transform.forward;
 
@@ -209,46 +213,44 @@ public class PlayerMovement : MonoBehaviour
         bool crouchPressed = Input.GetKeyDown(KeyCode.LeftControl);
         bool crouchReleased = Input.GetKeyUp(KeyCode.LeftControl);
 
-        if (capsule != null)
+        if (crouchPressed && !isCrouching)
         {
-            if (crouchPressed && !isCrouching)
-            {
-                isCrouching = true;
-                capsule.height = originalHeight * characterData.crouchHeight;
-                capsule.center = new Vector3(originalCenter.x, originalCenter.y * characterData.crouchHeight, originalCenter.z);
-            }
-            else if (crouchReleased && isCrouching)
-            {
-                isCrouching = false;
-                capsule.height = originalHeight;
-                capsule.center = originalCenter;
-            }
+            isCrouching = true;
+
+            float newHeight = originalHeight * characterData.crouchHeight;
+            capsule.height = newHeight;
+
+            float heightDelta = (originalHeight - newHeight) * 0.5f;
+            capsule.center = originalCenter - new Vector3(0f, heightDelta, 0f);
+        }
+        else if (crouchReleased && isCrouching)
+        {
+            isCrouching = false;
+            capsule.height = originalHeight;
+            capsule.center = originalCenter;
         }
     }
 
     void TryMeleeAttack()
     {
-        if (characterData == null || characterData.meleeAttacks.Count <= currentComboIndex)
-            return;
+        if (characterData == null || characterData.meleeAttacks == null) return;
+        if (currentComboIndex < 0 || currentComboIndex >= characterData.meleeAttacks.Count) return;
 
         var attack = characterData.meleeAttacks[currentComboIndex];
 
-        if (Time.time < lastAttackTime + attack.cooldown)
-            return;
-
+        if (Time.time < lastAttackTime + attack.cooldown) return;
         lastAttackTime = Time.time;
 
-        // Animación y sonido
-        if (attack.animation != null)
+        // Animación y sonido (seguros)
+        if (animator != null && attack.animation != null)
             animator.Play(attack.animation.name);
 
-        if (attack.sound != null)
+        if (audioSource != null && attack.sound != null)
             audioSource.PlayOneShot(attack.sound);
 
         if (attack.impactEffectPrefab != null)
             Instantiate(attack.impactEffectPrefab, transform.position + transform.forward, transform.rotation);
 
-        // Detección y daño real
         Collider[] hitEnemies = Physics.OverlapSphere(
             transform.position + transform.forward * attack.range * 0.5f,
             attack.range * 0.5f
@@ -263,12 +265,10 @@ public class PlayerMovement : MonoBehaviour
                 {
                     int damageDealt = Mathf.RoundToInt(attack.damage);
                     enemy.TakeDamage(damageDealt);
-                    Debug.Log($"Golpe a {col.name} → {damageDealt} de daño (Ataque: {attack.attackName})");
                 }
             }
         }
 
-        // Gestión de combo
         if (attack.canChainCombo && characterData.meleeAttacks.Count > attack.nextComboIndex)
         {
             currentComboIndex = attack.nextComboIndex;
@@ -282,130 +282,101 @@ public class PlayerMovement : MonoBehaviour
 
     void TryRangedAttack()
     {
-        if (characterData == null || characterData.rangedAttacks.Count <= selectedRangedIndex)
-            return;
+        if (characterData == null || characterData.rangedAttacks == null) return;
+        if (selectedRangedIndex < 0 || selectedRangedIndex >= characterData.rangedAttacks.Count) return;
 
         var attack = characterData.rangedAttacks[selectedRangedIndex];
+
         if (Time.time < lastAttackTime + attack.cooldown) return;
         lastAttackTime = Time.time;
 
-        if (attack.animation != null) animator.Play(attack.animation.name);
-        if (attack.sound != null) audioSource.PlayOneShot(attack.sound);
+        if (animator != null && attack.animation != null)
+            animator.Play(attack.animation.name);
 
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
+        if (audioSource != null && attack.sound != null)
+            audioSource.PlayOneShot(attack.sound);
+
         Vector3 shootDirection = transform.forward;
 
-        if (Physics.Raycast(ray, out hit, 100f))
+        if (Camera.main != null)
         {
-            shootDirection = (hit.point - transform.position).normalized;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit, 200f))
+            {
+                shootDirection = (hit.point - transform.position).normalized;
+            }
+        }
+
+        // Rotar hacia dirección de disparo (suave)
+        if (shootDirection.sqrMagnitude > 0.01f)
+        {
             Quaternion lookRotation = Quaternion.LookRotation(shootDirection, Vector3.up);
             transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, characterData.rotationSpeed * Time.deltaTime);
         }
 
-        if (attack.projectilePrefab != null)
-        {
-            GameObject projectile = Instantiate(
-                attack.projectilePrefab,
-                transform.position + shootDirection,
-                Quaternion.LookRotation(shootDirection)
-            );
-
-            ProjectileBehavior pb = projectile.GetComponent<ProjectileBehavior>();
-            if (pb != null)
-            {
-                pb.SetRange(attack.range);
-                pb.SetDamage(attack.damage);
-            }
-            else
-            {
-                Debug.LogWarning("El proyectil no tiene el script ProjectileBehavior.");
-            }
-        }
-        else
+        if (attack.projectilePrefab == null)
         {
             Debug.LogWarning("No hay prefab asignado para el ataque a distancia.");
+            return;
+        }
+
+        GameObject projectile = Instantiate(
+            attack.projectilePrefab,
+            transform.position + shootDirection, // spawn adelante
+            Quaternion.LookRotation(shootDirection)
+        );
+
+        ProjectileBehavior pb = projectile.GetComponent<ProjectileBehavior>();
+        if (pb != null)
+        {
+            pb.SetRange(attack.range);
+            pb.SetDamage(attack.damage);
         }
     }
 
-    public void EnableDoubleJump(bool enabled)
-    {
-        hasDoubleJump = enabled;
-    }
-
-    public void UnlockDoubleJump()
-    {
-        hasDoubleJump = true;
-    }
+    public void EnableDoubleJump(bool enabled) => hasDoubleJump = enabled;
+    public void UnlockDoubleJump() => hasDoubleJump = true;
 
     // ---------- GROUND / COLISIONES ----------
 
-    void OnCollisionEnter(Collision collision)
-    {
-        CheckGroundCollision(collision);
-    }
-
-    void OnCollisionStay(Collision collision)
-    {
-        CheckGroundCollision(collision);
-    }
+    void OnCollisionEnter(Collision collision) => CheckGroundCollision(collision);
+    void OnCollisionStay(Collision collision) => CheckGroundCollision(collision);
 
     void OnCollisionExit(Collision collision)
     {
-        if (IsGroundLayer(collision.gameObject.layer))
-        {
+        if (collision != null && collision.gameObject != null && IsGroundLayer(collision.gameObject.layer))
             isGrounded = false;
-        }
     }
 
-    bool IsGroundLayer(int layer)
-    {
-        return (groundMask & (1 << layer)) != 0;
-    }
+    bool IsGroundLayer(int layer) => (groundMask & (1 << layer)) != 0;
 
     void CheckGroundCollision(Collision collision)
     {
-        // Solo si esta en la layer de suelo
-        if (!IsGroundLayer(collision.gameObject.layer))
-            return;
+        if (collision == null || collision.gameObject == null) return;
+        if (!IsGroundLayer(collision.gameObject.layer)) return;
+        if (rb == null) return;
 
-        // Si estoy subiendo (velocidad Y > 0), NO resetea saltos
-        if (rb.linearVelocity.y > 0.01f)
-            return;
-
-        bool foundGroundContact = false;
+        // Si estoy subiendo, no resetear saltos
+        if (rb.linearVelocity.y > 0.01f) return;
 
         foreach (var contact in collision.contacts)
         {
-            // Solo piso realmente horizontal
             if (contact.normal.y >= 0.85f)
             {
-                foundGroundContact = true;
+                isGrounded = true;
+                jumpCount = 0;
                 break;
             }
-        }
-
-        if (foundGroundContact)
-        {
-            isGrounded = true;
-            jumpCount = 0;    // reseteamos conteo de saltos SOLO en suelo real y bajando
         }
     }
 
     void OnDrawGizmosSelected()
     {
-        if (characterData != null && characterData.meleeAttacks.Count > selectedMeleeIndex)
+        if (characterData != null && characterData.meleeAttacks != null && characterData.meleeAttacks.Count > selectedMeleeIndex)
         {
             var attack = characterData.meleeAttacks[selectedMeleeIndex];
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(transform.position + transform.forward * attack.range * 0.5f, attack.range * 0.5f);
         }
-    }
-
-    string GetAttackName<T>(List<T> list, int index) where T : class
-    {
-        if (list == null || index >= list.Count || index < 0) return "Ninguno";
-        var field = list[index].GetType().GetField("attackName");
-        return field != null ? field.GetValue(list[index])?.ToString() : "Sin nombre";
     }
 }
