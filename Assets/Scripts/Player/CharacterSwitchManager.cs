@@ -41,8 +41,6 @@ public class CharacterSwitchManager : MonoBehaviour
         // Activar solo el primero y desactivar los demás
         for (int i = 0; i < players.Count; i++)
         {
-            var pm = players[i].GetComponent<PlayerMovement>();
-            if (pm != null) pm.enabled = (i == currentIndex);
             players[i].SetActive(true);
         }
 
@@ -62,33 +60,10 @@ public class CharacterSwitchManager : MonoBehaviour
 
     void Swap()
     {
-
-        // Avanzar al siguiente
         currentIndex = (currentIndex + 1) % players.Count;
 
-        // Activar nuevo
-        players[currentIndex].SetActive(true);
-
-        // Habilitar solo el componente PlayerLocal del activo
-        SetPlayerLocalEnabled(players[currentIndex]);
-
         ApplyControlState();
-        // Actualizar cámara
         UpdateCameraTarget(players[currentIndex].transform);
-    }
-
-    void SetPlayerLocalEnabled(GameObject active)
-    {
-        // Desactivar PlayerMovement en todos
-        foreach (var p in players)
-        {
-            var pm = p.GetComponent<PlayerMovement>();
-            if (pm != null) pm.enabled = false;
-        }
-
-        // Activar en el actual
-        var activePm = active.GetComponent<PlayerMovement>();
-        if (activePm != null) activePm.enabled = true;
     }
 
     void ApplyControlState()
@@ -102,23 +77,26 @@ public class CharacterSwitchManager : MonoBehaviour
 
     void SetPlayerState(GameObject go, bool isActive)
     {
-        // Control
-        var pm = go.GetComponent<PlayerMovement>();
-        if (pm != null) pm.enabled = isActive;
+        if (go == null) return;
 
-        // Follow/Companion
+        var pm = go.GetComponent<PlayerMovement>();
         var follow = go.GetComponent<FollowPlayer>();
         var agent = go.GetComponent<UnityEngine.AI.NavMeshAgent>();
         var rb = go.GetComponent<Rigidbody>();
 
+        // Control directo
+        if (pm != null) pm.enabled = isActive;
+
         if (isActive)
         {
+            // el que manejás: NO follow, NO navmesh
             if (follow != null) follow.enabled = false;
             if (agent != null) agent.enabled = false;
             if (rb != null) rb.isKinematic = false;
         }
         else
         {
+            // compañero: follow + navmesh + sin física
             if (rb != null) rb.isKinematic = true;
             if (agent != null) agent.enabled = true;
             if (follow != null) follow.enabled = true;

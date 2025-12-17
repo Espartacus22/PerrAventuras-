@@ -14,17 +14,28 @@ public class FollowPlayer : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
     }
 
+    void OnEnable()
+    {
+        if (agent == null) agent = GetComponent<NavMeshAgent>();
+        if (agent != null) agent.isStopped = false;
+    }
+
     void Update()
     {
-        if (!enabled) return;
         if (agent == null || !agent.enabled) return;
         if (targetToFollow == null) return;
 
         float distance = Vector3.Distance(transform.position, targetToFollow.position);
 
         if (distance > followDistance)
+        {
+            agent.isStopped = false;
             agent.SetDestination(targetToFollow.position);
+        }
         else
+        {
             agent.ResetPath();
+        }
+
     }
 }

@@ -3594,16 +3594,16 @@ NavMeshAgent:
   m_GameObject: {fileID: 710315416}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
-  m_Speed: 6
-  m_Acceleration: 6
+  m_Radius: 0.4
+  m_Speed: 7
+  m_Acceleration: 10
   avoidancePriority: 50
-  m_AngularSpeed: 80
-  m_StoppingDistance: 0
+  m_AngularSpeed: 120
+  m_StoppingDistance: 5
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 2
+  m_Height: 1.8
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
@@ -3620,7 +3620,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetToFollow: {fileID: 967168950}
-  followDistance: 2.5
+  followDistance: 2
+--- !u!114 &710315432
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 710315416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a1d56dcaf9ea104f87aae0a63531a58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 967168950}
+  stayCommand: 0
+  isAggressive: 0
+  isDefensive: 0
 --- !u!1 &737092882
 GameObject:
   m_ObjectHideFlags: 0
@@ -6719,6 +6735,10 @@ PrefabInstance:
       propertyPath: groundMask.m_Bits
       value: 64
       objectReference: {fileID: 0}
+    - target: {fileID: 3930193842878341888, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
+      propertyPath: m_IsKinematic
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7286331782221990802, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.5
@@ -6790,6 +6810,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8874039823671508997, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
       insertIndex: 9
       addedObject: {fileID: 710315420}
+    - targetCorrespondingSourceObject: {fileID: 8874039823671508997, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
+      insertIndex: 10
+      addedObject: {fileID: 710315432}
     - targetCorrespondingSourceObject: {fileID: 8874039823671508997, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
       insertIndex: -1
       addedObject: {fileID: 710315417}

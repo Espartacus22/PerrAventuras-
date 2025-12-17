@@ -301,6 +301,7 @@ MonoBehaviour:
   xpRequiredPerLevel: 0000000064000000fa000000f401000020030000b0040000
   currentHP: 0
   hasShield: 0
+  extraMaxHP: 0
   respawn: {fileID: 0}
 --- !u!114 &1296923392958234583
 MonoBehaviour:

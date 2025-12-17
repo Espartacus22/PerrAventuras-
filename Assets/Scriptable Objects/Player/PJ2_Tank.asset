@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Tank
   hp: 150
-  walkSpeed: 4
-  runMultiplier: 1.25
+  walkSpeed: 10
+  runMultiplier: 2.2
   crouchMultiplier: 0.5
   rotationSpeed: 10
   jumpForce: 6
@@ -27,4 +27,12 @@ MonoBehaviour:
   shieldMax: 100
   shieldRegen: 5
   meleeAttacks: []
-  rangedAttacks: []
+  rangedAttacks:
+  - attackName: Proyectil
+    damage: 10
+    cooldown: 0.2
+    range: 10
+    animation: {fileID: 0}
+    sound: {fileID: 8300000, guid: 14104e2e592b7f342a40a799a6897619, type: 3}
+    projectilePrefab: {fileID: 1829786823211159021, guid: fc86b118525b2a74e985c28dd2a46bb9, type: 3}
+    requiredLevel: 0
