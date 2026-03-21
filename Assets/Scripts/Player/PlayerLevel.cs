@@ -3,179 +3,191 @@ using System.Collections;
 
 public class PlayerLevel : MonoBehaviour
 {
+    [Header("Compatibilidad / referencias")]
     public CharacterType characterData;
-    public int currentLevel = 0;
-    public int currentXP = 0;
-    public int[] xpRequiredPerLevel = { 0, 100, 250, 500, 800, 1200 };
-
-    // Player Life
-    [Header("Life")]
-    public int currentHP;
-    public bool hasShield = false;
-
-    // Vida extra por niveles (ej: +100 en nivel 2)
-    [SerializeField] private int extraMaxHP = 0;
-
-    [Header("Respawn")]
     public PlayerRespawn respawn;
 
-    // PARPADEO ROJO AL RECIBIR DANO
-    [Header("Efecto Daño")]
-    private Renderer playerRenderer;
-    private Color originalColor;
-    private Coroutine blinkCoroutine;
+    [Header("Nivel y experiencia")]
+    public int currentLevel = 0;
+    public int currentXP = 0;
+    public int xpToNextLevel = 100;
 
-    // ---------- STATS BASE ----------
+    [Header("Vida y escudo")]
+    public int maxHealth = 100;
+    public int currentHealth = 100;
 
-    // HP maximo = HP base del CharacterType + bonus por nivel
-    public int GetMaxHP() => characterData.hp + extraMaxHP;
+    public int maxShield = 0;
+    public int currentShield = 0;
 
-    public int GetDefense() => (hasShield ? 15 : 0) + currentLevel * 2;
-    public float GetFinalDamage(float baseDamage) => baseDamage + currentLevel * 0.1f;
+    [Header("Defensa")]
+    public int defense = 0;
+
+    [Header("Escalado por nivel")]
+    public int healthPerLevel = 20;
+    public int shieldPerLevel = 10;
+    public int defensePerLevel = 1;
+
+    [Header("Debug")]
+    public bool restoreFullOnLevelUp = true;
+
+    private void Awake()
+    {
+        // Si no está asignado en inspector, lo intentamos sacar del mismo objeto
+        if (characterData == null)
+        {
+            PlayerMovement movement = GetComponent<PlayerMovement>();
+            if (movement != null)
+                characterData = movement.characterData;
+        }
+    }
 
     private void Start()
     {
-        // Comenzar siempre con la vida al maximo actual
-        currentHP = GetMaxHP();
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        currentShield = Mathf.Clamp(currentShield, 0, maxShield);
 
-        // Guardar color original para parpadeo
-        playerRenderer = GetComponentInChildren<Renderer>();
-        if (playerRenderer != null)
-            originalColor = playerRenderer.material.color;
+        if (currentHealth <= 0)
+            currentHealth = maxHealth;
     }
 
-    void Update()
-    {
-        // Debug XP (tecla X)
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            GainXP(100); // Ganas 100 XP al presionar X
-        }
-    }
-
-    // ---------- XP / NIVELES ----------
+    // -------------------------
+    // XP / NIVEL
+    // -------------------------
 
     public void GainXP(int amount)
     {
+        AddXP(amount);
+    }
+
+    public void AddXP(int amount)
+    {
+        if (amount <= 0) return;
+
         currentXP += amount;
-        Debug.Log($"XP actual: {currentXP}, Nivel actual: {currentLevel}");
+        Debug.Log($"{name} ganó {amount} XP. XP actual: {currentXP}");
 
-        while (currentLevel < xpRequiredPerLevel.Length - 1 &&
-               currentXP >= xpRequiredPerLevel[currentLevel + 1])
+        while (currentXP >= xpToNextLevel)
         {
-            currentLevel++;
-            Debug.Log($"Subiste a nivel {currentLevel}");
-
-            OnLevelUp(currentLevel);
-
-            // Curacion leve al subir nivel (ademas de posibles efectos en OnLevelUp)
-            currentHP = Mathf.Min(GetMaxHP(), currentHP + 10);
+            currentXP -= xpToNextLevel;
+            LevelUp();
         }
     }
 
-    private void OnLevelUp(int newLevel)
+    private void LevelUp()
     {
-        // Nivel 1 → desbloquea doble salto
-        if (newLevel == 1)
-        {
-            var pm = GetComponent<PlayerMovement>();
-            if (pm != null)
-            {
-                pm.UnlockDoubleJump();
-                Debug.Log("DOBLE SALTO desbloqueado por NIVEL 1");
-            }
-        }
+        currentLevel++;
+        Debug.Log($"{name} subió a nivel {currentLevel}");
 
-        // Nivel 2 → +100 HP máximo
-        if (newLevel == 2)
-        {
-            extraMaxHP += 100;              // ahora el máximo sube (ej: de 100 a 200)
-            currentHP = GetMaxHP();         // rellenamos vida al nuevo máximo
-            Debug.Log($"Nivel 2 alcanzado → HP máximo ahora: {currentHP}");
-        }
-
-        // Futuro: if (newLevel == 3) { ... }
+        ApplyLevelRewards();
     }
 
-    [ContextMenu("Test XP Gain")]
-    public void TestGainXP()
+    private void ApplyLevelRewards()
     {
-        GainXP(0); // fuerza evaluación sin sumar XP
-    }
+        maxHealth += healthPerLevel;
+        maxShield += shieldPerLevel;
+        defense += defensePerLevel;
 
-    [ContextMenu("Forzar evaluación de leveo")]
-    public void ForceLevelCheck()
-    {
-        while (currentLevel < xpRequiredPerLevel.Length - 1 &&
-               currentXP >= xpRequiredPerLevel[currentLevel + 1])
+        if (restoreFullOnLevelUp)
         {
-            currentLevel++;
-            Debug.Log($"Subiste a nivel {currentLevel}");
-            OnLevelUp(currentLevel);
+            currentHealth = maxHealth;
+            currentShield = maxShield;
         }
-    }
-
-    [ContextMenu("Resetear XP y nivel")]
-    public void ResetLevel()
-    {
-        currentLevel = 0;
-        currentXP = 0;
-        extraMaxHP = 0;
-        currentHP = GetMaxHP();
-        Debug.Log("Nivel, XP y HP reseteados");
-    }
-
-    public bool IsAttackUnlocked(int requiredLevel) => currentLevel >= requiredLevel;
-
-    // ---------- DAÑO / CURA ----------
-
-    public void TakeDamage(int amount)
-    {
-        int finalDamage = Mathf.Max(0, amount - GetDefense());
-        currentHP -= finalDamage;
-        Debug.Log($"Player recibio {finalDamage} de dano. HP actual: {currentHP}");
-
-        // PARPADEO ROJO AL RECIBIR DANO
-        if (playerRenderer != null)
+        else
         {
-            if (blinkCoroutine != null)
-                StopCoroutine(blinkCoroutine);
-            blinkCoroutine = StartCoroutine(BlinkRed());
+            currentHealth = Mathf.Min(currentHealth, maxHealth);
+            currentShield = Mathf.Min(currentShield, maxShield);
         }
 
-        if (currentHP <= 0)
-        {
-            currentHP = 0;  // asegurar HP = 0 (no negativo)
-            Debug.Log("Player dead!!!");
-
-            if (respawn != null)
-            {
-                respawn.OnPlayerDeath();
-                currentHP = GetMaxHP();  // vida restaurada al 100%
-                Debug.Log($"Player respawneado! HP restaurado: {currentHP}");
-            }
-            else
-            {
-                Debug.LogWarning("PlayerRespawn no asignado en PlayerLevel");
-            }
-        }
+        Debug.Log($"{name} mejoró stats -> HP: {maxHealth}, Escudo: {maxShield}, Defensa: {defense}");
     }
 
-    private IEnumerator BlinkRed()
+    // -------------------------
+    // VIDA / DAÑO
+    // -------------------------
+
+    public void TakeDamage(int damage)
     {
-        for (int i = 0; i < 4; i++)
+        if (damage <= 0) return;
+
+        int finalDamage = Mathf.Max(damage - defense, 1);
+
+        // Primero escudo
+        if (currentShield > 0)
         {
-            playerRenderer.material.color = Color.red;
-            yield return new WaitForSeconds(0.08f);
-            playerRenderer.material.color = originalColor;
-            yield return new WaitForSeconds(0.08f);
+            int shieldDamage = Mathf.Min(currentShield, finalDamage);
+            currentShield -= shieldDamage;
+            finalDamage -= shieldDamage;
         }
-        blinkCoroutine = null;
+
+        // Después vida
+        if (finalDamage > 0)
+        {
+            currentHealth -= finalDamage;
+        }
+
+        Debug.Log($"{name} recibió daño. HP: {currentHealth}, Escudo: {currentShield}");
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
     }
 
     public void Heal(int amount)
     {
-        currentHP = Mathf.Min(GetMaxHP(), currentHP + amount);
-        Debug.Log($"Player curado por {amount}. HP actual: {currentHP}");
+        if (amount <= 0) return;
+
+        currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
+        Debug.Log($"{name} se curó. HP actual: {currentHealth}");
+    }
+
+    public void RestoreShield(int amount)
+    {
+        if (amount <= 0) return;
+
+        currentShield = Mathf.Min(currentShield + amount, maxShield);
+        Debug.Log($"{name} recuperó escudo. Escudo actual: {currentShield}");
+    }
+
+    public void RestoreFullState()
+    {
+        currentHealth = maxHealth;
+        currentShield = maxShield;
+        Debug.Log($"{name} restauró vida y escudo al máximo.");
+    }
+
+    // Compatibilidad con scripts viejos
+    public int GetMaxHP()
+    {
+        RestoreFullState();
+        return maxHealth;
+    }
+
+    public int GetCurrentHP()
+    {
+        return currentHealth;
+    }
+
+    public int GetCurrentShield()
+    {
+        return currentShield;
+    }
+
+    // -------------------------
+    // MUERTE / RESPAWN
+    // -------------------------
+
+    private void Die()
+    {
+        Debug.Log($"{name} murió.");
+
+        if (respawn != null)
+        {
+            respawn.OnPlayerDeath();
+        }
+        else
+        {
+            Debug.LogWarning($"{name}: no tiene PlayerRespawn asignado.");
+        }
     }
 }

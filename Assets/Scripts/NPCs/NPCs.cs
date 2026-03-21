@@ -4,50 +4,51 @@ using UnityEngine;
 public class NPCs : MonoBehaviour
 {
     [Header("Quest")]
-    public Collares quest;           // Referencia a la misión Collares
-    public GameObject[] goals;       // Objetivos que se activan al aceptar (opcional)
+    public Collares quest;
+    public GameObject[] goals;
     public int numGoals;
 
     [Header("UI")]
-    public GameObject missSymbol;    // Ícono sobre el NPC
-    public GameObject panelHintFar;     // "Hey, hey! Óyeme..."
+    public GameObject missSymbol;
+    public GameObject panelHintFar;
     public GameObject panelHintNear;
-    public GameObject panelNPC;      // Panel de diálogo principal (¿Quieres ayudarme?)
-    public GameObject panelNPC2;     // Panel secundario (ej: “Vuelve luego”)
-    public GameObject panelMiss;     // Panel de misión activa
-    public TextMeshProUGUI textMiss; // Texto de la misión
-    public GameObject buttonMiss;    // Botón para cerrar/continuar misión
+    public GameObject panelNPC;
+    public GameObject panelNPC2;
+    public GameObject panelMiss;
+    public TextMeshProUGUI textMiss;
+    public GameObject buttonMiss;
 
     [Header("Ranges")]
     public float outerRange = 3f;
     public float innerRange = 1.5f;
 
     [Header("Player")]
-    public PlayerMovement player;    // Script real de movimiento del jugador
-    public float moveSpeed = 3f;     // Velocidad del NPC cuando la misión está activa
+    public PlayerMovement player;
+    public float moveSpeed = 3f;
 
     [Header("Tutorial (opcional)")]
     public string[] instructions;
 
     [Header("Training Mission")]
-    public GameObject trainingZone;        // La pista entera
-    public Transform trainingStartPoint;   // Donde aparece el player al aceptar mision
-    public Transform trainingEndPoint;     // Opcional: punto donde vuelve después
+    public GameObject trainingZone;
+    public Transform trainingStartPoint;
+    public Transform trainingEndPoint;
+
+    [Header("Reward")]
+    public bool givesDoubleJump = true;
+    private bool rewardGiven = false;
 
     [SerializeField] private KeyCode interactKey = KeyCode.E;
 
-    // ESTADO INTERNO
-    bool playerInRange = false;  // ¿El jugador está dentro del trigger?
-    bool acceptMiss = false;     // ¿Aceptó la misión?
+    bool playerInRange = false;
+    bool acceptMiss = false;
     int currentStep = 0;
 
     private void Start()
     {
-        // Contar objetivos si se usan
         if (goals != null)
             numGoals = goals.Length;
 
-        // Texto por defecto si no cargaste nada en el inspector
         if (instructions == null || instructions.Length == 0)
         {
             instructions = new string[]
@@ -60,7 +61,6 @@ public class NPCs : MonoBehaviour
             };
         }
 
-        // Buscar Player si no está asignado
         if (player == null)
         {
             GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
@@ -68,9 +68,7 @@ public class NPCs : MonoBehaviour
             {
                 player = playerObject.GetComponent<PlayerMovement>();
                 if (player == null)
-                {
                     Debug.LogError("No se encontró PlayerMovement en el objeto con tag 'Player'.");
-                }
             }
             else
             {
@@ -78,7 +76,6 @@ public class NPCs : MonoBehaviour
             }
         }
 
-        // Enlazar este NPC como questGiver de Collares
         if (quest != null)
         {
             quest.questGiver = this;
@@ -87,51 +84,41 @@ public class NPCs : MonoBehaviour
                 textMiss.text = quest.missionDescription;
         }
 
-        // Estado inicial de UI
         if (missSymbol != null) missSymbol.SetActive(true);
         if (panelNPC != null) panelNPC.SetActive(false);
         if (panelNPC2 != null) panelNPC2.SetActive(false);
         if (panelMiss != null) panelMiss.SetActive(false);
         if (buttonMiss != null) buttonMiss.SetActive(false);
         if (panelHintFar != null) panelHintFar.SetActive(false);
+        if (panelHintNear != null) panelHintNear.SetActive(false);
     }
 
     private void Update()
     {
         if (player != null)
         {
-            // Distancia plano entre NPC y Player
             float dist = Vector3.Distance(player.transform.position, transform.position);
 
-            // Interacción: si esta dentro del rango de "Presiona E...", ya puede hablar
             if (!acceptMiss && dist <= innerRange && Input.GetKeyDown(interactKey))
             {
-                // Hacer que mire al NPC (solo en XZ)
                 Vector3 lookPos = new Vector3(transform.position.x, player.transform.position.y, transform.position.z);
                 player.transform.LookAt(lookPos);
-
-                // Opcional: bloquear movimiento mientras habla
                 player.enabled = false;
-
                 OpenDialogue();
             }
 
-            // Hints segun distancia, SOLO si aun NO acepto la mision
             if (!acceptMiss && (panelHintFar != null || panelHintNear != null))
             {
-                // Muy cerca -> "Presiona E para interactuar"
                 if (dist <= innerRange)
                 {
                     if (panelHintNear != null) panelHintNear.SetActive(true);
                     if (panelHintFar != null) panelHintFar.SetActive(false);
                 }
-                // Cerca -> "Hey, hey… ¡Oyeme!"
                 else if (dist <= outerRange)
                 {
                     if (panelHintFar != null) panelHintFar.SetActive(true);
                     if (panelHintNear != null) panelHintNear.SetActive(false);
                 }
-                // Lejos -> nada
                 else
                 {
                     if (panelHintFar != null) panelHintFar.SetActive(false);
@@ -140,7 +127,6 @@ public class NPCs : MonoBehaviour
             }
         }
 
-        // Si la misión está activa, el NPC se mueve hacia adelante
         if (acceptMiss && moveSpeed > 0f)
         {
             transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime, Space.Self);
@@ -161,7 +147,6 @@ public class NPCs : MonoBehaviour
 
         playerInRange = true;
 
-        // Solo mostramos hint si todavia no acepto la mision
         if (!acceptMiss && panelHintFar != null)
             panelHintFar.SetActive(true);
     }
@@ -173,23 +158,21 @@ public class NPCs : MonoBehaviour
         playerInRange = false;
 
         if (panelHintFar != null) panelHintFar.SetActive(false);
+        if (panelHintNear != null) panelHintNear.SetActive(false);
         if (panelNPC != null) panelNPC.SetActive(false);
         if (panelNPC2 != null) panelNPC2.SetActive(false);
 
-        // Asegurarnos de que el player vuelva a tener control
         if (player != null) player.enabled = true;
     }
 
-    // Botón NO en el diálogo
     public void NO()
     {
         if (player != null) player.enabled = true;
 
         if (panelNPC != null) panelNPC.SetActive(false);
-        if (panelNPC2 != null) panelNPC2.SetActive(true); // “Vuelve si cambias de opinion”
+        if (panelNPC2 != null) panelNPC2.SetActive(true);
     }
 
-    // Botón YES en el diálogo
     public void YES()
     {
         if (player != null) player.enabled = true;
@@ -198,7 +181,6 @@ public class NPCs : MonoBehaviour
         currentStep = 0;
         UpdateMissionText();
 
-        // Activar objetivos de escena si los usás
         if (goals != null)
         {
             for (int i = 0; i < goals.Length; i++)
@@ -208,10 +190,17 @@ public class NPCs : MonoBehaviour
             }
         }
 
-        // Iniciar la misión de Collares
         if (quest != null)
         {
             quest.StartQuest();
+        }
+
+        if (trainingZone != null)
+            trainingZone.SetActive(true);
+
+        if (trainingStartPoint != null && player != null)
+        {
+            player.transform.position = trainingStartPoint.position;
         }
 
         if (missSymbol != null) missSymbol.SetActive(false);
@@ -219,38 +208,12 @@ public class NPCs : MonoBehaviour
         if (panelNPC2 != null) panelNPC2.SetActive(false);
         if (panelMiss != null) panelMiss.SetActive(true);
         if (panelHintFar != null) panelHintFar.SetActive(false);
-    }
-    public void AcceptMission()
-    {
-        // Mostrar panelNPC y ocultar hint
-        if (panelNPC != null) panelNPC.SetActive(true);
-        if (panelHintFar != null) panelHintFar.SetActive(false);
-
-        // Activar pista
-        if (trainingZone != null)
-            trainingZone.SetActive(true);
-
-        // Mover al player a la pista
-        if (trainingStartPoint != null)
-        {
-            player.transform.position = trainingStartPoint.position;
-        }
+        if (panelHintNear != null) panelHintNear.SetActive(false);
     }
 
-    public void ShowMissionCompleted()
-    {
-        // Mostrar panelNPC con texto de “Felicitaciones"
-        if (panelNPC != null)
-            panelNPC.SetActive(true);
-
-        // Cambiar texto...
-    }
-
-    // Actualiza el texto de la misión en el panel
     private void UpdateMissionText()
     {
-        if (textMiss == null)
-            return;
+        if (textMiss == null) return;
 
         if (quest != null && instructions != null && instructions.Length > 0 && currentStep < instructions.Length)
         {
@@ -262,7 +225,6 @@ public class NPCs : MonoBehaviour
         }
     }
 
-    // Si quisieras avanzar pasos de tutorial desde otro lado
     public void AdvanceStep()
     {
         currentStep++;
@@ -272,30 +234,36 @@ public class NPCs : MonoBehaviour
         UpdateMissionText();
     }
 
-    /// <summary>
-    /// Llamado desde Collares cuando la misión se completa.
-    /// </summary>
     public void OnQuestCompleted()
     {
-        Debug.Log("Misión completada: el NPC puede dar la recompensa.");
+        Debug.Log("Misión completada: el NPC da la recompensa.");
+
+        if (givesDoubleJump && !rewardGiven && player != null)
+        {
+            player.UnlockDoubleJump();
+            rewardGiven = true;
+        }
 
         if (textMiss != null)
-            textMiss.text = "¡Misión completada!";
+            textMiss.text = "¡Misión completada! Recompensa obtenida: doble salto.";
 
         if (buttonMiss != null)
             buttonMiss.SetActive(true);
+
+        if (trainingEndPoint != null && player != null)
+        {
+            player.transform.position = trainingEndPoint.position;
+        }
     }
 
     public void HideDialogue()
     {
-        // Ocultar TODOS los paneles relacionados al NPC
         if (panelHintFar != null) panelHintFar.SetActive(false);
         if (panelHintNear != null) panelHintNear.SetActive(false);
         if (panelNPC != null) panelNPC.SetActive(false);
         if (panelNPC2 != null) panelNPC2.SetActive(false);
         if (panelMiss != null) panelMiss.SetActive(false);
 
-        // Asegurarnos de devolver el control al jugador
         if (player != null) player.enabled = true;
     }
 }

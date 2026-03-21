@@ -23,10 +23,20 @@ MonoBehaviour:
   dashSpeed: 15
   dashDuration: 0.2
   crouchHeight: 0.5
-  defensePercent: 0.3
+  defensePercent: 0.9
   shieldMax: 100
   shieldRegen: 5
-  meleeAttacks: []
+  meleeAttacks:
+  - attackName: Envestida
+    damage: 20
+    cooldown: 1.2
+    range: 10
+    animation: {fileID: 0}
+    sound: {fileID: 0}
+    impactEffectPrefab: {fileID: 0}
+    canChainCombo: 1
+    nextComboIndex: 0
+    requiredLevel: 1
   rangedAttacks:
   - attackName: Proyectil
     damage: 10

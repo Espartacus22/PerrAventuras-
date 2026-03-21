@@ -5,125 +5,196 @@ using UnityEngine.AI;
 [RequireComponent(typeof(EnemyStats))]
 public class EnemyFollow : MonoBehaviour
 {
-    [Header("Configuración")]
+    [Header("Jugador")]
+    public Transform target;
+    public string playerTag = "Player";
+
+    [Header("Datos generales")]
     public EnemyType enemyData;
-
-    [Header("Rangos")]
-    public float chaseRange = 15f;
-    public float attackRange = 2f;
-
-    [Header("Ataque")]
-    public float attackDamage = 15f;
-    public float attackCooldown = 1.5f;
-
-    private Transform target;
+    private EnemyStats stats;
     private NavMeshAgent agent;
-    private float lastAttackTime;
-    private float lastPathUpdateTime;
-    private float pathUpdateInterval = 0.5f; // Solo actualizar path cada 0.5s
+
+    [Header("Patrulla")]
+    public Transform[] patrolPoints;
+    public float pointTolerance = 0.3f;
+    private int currentPatrolIndex = 0;
+
+    [Header("Disparo")]
+    public Transform firePoint;
+    public GameObject projectilePrefab;
+
+    [Header("Sniper (rango largo)")]
+    public float sniperRange = 50f;
+    public float sniperCooldown = 1.5f;
+    public int sniperDamage = 20;
+
+    [Header("Furia metralleta (rango corto)")]
+    public float furyRange = 8f;
+    public float furyFireRate = 5f;
+    public int furyDamage = 30;
+    public float furyWindupTime = 2f;
+
+    [Header("Retarget")]
+    public float retargetInterval = 0.35f;
+    private float nextRetargetTime;
+
+    private float nextShootTime;
+
+    private Transform lockedTarget;
+    private bool furyCharging;
+    private bool furyActive;
+    private float furyStartTime;
 
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
-
-        // CONFIGURACIÓN CLAVE PARA RIGIDBODY PLAYER
-        agent.updatePosition = true;
-        agent.updateRotation = false; // Nosotros controlamos la rotación
-        agent.autoBraking = true; // Frena suavemente
+        stats = GetComponent<EnemyStats>();
 
         if (enemyData != null)
         {
             agent.speed = enemyData.moveSpeed;
-            agent.angularSpeed = 360f; // Rota rápido
+            stats.enemyData = enemyData;
         }
     }
 
     void Start()
     {
-        FindPlayer();
+        AcquireTarget();
+        if (patrolPoints != null && patrolPoints.Length > 0)
+            agent.SetDestination(patrolPoints[0].position);
     }
 
     void Update()
     {
-        // Buscar jugador si se pierde (importante por respawn)
+        if (Time.time >= nextRetargetTime && lockedTarget == null)
+        {
+            AcquireTarget();
+            nextRetargetTime = Time.time + retargetInterval;
+        }
+
+        if (lockedTarget != null)
+            target = lockedTarget;
+
         if (target == null)
         {
-            FindPlayer();
+            ResetFury();
+            Patrol();
             return;
         }
 
         float distance = Vector3.Distance(transform.position, target.position);
 
-        // PERSEGUIR (solo si está en rango)
-        if (distance <= chaseRange)
+        if (distance <= furyRange)
         {
-            ChasePlayer();
+            if (lockedTarget == null) lockedTarget = target;
+            HandleFury();
+        }
+        else if (distance <= sniperRange)
+        {
+            lockedTarget = null;
+            ResetFury();
+            HandleSniper();
         }
         else
         {
-            agent.ResetPath(); // Para de perseguir
-        }
-
-        // ATACAR (si está muy cerca)
-        if (distance <= attackRange && Time.time >= lastAttackTime + attackCooldown)
-        {
-            Attack();
-        }
-
-        // Rotar hacia jugador (suave)
-        RotateToPlayer();
-    }
-
-    void FindPlayer()
-    {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
-        {
-            target = player.transform;
-            Debug.Log($"[{gameObject.name}] Encontró jugador!");
+            lockedTarget = null;
+            ResetFury();
+            Patrol();
         }
     }
 
-    void ChasePlayer()
+    void AcquireTarget()
     {
-        // Actualizar path solo cada 0.5 segundos (OPTIMIZADO)
-        if (Time.time >= lastPathUpdateTime + pathUpdateInterval)
+        GameObject playerObj = GameObject.FindGameObjectWithTag(playerTag);
+        if (playerObj != null)
+            target = playerObj.transform;
+        else
+            target = null;
+    }
+
+    void Patrol()
+    {
+        if (patrolPoints == null || patrolPoints.Length == 0) return;
+
+        agent.isStopped = false;
+
+        if (!agent.pathPending && agent.remainingDistance <= pointTolerance)
         {
-            agent.SetDestination(target.position);
-            lastPathUpdateTime = Time.time;
+            currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.Length;
+            agent.SetDestination(patrolPoints[currentPatrolIndex].position);
         }
     }
 
-    void Attack()
+    void HandleSniper()
     {
-        lastAttackTime = Time.time;
+        agent.isStopped = true;
+        LookAtTarget();
 
-        PlayerLevel playerLevel = target.GetComponent<PlayerLevel>();
-        if (playerLevel != null)
+        if (Time.time >= nextShootTime)
         {
-            playerLevel.TakeDamage(Mathf.RoundToInt(attackDamage));
+            Shoot(sniperDamage);
+            nextShootTime = Time.time + sniperCooldown;
         }
     }
 
-    void RotateToPlayer()
+    void HandleFury()
     {
-        Vector3 direction = (target.position - transform.position);
-        direction.y = 0; // Solo rotar en Y
+        agent.isStopped = true;
+        LookAtTarget();
 
-        if (direction.sqrMagnitude > 0.1f)
+        if (!furyCharging && !furyActive)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 10f * Time.deltaTime);
+            furyCharging = true;
+            furyStartTime = Time.time;
+        }
+
+        if (furyCharging && Time.time >= furyStartTime + furyWindupTime)
+        {
+            furyCharging = false;
+            furyActive = true;
+        }
+
+        if (!furyActive) return;
+
+        float interval = 1f / Mathf.Max(0.1f, furyFireRate);
+        if (Time.time >= nextShootTime)
+        {
+            Shoot(furyDamage);
+            nextShootTime = Time.time + interval;
         }
     }
 
-    // GIZMOS para debug
-    void OnDrawGizmosSelected()
+    void ResetFury()
     {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, chaseRange);
+        furyCharging = false;
+        furyActive = false;
+    }
 
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+    void LookAtTarget()
+    {
+        if (target == null) return;
+
+        Vector3 dir = target.position - transform.position;
+        dir.y = 0f;
+
+        if (dir.sqrMagnitude > 0.001f)
+        {
+            Quaternion desiredRot = Quaternion.LookRotation(dir);
+            transform.rotation = Quaternion.Slerp(transform.rotation, desiredRot, 10f * Time.deltaTime);
+        }
+    }
+
+    void Shoot(int damage)
+    {
+        if (projectilePrefab == null || firePoint == null || target == null) return;
+
+        Vector3 dir = (target.position + Vector3.up * 1.2f - firePoint.position).normalized;
+        GameObject go = Instantiate(projectilePrefab, firePoint.position, Quaternion.LookRotation(dir));
+
+        var proj = go.GetComponent<PaintProjectileBehavior>();
+        if (proj != null)
+        {
+            proj.damage = damage;
+        }
     }
 }

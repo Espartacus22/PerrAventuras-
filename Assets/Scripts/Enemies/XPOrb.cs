@@ -6,7 +6,7 @@ public class XPOrb : MonoBehaviour
     public float attractRadius = 5f;
     public float attractSpeed = 8f;
 
-    Transform player;
+    private Transform player;
 
     void Start()
     {
@@ -30,13 +30,14 @@ public class XPOrb : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
-        {
-            PlayerLevel playerLevel = other.GetComponent<PlayerLevel>();
-            if (playerLevel != null)
-                playerLevel.GainXP(xpAmount);
+        if (!other.CompareTag("Player")) return;
 
-            Destroy(gameObject);
+        PlayerLevel playerLevel = other.GetComponent<PlayerLevel>();
+        if (playerLevel != null)
+        {
+            playerLevel.GainXP(xpAmount);
         }
+
+        Destroy(gameObject);
     }
 }

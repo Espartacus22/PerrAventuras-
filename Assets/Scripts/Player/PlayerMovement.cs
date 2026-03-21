@@ -4,6 +4,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CapsuleCollider))]
+[RequireComponent(typeof(PlayerInputHandler))]
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Datos del personaje")]
@@ -18,6 +19,8 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Ground")]
     public LayerMask groundMask;
+    [SerializeField] private Transform groundCheck;
+    [SerializeField] private float groundCheckRadius = 0.25f;
 
     private int currentComboIndex = -1;
     private float comboResetTimer = 0f;
@@ -28,6 +31,7 @@ public class PlayerMovement : MonoBehaviour
     private Animator animator;
     private AudioSource audioSource;
     private CapsuleCollider capsule;
+    private PlayerInputHandler inputHandler;
 
     public bool isGrounded;
     private bool isDashing;
@@ -36,15 +40,14 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 originalCenter;
 
     private int jumpCount;
-    private float lastShiftTime;
-    private float doubleTapThreshold = 0.3f;
 
-    void Awake()
+    private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         capsule = GetComponent<CapsuleCollider>();
         animator = GetComponentInChildren<Animator>();
         audioSource = GetComponent<AudioSource>();
+        inputHandler = GetComponent<PlayerInputHandler>();
 
         if (rb == null)
         {
@@ -60,18 +63,28 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
+        if (inputHandler == null)
+        {
+            Debug.LogError($"[{name}] PlayerMovement: Falta PlayerInputHandler.");
+            enabled = false;
+            return;
+        }
+
         originalHeight = capsule.height;
         originalCenter = capsule.center;
 
         rb.freezeRotation = true;
 
-        // Arranca sin doble salto (lo habilita PlayerLevel al subir a nivel 1)
+        // Arranca sin doble salto.
+        // Después lo podés habilitar desde NPC1 o desde otro sistema de unlocks.
         hasDoubleJump = false;
     }
 
-    void Update()
+    private void Update()
     {
         if (characterData == null) return;
+
+        UpdateGroundCheck();
 
         HandleMovement();
         HandleJump();
@@ -80,7 +93,7 @@ public class PlayerMovement : MonoBehaviour
 
         RotateTowardsMouse();
 
-        if (Input.GetMouseButtonDown(0))
+        if (inputHandler.MeleePressed)
         {
             if (currentComboIndex == -1)
                 currentComboIndex = selectedMeleeIndex;
@@ -88,22 +101,45 @@ public class PlayerMovement : MonoBehaviour
             TryMeleeAttack();
         }
 
-        if (Input.GetMouseButtonDown(1))
+        if (inputHandler.RangedPressed)
         {
             TryRangedAttack();
         }
 
         if (Time.time > comboResetTimer)
             currentComboIndex = -1;
+
+        inputHandler.ConsumeFrameInput();
     }
 
-    void HandleMovement()
+    private void UpdateGroundCheck()
+    {
+        bool wasGrounded = isGrounded;
+
+        if (groundCheck != null)
+        {
+            isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundMask);
+        }
+        else
+        {
+            // Fallback por si todavía no asignaste un groundCheck en inspector
+            Vector3 origin = transform.position + Vector3.up * 0.1f;
+            float distance = (capsule.height * 0.5f) + 0.2f;
+            isGrounded = Physics.Raycast(origin, Vector3.down, distance, groundMask);
+        }
+
+        if (isGrounded && !wasGrounded)
+        {
+            jumpCount = 0;
+        }
+    }
+
+    private void HandleMovement()
     {
         if (isDashing) return;
 
-        float moveX = Input.GetAxis("Horizontal");
-        float moveZ = Input.GetAxis("Vertical");
-        Vector3 input = new Vector3(moveX, 0, moveZ);
+        Vector2 moveInput = inputHandler.MoveInput;
+        Vector3 input = new Vector3(moveInput.x, 0f, moveInput.y);
 
         if (input.sqrMagnitude > 0.01f)
         {
@@ -121,18 +157,22 @@ public class PlayerMovement : MonoBehaviour
 
             if (isCrouching)
                 currentSpeed *= characterData.crouchMultiplier;
-            else if (Input.GetKey(KeyCode.LeftShift))
+            else if (inputHandler.RunHeld)
                 currentSpeed *= characterData.runMultiplier;
 
-            rb.linearVelocity = new Vector3(moveDir.x * currentSpeed, rb.linearVelocity.y, moveDir.z * currentSpeed);
+            rb.linearVelocity = new Vector3(
+                moveDir.x * currentSpeed,
+                rb.linearVelocity.y,
+                moveDir.z * currentSpeed
+            );
         }
         else
         {
-            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
+            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
         }
     }
 
-    void RotateTowardsMouse()
+    private void RotateTowardsMouse()
     {
         if (Camera.main == null) return;
 
@@ -140,49 +180,53 @@ public class PlayerMovement : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit, 200f))
         {
             Vector3 lookDir = hit.point - transform.position;
-            lookDir.y = 0;
+            lookDir.y = 0f;
 
             if (lookDir.sqrMagnitude > 0.01f)
             {
                 Quaternion lookRotation = Quaternion.LookRotation(lookDir);
-                transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, characterData.rotationSpeed * Time.deltaTime);
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    lookRotation,
+                    characterData.rotationSpeed * Time.deltaTime
+                );
             }
         }
     }
 
-    void HandleJump()
+    private void HandleJump()
     {
-        if (Input.GetButtonDown("Jump") && !isDashing)
-        {
-            int maxJumps = hasDoubleJump ? 2 : 1;
+        if (!inputHandler.JumpPressed || isDashing)
+            return;
 
-            if (jumpCount < maxJumps)
-            {
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x, characterData.jumpForce, rb.linearVelocity.z);
-                jumpCount++;
-            }
+        int maxJumps = hasDoubleJump ? 2 : 1;
+
+        if (jumpCount < maxJumps)
+        {
+            rb.linearVelocity = new Vector3(
+                rb.linearVelocity.x,
+                characterData.jumpForce,
+                rb.linearVelocity.z
+            );
+
+            jumpCount++;
         }
     }
 
-    void HandleDash()
+    private void HandleDash()
     {
-        if (Input.GetKeyDown(KeyCode.LeftShift))
-        {
-            float timeSinceLastTap = Time.time - lastShiftTime;
-            if (timeSinceLastTap <= doubleTapThreshold && !isDashing)
-                StartCoroutine(Dash());
+        if (!inputHandler.DashPressed || isDashing)
+            return;
 
-            lastShiftTime = Time.time;
-        }
+        StartCoroutine(Dash());
     }
 
-    IEnumerator Dash()
+    private IEnumerator Dash()
     {
         isDashing = true;
 
-        float moveX = Input.GetAxisRaw("Horizontal");
-        float moveZ = Input.GetAxisRaw("Vertical");
-        Vector3 input = new Vector3(moveX, 0, moveZ);
+        Vector2 moveInput = inputHandler.MoveInput;
+        Vector3 input = new Vector3(moveInput.x, 0f, moveInput.y);
 
         Transform cam = Camera.main != null ? Camera.main.transform : null;
         Vector3 dashDir = input.normalized;
@@ -208,12 +252,9 @@ public class PlayerMovement : MonoBehaviour
         isDashing = false;
     }
 
-    void HandleCrouch()
+    private void HandleCrouch()
     {
-        bool crouchPressed = Input.GetKeyDown(KeyCode.LeftControl);
-        bool crouchReleased = Input.GetKeyUp(KeyCode.LeftControl);
-
-        if (crouchPressed && !isCrouching)
+        if (inputHandler.CrouchPressed && !isCrouching)
         {
             isCrouching = true;
 
@@ -223,7 +264,7 @@ public class PlayerMovement : MonoBehaviour
             float heightDelta = (originalHeight - newHeight) * 0.5f;
             capsule.center = originalCenter - new Vector3(0f, heightDelta, 0f);
         }
-        else if (crouchReleased && isCrouching)
+        else if (inputHandler.CrouchReleased && isCrouching)
         {
             isCrouching = false;
             capsule.height = originalHeight;
@@ -231,7 +272,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void TryMeleeAttack()
+    private void TryMeleeAttack()
     {
         if (characterData == null || characterData.meleeAttacks == null) return;
         if (currentComboIndex < 0 || currentComboIndex >= characterData.meleeAttacks.Count) return;
@@ -241,7 +282,13 @@ public class PlayerMovement : MonoBehaviour
         if (Time.time < lastAttackTime + attack.cooldown) return;
         lastAttackTime = Time.time;
 
-        // Animación y sonido (seguros)
+        var level = GetComponent<PlayerLevel>();
+        if (level != null && level.currentLevel < attack.requiredLevel)
+        {
+            Debug.Log("Ataque no desbloqueado todavía");
+            return;
+        }
+
         if (animator != null && attack.animation != null)
             animator.Play(attack.animation.name);
 
@@ -280,7 +327,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void TryRangedAttack()
+    private void TryRangedAttack()
     {
         if (characterData == null || characterData.rangedAttacks == null) return;
         if (selectedRangedIndex < 0 || selectedRangedIndex >= characterData.rangedAttacks.Count) return;
@@ -289,6 +336,13 @@ public class PlayerMovement : MonoBehaviour
 
         if (Time.time < lastAttackTime + attack.cooldown) return;
         lastAttackTime = Time.time;
+
+        var level = GetComponent<PlayerLevel>();
+        if (level != null && level.currentLevel < attack.requiredLevel)
+        {
+            Debug.Log("Ataque a distancia no desbloqueado todavía");
+            return;
+        }
 
         if (animator != null && attack.animation != null)
             animator.Play(attack.animation.name);
@@ -307,11 +361,14 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        // Rotar hacia dirección de disparo (suave)
         if (shootDirection.sqrMagnitude > 0.01f)
         {
             Quaternion lookRotation = Quaternion.LookRotation(shootDirection, Vector3.up);
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, characterData.rotationSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                lookRotation,
+                characterData.rotationSpeed * Time.deltaTime
+            );
         }
 
         if (attack.projectilePrefab == null)
@@ -322,7 +379,7 @@ public class PlayerMovement : MonoBehaviour
 
         GameObject projectile = Instantiate(
             attack.projectilePrefab,
-            transform.position + shootDirection, // spawn adelante
+            transform.position + shootDirection,
             Quaternion.LookRotation(shootDirection)
         );
 
@@ -334,49 +391,29 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    public void EnableDoubleJump(bool enabled) => hasDoubleJump = enabled;
-    public void UnlockDoubleJump() => hasDoubleJump = true;
-
-    // ---------- GROUND / COLISIONES ----------
-
-    void OnCollisionEnter(Collision collision) => CheckGroundCollision(collision);
-    void OnCollisionStay(Collision collision) => CheckGroundCollision(collision);
-
-    void OnCollisionExit(Collision collision)
+    public void UnlockDoubleJump()
     {
-        if (collision != null && collision.gameObject != null && IsGroundLayer(collision.gameObject.layer))
-            isGrounded = false;
+        hasDoubleJump = true;
+        Debug.Log($"{name}: Doble salto desbloqueado.");
     }
 
-    bool IsGroundLayer(int layer) => (groundMask & (1 << layer)) != 0;
-
-    void CheckGroundCollision(Collision collision)
+    public void LockDoubleJump()
     {
-        if (collision == null || collision.gameObject == null) return;
-        if (!IsGroundLayer(collision.gameObject.layer)) return;
-        if (rb == null) return;
-
-        // Si estoy subiendo, no resetear saltos
-        if (rb.linearVelocity.y > 0.01f) return;
-
-        foreach (var contact in collision.contacts)
-        {
-            if (contact.normal.y >= 0.85f)
-            {
-                isGrounded = true;
-                jumpCount = 0;
-                break;
-            }
-        }
+        hasDoubleJump = false;
+        Debug.Log($"{name}: Doble salto bloqueado.");
     }
 
-    void OnDrawGizmosSelected()
+    public bool HasDoubleJump()
     {
-        if (characterData != null && characterData.meleeAttacks != null && characterData.meleeAttacks.Count > selectedMeleeIndex)
+        return hasDoubleJump;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (groundCheck != null)
         {
-            var attack = characterData.meleeAttacks[selectedMeleeIndex];
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position + transform.forward * attack.range * 0.5f, attack.range * 0.5f);
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
         }
     }
 }

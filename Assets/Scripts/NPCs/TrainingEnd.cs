@@ -2,15 +2,15 @@ using UnityEngine;
 
 public class TrainingEnd : MonoBehaviour
 {
-    public Collares mission;   // referencia a Collares
+    public Collares mission;
 
-    void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player")) return;
 
-        Debug.Log("Pista completada!");
+        Debug.Log("¡Pista completada!");
 
         if (mission != null)
-            mission.CompleteQuest();   // Avisa a Collares
+            mission.CompleteQuest();
     }
 }

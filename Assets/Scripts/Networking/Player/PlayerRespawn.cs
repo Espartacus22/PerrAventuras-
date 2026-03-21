@@ -3,17 +3,17 @@ using UnityEngine;
 public class PlayerRespawn : MonoBehaviour
 {
     [Header("Punto inicial")]
-    public Transform defaultSpawnPoint;      // si lo dej�s vac�o, usa la posici�n inicial actual
+    public Transform defaultSpawnPoint;
 
     [Header("Checkpoints")]
     public Checkpoint currentCheckpoint;
 
-    [Header("Caida del nivel")]
-    public float fallThresholdY = -20f;      // si el player baja de esta Y, respawnea
+    [Header("Caída del nivel")]
+    public float fallThresholdY = -20f;
 
-    PlayerLevel playerLevel;
-    Rigidbody rb;
-    PlayerMovement movement;  // tu script de movimiento, cambialo por el nombre real
+    private PlayerLevel playerLevel;
+    private Rigidbody rb;
+    private PlayerMovement movement;
 
     void Awake()
     {
@@ -24,23 +24,22 @@ public class PlayerRespawn : MonoBehaviour
 
     void Start()
     {
-        // Si no se asigna spawnPoint, usamos la posicion donde empezo
         if (defaultSpawnPoint == null)
         {
             GameObject go = new GameObject("DefaultSpawnPoint");
             go.transform.position = transform.position;
+            go.transform.rotation = transform.rotation;
             defaultSpawnPoint = go.transform;
         }
 
         if (playerLevel != null)
         {
-            playerLevel.respawn = this;   // conectar desde c�digo por si te olvid�s en el inspector
+            playerLevel.respawn = this;
         }
     }
 
     void Update()
     {
-        // Caida fuera del escenario
         if (transform.position.y < fallThresholdY)
         {
             Respawn();
@@ -58,9 +57,8 @@ public class PlayerRespawn : MonoBehaviour
         Debug.Log($"Checkpoint activado: {checkpoint.name}");
     }
 
-    void Respawn()
+    public void Respawn()
     {
-        // Determinar posicion de respawn
         Vector3 respawnPos = defaultSpawnPoint.position;
         Quaternion respawnRot = defaultSpawnPoint.rotation;
 
@@ -70,7 +68,6 @@ public class PlayerRespawn : MonoBehaviour
             respawnRot = currentCheckpoint.transform.rotation;
         }
 
-        // Desactivar movimiento mientras teletransportamos
         if (movement != null)
             movement.enabled = false;
 
@@ -83,11 +80,10 @@ public class PlayerRespawn : MonoBehaviour
         transform.position = respawnPos;
         transform.rotation = respawnRot;
 
+        if (playerLevel != null)
+            playerLevel.RestoreFullState();
+
         if (movement != null)
             movement.enabled = true;
-
-        // Recuperar vida
-        if (playerLevel != null)
-            playerLevel.GetMaxHP();
     }
 }
