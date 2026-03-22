@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 434580db0ca717d4597483437195595b, type: 3}
+  m_Name: Bullldog
+  m_EditorClassIdentifier: 
+  characterName: Piki
+  hp: 100
+  walkSpeed: 15
+  runMultiplier: 3
+  crouchMultiplier: 0.5
+  rotationSpeed: 50
+  jumpForce: 8.5
+  dobleSalto: 0
+  dashSpeed: 30
+  dashDuration: 0.5
+  crouchHeight: 0.5
+  meleeAttacks:
+  - attackName: Ataque con Martillo
+    damage: 20
+    cooldown: 0.2
+    range: 3
+    animation: {fileID: 0}
+    sound: {fileID: 0}
+    impactEffectPrefab: {fileID: 0}
+    canChainCombo: 1
+    nextComboIndex: 0
+    requiredLevel: 0
+  rangedAttacks:
+  - attackName: Disparo
+    damage: 50
+    cooldown: 0.2
+    range: 10
+    animation: {fileID: 0}
+    sound: {fileID: 8300000, guid: 14104e2e592b7f342a40a799a6897619, type: 3}
+    projectilePrefab: {fileID: 1829786823211159021, guid: fc86b118525b2a74e985c28dd2a46bb9, type: 3}
+    requiredLevel: 1

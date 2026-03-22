@@ -1,0 +1,56 @@
+using UnityEngine;
+
+public class EnemyProjectileBehavior : MonoBehaviour
+{
+    public float speed = 15f;
+
+    private float damage;
+    private float maxRange;
+    private Vector3 startPosition;
+
+    public void SetRange(float range)
+    {
+        maxRange = range;
+    }
+
+    public void SetDamage(float value)
+    {
+        damage = value;
+    }
+
+    void Start()
+    {
+        startPosition = transform.position;
+    }
+
+    void Update()
+    {
+        transform.Translate(Vector3.forward * speed * Time.deltaTime);
+
+        float distanceTraveled = Vector3.Distance(startPosition, transform.position);
+        if (distanceTraveled > maxRange)
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        // daño al player
+        if (other.CompareTag("Player"))
+        {
+            PlayerLevel playerLevel = other.GetComponent<PlayerLevel>();
+            if (playerLevel != null)
+            {
+                playerLevel.TakeDamage(Mathf.RoundToInt(damage));
+            }
+
+            Destroy(gameObject);
+        }
+        // ignoramos otros enemigos, pero chocamos con escenario, etc.
+        else if (!other.CompareTag("Enemy"))
+        {
+            Destroy(gameObject);
+        }
+    }
+}
