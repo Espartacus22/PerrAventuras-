@@ -5,7 +5,6 @@ public class PlayerLevel : MonoBehaviour
 {
     [Header("Compatibilidad / referencias")]
     public CharacterType characterData;
-    public PlayerRespawn respawn;
 
     [Header("Nivel y experiencia")]
     public int currentLevel = 0;
@@ -32,7 +31,6 @@ public class PlayerLevel : MonoBehaviour
 
     private void Awake()
     {
-        // Si no está asignado en inspector, lo intentamos sacar del mismo objeto
         if (characterData == null)
         {
             PlayerMovement movement = GetComponent<PlayerMovement>();
@@ -111,7 +109,6 @@ public class PlayerLevel : MonoBehaviour
 
         int finalDamage = Mathf.Max(damage - defense, 1);
 
-        // Primero escudo
         if (currentShield > 0)
         {
             int shieldDamage = Mathf.Min(currentShield, finalDamage);
@@ -119,7 +116,6 @@ public class PlayerLevel : MonoBehaviour
             finalDamage -= shieldDamage;
         }
 
-        // Después vida
         if (finalDamage > 0)
         {
             currentHealth -= finalDamage;
@@ -156,10 +152,8 @@ public class PlayerLevel : MonoBehaviour
         Debug.Log($"{name} restauró vida y escudo al máximo.");
     }
 
-    // Compatibilidad con scripts viejos
     public int GetMaxHP()
     {
-        RestoreFullState();
         return maxHealth;
     }
 
@@ -174,20 +168,15 @@ public class PlayerLevel : MonoBehaviour
     }
 
     // -------------------------
-    // MUERTE / RESPAWN
+    // MUERTE
     // -------------------------
 
     private void Die()
     {
         Debug.Log($"{name} murió.");
 
-        if (respawn != null)
-        {
-            respawn.OnPlayerDeath();
-        }
-        else
-        {
-            Debug.LogWarning($"{name}: no tiene PlayerRespawn asignado.");
-        }
+        // Por ahora, solo restauramos estado para no depender de PlayerRespawn.
+        // Más adelante lo reconectamos con un sistema de respawn separado.
+        RestoreFullState();
     }
 }
