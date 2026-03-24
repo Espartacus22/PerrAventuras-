@@ -1,16 +1,19 @@
 using UnityEngine;
 
-public class PState : MonoBehaviour
+public class PState
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    protected PlayerMovement player;
+    protected PStateMachine stateMachine;
+
+    protected PState(PlayerMovement player, PStateMachine stateMachine)
     {
-        
+        this.player = player;
+        this.stateMachine = stateMachine;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public virtual void Enter() { }
+    public virtual void Exit() { }
+    public virtual void HandleInput() { }
+    public virtual void LogicUpdate() { }
+    public virtual void PhysicsUpdate() { }
 }

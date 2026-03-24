@@ -1,16 +1,22 @@
 using UnityEngine;
+using UnityEngine.Playables;
 
-public class PStateMachine : MonoBehaviour
+public class PStateMachine
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public PState CurrentState { get; private set; }
+
+    public void Initialize(PState startingState)
     {
-        
+        CurrentState = startingState;
+        CurrentState.Enter();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void ChangeState(PState newState)
     {
-        
+        if (CurrentState != null)
+            CurrentState.Exit();
+
+        CurrentState = newState;
+        CurrentState.Enter();
     }
 }

@@ -1,16 +1,41 @@
 using UnityEngine;
 
-public class PJumpState : MonoBehaviour
+public class PJumpState : PState
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public PJumpState(PlayerMovement player, PStateMachine stateMachine)
+        : base(player, stateMachine) { }
+
+    public override void Enter()
     {
-        
+        player.Jump();
     }
 
-    // Update is called once per frame
-    void Update()
+    public override void LogicUpdate()
     {
-        
+        if (player.InputHandler.DashPressed)
+        {
+            stateMachine.ChangeState(player.DashState);
+            return;
+        }
+
+        if (player.IsGrounded && player.VerticalVelocity <= 0.05f)
+        {
+            if (player.HasMovementInput())
+            {
+                if (player.InputHandler.RunHeld)
+                    stateMachine.ChangeState(player.RunState);
+                else
+                    stateMachine.ChangeState(player.MoveState);
+            }
+            else
+            {
+                stateMachine.ChangeState(player.IdleState);
+            }
+        }
+    }
+
+    public override void PhysicsUpdate()
+    {
+        player.MoveInAir();
     }
 }
