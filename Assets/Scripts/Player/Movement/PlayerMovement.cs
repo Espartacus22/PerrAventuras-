@@ -81,8 +81,6 @@ public class PlayerMovement : MonoBehaviour
 
         StateMachine.CurrentState.HandleInput();
         StateMachine.CurrentState.LogicUpdate();
-
-        inputHandler.ConsumeFrameInput();
     }
 
     private void FixedUpdate()

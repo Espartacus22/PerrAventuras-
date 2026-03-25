@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Piki
   hp: 100
-  walkSpeed: 15
+  walkSpeed: 12
   runMultiplier: 3
   crouchMultiplier: 0.5
   rotationSpeed: 50
@@ -23,6 +23,9 @@ MonoBehaviour:
   dashSpeed: 30
   dashDuration: 0.5
   crouchHeight: 0.5
+  defensePercent: 0
+  shieldMax: 0
+  shieldRegen: 0
   meleeAttacks:
   - attackName: Ataque con Martillo
     damage: 20

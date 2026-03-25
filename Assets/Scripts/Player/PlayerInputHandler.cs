@@ -28,6 +28,11 @@ public class PlayerInputHandler : MonoBehaviour
         RangedPressed = Input.GetMouseButtonDown(1);
     }
 
+    private void LateUpdate()
+    {
+        ConsumeFrameInput();
+    }
+
     public void ConsumeFrameInput()
     {
         JumpPressed = false;

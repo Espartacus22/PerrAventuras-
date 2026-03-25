@@ -3026,7 +3026,10 @@ PrefabInstance:
     - {fileID: 1296923392958234583, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8874039823671508997, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 967168952}
   m_SourcePrefab: {fileID: 100100000, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
 --- !u!1 &599840882
 GameObject:
@@ -4488,6 +4491,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45c7b0c95c101f04581f086a83eaedc1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &967168952
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 39291292}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ed589e2bf7df0c4b8458458f4797475, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCombat
+  characterData: {fileID: 11400000, guid: 57094d7e95b45e54db697615c651fe85, type: 2}
+  selectedMeleeIndex: 0
+  selectedRangedIndex: 0
 --- !u!4 &998213599 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3450657088883723275, guid: 934a0907339829d49bff89d404fe24d8, type: 3}
