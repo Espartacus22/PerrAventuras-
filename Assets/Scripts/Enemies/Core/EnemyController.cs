@@ -25,6 +25,16 @@ public class EnemyController : MonoBehaviour
     [Header("Attack")]
     public int attackDamage = 10;
 
+    [Header("Projectile Attack")]
+    [SerializeField] private bool useProjectileAttack = false;
+    [SerializeField] private GameObject projectilePrefab;
+    [SerializeField] private Transform firePoint;
+    [SerializeField] private float projectileSpeed = 12f;
+
+    public GameObject ProjectilePrefab => projectilePrefab;
+    public Transform FirePoint => firePoint;
+    public float ProjectileSpeed => projectileSpeed;
+
     public EStateMachine StateMachine { get; private set; }
     public EIdleState IdleState { get; private set; }
     public EPatrolState PatrolState { get; private set; }
@@ -59,7 +69,10 @@ public class EnemyController : MonoBehaviour
         ChaseState = new EChaseState(this, StateMachine);
         AttackState = new EAttackState(this, StateMachine);
 
-        attackStrategy = new MeleeEnemyAttackStrategy();
+        if (useProjectileAttack)
+            attackStrategy = new ProjectileEnemyAttackStrategy();
+        else
+            attackStrategy = new MeleeEnemyAttackStrategy();
     }
 
     private void Start()
