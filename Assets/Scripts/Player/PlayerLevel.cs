@@ -175,8 +175,15 @@ public class PlayerLevel : MonoBehaviour
     {
         Debug.Log($"{name} murió.");
 
-        // Por ahora, solo restauramos estado para no depender de PlayerRespawn.
-        // Más adelante lo reconectamos con un sistema de respawn separado.
-        RestoreFullState();
+        PlayerRespawn respawn = GetComponent<PlayerRespawn>();
+        if (respawn != null)
+        {
+            respawn.Respawn();
+        }
+        else
+        {
+            RestoreFullState();
+            Debug.LogWarning("No se encontró PlayerRespawn en el Player.");
+        }
     }
 }
