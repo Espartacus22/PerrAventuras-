@@ -434,6 +434,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -455,9 +457,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!136 &4992728569129981615
 CapsuleCollider:
@@ -617,10 +621,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7623272905514402766}
-  - component: {fileID: 1919342500409062012}
-  - component: {fileID: 8123180421160103399}
   - component: {fileID: 8500501904246159201}
   - component: {fileID: -4268107754245200327}
+  - component: {fileID: 238940377480573588}
   m_Layer: 7
   m_Name: TrashDrone
   m_TagString: Enemy
@@ -645,55 +648,6 @@ Transform:
   - {fileID: 6996282384541581334}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!54 &1919342500409062012
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7526836627258764377}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 0
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 84
-  m_CollisionDetection: 0
---- !u!114 &8123180421160103399
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7526836627258764377}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f2e0635f29cccb4a80a0ed7bf87ead0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  patrolPoints: []
-  moveSpeed: 0
-  pointTolerance: 1
-  hoverHeight: 1
-  firePoints:
-  - {fileID: 7758912035439495191}
-  - {fileID: 5745021739647671365}
-  trashProjectilePrefab: {fileID: 9014407918597591715, guid: da73d1c38bb8beb4989fb3d34411ffe5, type: 3}
-  shootRange: 30
-  shootCooldown: 1.2
 --- !u!114 &8500501904246159201
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -721,6 +675,32 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   healthSlider: {fileID: 6891251007550045445}
+--- !u!114 &238940377480573588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7526836627258764377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f2e0635f29cccb4a80a0ed7bf87ead0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrashDroneEnemy
+  patrolPoints: []
+  moveSpeed: 3
+  pointTolerance: 0.5
+  hoverHeight: 3
+  detectRange: 30
+  desiredCombatDistance: 1.2
+  combatMoveSpeed: 4.5
+  distanceDeadZone: 0.25
+  firePoints:
+  - {fileID: 7758912035439495191}
+  - {fileID: 5745021739647671365}
+  trashProjectilePrefab: {fileID: 9014407918597591715, guid: da73d1c38bb8beb4989fb3d34411ffe5, type: 3}
+  shootRange: 20
+  shootCooldown: 1.2
 --- !u!1 &8295190287298164584
 GameObject:
   m_ObjectHideFlags: 0

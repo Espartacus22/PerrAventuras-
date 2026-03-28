@@ -108,19 +108,28 @@ public class TrashDroneEnemy : MonoBehaviour
         if (distance > desiredCombatDistance + distanceDeadZone)
         {
             // acercarse
-            Vector3 newPos = Vector3.MoveTowards(
-                droneFlat,
-                playerFlat,
-                combatMoveSpeed * Time.deltaTime
-            );
-            transform.position = new Vector3(newPos.x, hoverHeight, newPos.z);
+            Vector3 moveDir = (playerFlat - droneFlat).normalized;
+            float moveStep = combatMoveSpeed * Time.deltaTime;
+
+            if (!Physics.Raycast(transform.position, moveDir, moveStep + 0.5f))
+            {
+                Vector3 newPos = droneFlat + moveDir * moveStep;
+                transform.position = new Vector3(newPos.x, hoverHeight, newPos.z);
+            }
         }
         else if (distance < desiredCombatDistance - distanceDeadZone)
         {
             // alejarse un poco
             Vector3 away = -toPlayerFlat.normalized;
-            Vector3 newPos = droneFlat + away * combatMoveSpeed * Time.deltaTime;
-            transform.position = new Vector3(newPos.x, hoverHeight, newPos.z);
+            Vector3 moveDir = away.normalized;
+            float moveStep = combatMoveSpeed * Time.deltaTime;
+
+            // Raycast para detectar pared
+            if (!Physics.Raycast(transform.position, moveDir, moveStep + 0.5f))
+            {
+                Vector3 newPos = droneFlat + moveDir * moveStep;
+                transform.position = new Vector3(newPos.x, hoverHeight, newPos.z);
+            }
         }
         else
         {

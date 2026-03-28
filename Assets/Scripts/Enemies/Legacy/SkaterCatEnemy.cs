@@ -181,4 +181,30 @@ public class SkaterCatEnemy : MonoBehaviour
             proj.SetRange(range);
         }
     }
+
+    private void OnDrawGizmosSelected()
+    {
+        // Rango sniper
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, sniperRange);
+
+        // Rango fury
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, furyRange);
+
+        // Línea hacia target actual si existe
+        if (target != null)
+        {
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawLine(transform.position, target.position);
+        }
+
+        // Fire point
+        if (firePoint != null)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawSphere(firePoint.position, 0.15f);
+            Gizmos.DrawLine(firePoint.position, firePoint.position + firePoint.forward * 2f);
+        }
+    }
 }
