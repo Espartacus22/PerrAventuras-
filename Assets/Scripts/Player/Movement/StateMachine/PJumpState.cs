@@ -12,6 +12,12 @@ public class PJumpState : PState
 
     public override void LogicUpdate()
     {
+        // Permitir segundo salto en el aire
+        if (player.InputHandler.JumpPressed && !player.IsGrounded)
+        {
+            player.Jump();
+        }
+
         if (player.InputHandler.DashPressed)
         {
             stateMachine.ChangeState(player.DashState);

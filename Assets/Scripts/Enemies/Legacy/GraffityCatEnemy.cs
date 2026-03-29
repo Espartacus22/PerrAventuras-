@@ -5,6 +5,18 @@ using UnityEngine.AI;
 
 public class GraffityCatEnemy : MonoBehaviour
 {
+    public enum BossPhase
+    {
+        Patrol,
+        Combat,
+        Enraged
+    }
+    [SerializeField] private BossPhase currentPhase = BossPhase.Patrol;
+
+    [SerializeField] private bool enableEnragedPhase = true;
+    [SerializeField] private float enragedHpThreshold = 0.4f;
+    private bool _enragedApplied = false;
+
     [Header("Datos base")]
     public EnemyType enemyData;          // ScriptableObject del boss
     public EnemyStats enemyStats;        // Mismo componente que usan otros enemigos
@@ -130,6 +142,22 @@ public class GraffityCatEnemy : MonoBehaviour
             HandleWalls(dist);
             HandleClones();
             HandleJump(dist);
+        }
+    }
+
+    void HandleEnragedPhase()
+    {
+        if (!enableEnragedPhase || _enragedApplied || enemyStats == null || enemyData == null) return;
+
+        float hpPercent = (float)enemyStats.CurrentHealth / enemyData.maxHealth;
+        if (hpPercent <= enragedHpThreshold)
+        {
+            rangedCooldown *= 0.8f;
+            meleeCooldown *= 0.8f;
+            wallCooldown *= 0.85f;
+            _enragedApplied = true;
+            currentPhase = BossPhase.Enraged;
+            Debug.Log("GraffityCat entró en fase Enraged");
         }
     }
 
@@ -260,8 +288,7 @@ public class GraffityCatEnemy : MonoBehaviour
         if (Time.time < _nextRangedTime) return;
         if (paintProjectilePrefab == null || firePoint == null) return;
 
-        Vector3 dir = (playerTarget.position - firePoint.position).normalized;
-        dir.y = 0;
+        Vector3 dir = (playerTarget.position + Vector3.up * 1.2f - firePoint.position).normalized;
 
         Quaternion rot = Quaternion.LookRotation(dir);
         GameObject projGO = Instantiate(paintProjectilePrefab, firePoint.position, rot);

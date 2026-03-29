@@ -12,8 +12,8 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Ground")]
     public LayerMask groundMask;
-    [SerializeField] private Transform groundCheck;
-    [SerializeField] private float groundCheckRadius = 0.25f;
+    [SerializeField] private float groundCheckDistance = 1.2f;
+    [SerializeField] private float groundRayOffset = 0.1f;
 
     [Header("Saltos")]
     [SerializeField] private bool hasDoubleJump = false;
@@ -94,13 +94,13 @@ public class PlayerMovement : MonoBehaviour
     {
         bool wasGrounded = isGrounded;
 
-        if (groundCheck != null)
-            isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundMask);
-        else
-            isGrounded = Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, 1.3f, groundMask);
+        Vector3 origin = transform.position + Vector3.up * groundRayOffset;
+        isGrounded = Physics.Raycast(origin, Vector3.down, groundCheckDistance, groundMask);
 
         if (isGrounded && !wasGrounded)
+        {
             jumpCount = 0;
+        }
     }
 
     public bool HasMovementInput()
@@ -176,6 +176,8 @@ public class PlayerMovement : MonoBehaviour
             );
 
             jumpCount++;
+            Debug.Log($"Salto ejecutado. jumpCount={jumpCount}, maxJumps={maxJumps}, hasDoubleJump={hasDoubleJump}");
+
         }
     }
 
@@ -283,10 +285,12 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        if (groundCheck != null)
-        {
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
-        }
+        Gizmos.color = isGrounded ? Color.green : Color.red;
+
+        Vector3 origin = transform.position + Vector3.up * groundRayOffset;
+        Vector3 end = origin + Vector3.down * groundCheckDistance;
+
+        Gizmos.DrawLine(origin, end);
+        Gizmos.DrawSphere(end, 0.05f);
     }
 }

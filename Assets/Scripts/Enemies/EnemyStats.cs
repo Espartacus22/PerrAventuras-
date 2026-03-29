@@ -7,6 +7,7 @@ public class EnemyStats : MonoBehaviour
     [SerializeField] private Slider healthSlider;
 
     private int currentHealth;
+    public int CurrentHealth => currentHealth;
 
     void Start()
     {
