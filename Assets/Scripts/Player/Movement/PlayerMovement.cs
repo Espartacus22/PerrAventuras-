@@ -18,6 +18,10 @@ public class PlayerMovement : MonoBehaviour
     [Header("Saltos")]
     [SerializeField] private bool hasDoubleJump = false;
 
+    [Header("Gravity")]
+    [SerializeField] private float extraFallGravity = 2.5f;
+    [SerializeField] private float lowJumpGravityMultiplier = 2f;
+
     private Rigidbody rb;
     private CapsuleCollider capsule;
     private PlayerInputHandler inputHandler;
@@ -88,6 +92,7 @@ public class PlayerMovement : MonoBehaviour
         if (characterData == null) return;
 
         StateMachine.CurrentState.PhysicsUpdate();
+        HandleBetterGravity();
     }
 
     private void UpdateGroundCheck()
@@ -281,6 +286,18 @@ public class PlayerMovement : MonoBehaviour
     public bool HasDoubleJump()
     {
         return hasDoubleJump;
+    }
+
+    private void HandleBetterGravity()
+    {
+        if (rb.linearVelocity.y < 0f)
+        {
+            rb.linearVelocity += Vector3.up * Physics.gravity.y * (extraFallGravity - 1f) * Time.deltaTime;
+        }
+        else if (rb.linearVelocity.y > 0f && !Input.GetButton("Jump"))
+        {
+            rb.linearVelocity += Vector3.up * Physics.gravity.y * (lowJumpGravityMultiplier - 1f) * Time.deltaTime;
+        }
     }
 
     private void OnDrawGizmosSelected()

@@ -96,8 +96,8 @@ public class LaserTurret : MonoBehaviour
             PlayerLevel lvl = hit.collider.GetComponentInParent<PlayerLevel>();
             if (lvl != null)
             {
-                float deltaDamage = damagePerSecond * Time.deltaTime;
-                lvl.TakeDamage(Mathf.RoundToInt(deltaDamage));
+                int damageThisFrame = Mathf.Max(1, Mathf.RoundToInt(damagePerSecond * Time.deltaTime));
+                lvl.TakeDamage(damageThisFrame);
             }
         }
         else

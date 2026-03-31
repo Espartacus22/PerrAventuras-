@@ -2,19 +2,20 @@ using UnityEngine;
 
 public class ShadowFollower : MonoBehaviour
 {
-    public Transform player;        // arrastrá el player (Piki)
-    public float heightOffset = 0.05f; // cuán cerca del suelo está
-    public LayerMask groundMask;    // asigná tu capa "Ground" o "Default"
+    [SerializeField] private Transform target;
+    [SerializeField] private LayerMask groundMask;
+    [SerializeField] private float rayDistance = 50f;
+    [SerializeField] private float yOffset = 0.02f;
 
-    void LateUpdate()
+    private void LateUpdate()
     {
-        if (player == null) return;
+        if (target == null) return;
 
-        Vector3 origin = player.position + Vector3.up * 2f;
-        if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 10f, groundMask))
+        Vector3 origin = target.position + Vector3.up * 2f;
+
+        if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, rayDistance, groundMask))
         {
-            transform.position = new Vector3(player.position.x, hit.point.y + heightOffset, player.position.z);
-            transform.rotation = Quaternion.Euler(90, 0, 0);
+            transform.position = hit.point + Vector3.up * yOffset;
         }
     }
 }
