@@ -28,7 +28,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1522931572753073572}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.24}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -37,7 +37,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -28.2, y: 0.74}
+  m_AnchoredPosition: {x: 0.536, y: 0.705}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &6579645032468916003
@@ -687,20 +687,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f2e0635f29cccb4a80a0ed7bf87ead0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TrashDroneEnemy
+  enemyData: {fileID: 0}
   patrolPoints: []
   moveSpeed: 3
   pointTolerance: 0.5
   hoverHeight: 3
-  detectRange: 30
-  desiredCombatDistance: 1.2
-  combatMoveSpeed: 4.5
-  distanceDeadZone: 0.25
+  detectRange: 20
+  desiredCombatDistance: 3
+  combatMoveSpeed: 3.5
+  distanceDeadZone: 0.5
   firePoints:
   - {fileID: 7758912035439495191}
   - {fileID: 5745021739647671365}
   trashProjectilePrefab: {fileID: 9014407918597591715, guid: da73d1c38bb8beb4989fb3d34411ffe5, type: 3}
-  shootRange: 20
+  shootRange: 15
   shootCooldown: 1.2
+  projectileDamage: 10
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 320
+  obstacleCheckDistance: 1.2
+  obstacleRayHeight: 1.2
 --- !u!1 &8295190287298164584
 GameObject:
   m_ObjectHideFlags: 0
@@ -726,7 +733,7 @@ Transform:
   m_GameObject: {fileID: 8295190287298164584}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -28.8, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
