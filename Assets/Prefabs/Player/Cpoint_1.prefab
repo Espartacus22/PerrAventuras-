@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 6162185698076475847}
   - component: {fileID: 5698667365911697792}
   - component: {fileID: 3489401294801232206}
-  - component: {fileID: 991685747754319823}
+  - component: {fileID: 5299987152502313013}
   m_Layer: 0
   m_Name: Cpoint_1
   m_TagString: Untagged
@@ -61,7 +61,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: -25, y: 6.8, z: -203.9}
-  m_LocalScale: {x: 13.299252, y: 1, z: 1.6125}
+  m_LocalScale: {x: 13.299252, y: 1, z: 1.6125001}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 963703375865662910}
@@ -95,6 +95,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -116,9 +118,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!64 &3489401294801232206
 MeshCollider:
@@ -142,7 +146,7 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &991685747754319823
+--- !u!114 &5299987152502313013
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -151,9 +155,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 8244969956693476122}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f20af9f2224cb1a4588bad74b24a6b20, type: 3}
+  m_Script: {fileID: 11500000, guid: ada038df1ff8f8d41bbf2eaa254a467d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
-  spawnPoint: {fileID: 963703375865662910}
-  activeVfx: {fileID: 0}
-  inactiveVfx: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::Checkpoint
