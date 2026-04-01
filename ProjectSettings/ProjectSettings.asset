@@ -929,11 +929,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 2
   windowsGamepadBackendHint: 0
-  cloudProjectId: 0d2047db-e430-426c-9c95-483ce03d25cc
+  cloudProjectId: 04c1148c-1502-46ff-a527-bb543a2ab667
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: My project 2025-08-27_18-54-42
-  organizationId: el_gojo_jpg
+  projectName: Masco Aventuras
+  organizationId: dimen-upc
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}
