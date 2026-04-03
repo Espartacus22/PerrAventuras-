@@ -26,20 +26,8 @@ public class PlayerInputHandler : MonoBehaviour
 
         MeleePressed = Input.GetMouseButtonDown(0);
         RangedPressed = Input.GetMouseButtonDown(1);
-    }
 
-    private void LateUpdate()
-    {
-        ConsumeFrameInput();
-    }
-
-    public void ConsumeFrameInput()
-    {
-        JumpPressed = false;
-        DashPressed = false;
-        CrouchPressed = false;
-        CrouchReleased = false;
-        MeleePressed = false;
-        RangedPressed = false;
+        if (MeleePressed) Debug.Log("InputHandler: click izquierdo");
+        if (RangedPressed) Debug.Log("InputHandler: click derecho");
     }
 }
