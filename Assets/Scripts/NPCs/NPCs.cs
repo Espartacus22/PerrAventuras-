@@ -45,7 +45,6 @@ public class NPCs : MonoBehaviour
 
     [SerializeField] private KeyCode interactKey = KeyCode.E;
 
-    bool playerInRange = false;
     bool acceptMiss = false;
     int currentStep = 0;
     bool dialogueOpen = false;
@@ -178,8 +177,6 @@ public class NPCs : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
-        playerInRange = true;
-
         if (!acceptMiss && !dialogueOpen && panelHintFar != null)
             panelHintFar.SetActive(true);
     }
@@ -187,8 +184,6 @@ public class NPCs : MonoBehaviour
     private void OnTriggerExit(Collider other)
     {
         if (!other.CompareTag("Player")) return;
-
-        playerInRange = false;
 
         if (panelHintFar != null) panelHintFar.SetActive(false);
         if (panelHintNear != null) panelHintNear.SetActive(false);
