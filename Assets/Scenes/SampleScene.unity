@@ -2220,9 +2220,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -120, y: -40}
+  m_AnchoredPosition: {x: -10, y: -10}
   m_SizeDelta: {x: 220, y: 60}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 1, y: 1}
 --- !u!114 &443828852
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3214,6 +3214,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8436530556138578653, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
+      propertyPath: maxShield
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 8436530556138578653, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
+      propertyPath: currentShield
+      value: 50
+      objectReference: {fileID: 0}
     - target: {fileID: 8874039823671508997, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
       propertyPath: m_Name
       value: Player
@@ -3757,9 +3765,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -900, y: -300}
+  m_AnchoredPosition: {x: -1200, y: -310}
   m_SizeDelta: {x: 390, y: 110}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0, y: 0}
 --- !u!114 &654657039
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5179,6 +5187,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45c7b0c95c101f04581f086a83eaedc1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &967168956 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8436530556138578653, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
+  m_PrefabInstance: {fileID: 584904768}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 39291292}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ac900c71e045244a83e8a9017f90900, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &998213599 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3450657088883723275, guid: 934a0907339829d49bff89d404fe24d8, type: 3}
@@ -6594,6 +6613,7 @@ GameObject:
   - component: {fileID: 1334682494}
   - component: {fileID: 1334682493}
   - component: {fileID: 1334682492}
+  - component: {fileID: 1334682496}
   m_Layer: 5
   m_Name: Canvas_PlayerUI
   m_TagString: Untagged
@@ -6686,6 +6706,26 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1334682496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1334682491}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44c942ce9756c994890f71e86fb9aac6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHUD
+  hpBar: {fileID: 768922225}
+  shieldBar: {fileID: 592611540}
+  xpBar: {fileID: 1019788916}
+  hpText: {fileID: 1408252474}
+  shieldText: {fileID: 1566811009}
+  xpText: {fileID: 1439033727}
+  coinsText: {fileID: 1230122022}
+  playerLevel: {fileID: 967168956}
 --- !u!1 &1336980175
 GameObject:
   m_ObjectHideFlags: 0
@@ -7167,7 +7207,7 @@ GameObject:
   - component: {fileID: 1439033728}
   - component: {fileID: 1439033727}
   m_Layer: 5
-  m_Name: HP_Text
+  m_Name: XP_Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7591,7 +7631,7 @@ GameObject:
   - component: {fileID: 1566811010}
   - component: {fileID: 1566811009}
   m_Layer: 5
-  m_Name: HP_Text
+  m_Name: Shield_Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
