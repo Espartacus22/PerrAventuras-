@@ -45,10 +45,16 @@ public class PlayerCombat : MonoBehaviour
     private void Update()
     {
         if (inputHandler.MeleePressed)
+        {
+            Debug.Log("MELEE EXECUTE");
             meleeStrategy.Execute(this);
+        }
 
         if (inputHandler.RangedPressed)
+        {
+            Debug.Log("RANGED EXECUTE");
             rangedStrategy.Execute(this);
+        }
     }
 
     public void SetMeleeStrategy(IMeleeAttackStrategy newStrategy)

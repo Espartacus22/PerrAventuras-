@@ -17,6 +17,7 @@ public class NPCs : MonoBehaviour
     public GameObject panelMiss;
     public TextMeshProUGUI textMiss;
     public GameObject buttonMiss;
+    public GameObject crosshair;
 
     [Header("Ranges")]
     public float outerRange = 3f;
@@ -25,6 +26,10 @@ public class NPCs : MonoBehaviour
     [Header("Player")]
     public PlayerMovement player;
     public float moveSpeed = 3f;
+
+    [Header("Optional Player Scripts")]
+    public PlayerInputHandler playerInputHandler;
+    public PlayerCombat playerCombat;
 
     [Header("Tutorial (opcional)")]
     public string[] instructions;
@@ -40,9 +45,9 @@ public class NPCs : MonoBehaviour
 
     [SerializeField] private KeyCode interactKey = KeyCode.E;
 
-    bool playerInRange = false;
     bool acceptMiss = false;
     int currentStep = 0;
+    bool dialogueOpen = false;
 
     private void Start()
     {
@@ -69,6 +74,12 @@ public class NPCs : MonoBehaviour
                 player = playerObject.GetComponent<PlayerMovement>();
                 if (player == null)
                     Debug.LogError("No se encontró PlayerMovement en el objeto con tag 'Player'.");
+
+                if (playerInputHandler == null)
+                    playerInputHandler = playerObject.GetComponent<PlayerInputHandler>();
+
+                if (playerCombat == null)
+                    playerCombat = playerObject.GetComponent<PlayerCombat>();
             }
             else
             {
@@ -91,6 +102,8 @@ public class NPCs : MonoBehaviour
         if (buttonMiss != null) buttonMiss.SetActive(false);
         if (panelHintFar != null) panelHintFar.SetActive(false);
         if (panelHintNear != null) panelHintNear.SetActive(false);
+
+        LockGameplayCursor();
     }
 
     private void Update()
@@ -99,15 +112,14 @@ public class NPCs : MonoBehaviour
         {
             float dist = Vector3.Distance(player.transform.position, transform.position);
 
-            if (!acceptMiss && dist <= innerRange && Input.GetKeyDown(interactKey))
+            if (!acceptMiss && !dialogueOpen && dist <= innerRange && Input.GetKeyDown(interactKey))
             {
                 Vector3 lookPos = new Vector3(transform.position.x, player.transform.position.y, transform.position.z);
                 player.transform.LookAt(lookPos);
-                player.enabled = false;
                 OpenDialogue();
             }
 
-            if (!acceptMiss && (panelHintFar != null || panelHintNear != null))
+            if (!acceptMiss && (panelHintFar != null || panelHintNear != null) && !dialogueOpen)
             {
                 if (dist <= innerRange)
                 {
@@ -127,6 +139,19 @@ public class NPCs : MonoBehaviour
             }
         }
 
+        if (dialogueOpen)
+        {
+            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+            {
+                YES();
+            }
+
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                HideDialogue();
+            }
+        }
+
         if (acceptMiss && moveSpeed > 0f)
         {
             transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime, Space.Self);
@@ -135,19 +160,24 @@ public class NPCs : MonoBehaviour
 
     void OpenDialogue()
     {
+        dialogueOpen = true;
+
         if (panelHintFar != null) panelHintFar.SetActive(false);
         if (panelHintNear != null) panelHintNear.SetActive(false);
         if (panelNPC != null) panelNPC.SetActive(true);
         if (panelNPC2 != null) panelNPC2.SetActive(false);
+
+        if (crosshair != null) crosshair.SetActive(false);
+
+        DisablePlayerForDialogue();
+        UnlockCursorForUI();
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player")) return;
 
-        playerInRange = true;
-
-        if (!acceptMiss && panelHintFar != null)
+        if (!acceptMiss && !dialogueOpen && panelHintFar != null)
             panelHintFar.SetActive(true);
     }
 
@@ -155,28 +185,24 @@ public class NPCs : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
-        playerInRange = false;
-
         if (panelHintFar != null) panelHintFar.SetActive(false);
         if (panelHintNear != null) panelHintNear.SetActive(false);
         if (panelNPC != null) panelNPC.SetActive(false);
         if (panelNPC2 != null) panelNPC2.SetActive(false);
 
-        if (player != null) player.enabled = true;
+        dialogueOpen = false;
+        EnablePlayerAfterDialogue();
+        LockGameplayCursor();
     }
 
     public void NO()
     {
-        if (player != null) player.enabled = true;
-
         if (panelNPC != null) panelNPC.SetActive(false);
         if (panelNPC2 != null) panelNPC2.SetActive(true);
     }
 
     public void YES()
     {
-        if (player != null) player.enabled = true;
-
         acceptMiss = true;
         currentStep = 0;
         UpdateMissionText();
@@ -191,17 +217,13 @@ public class NPCs : MonoBehaviour
         }
 
         if (quest != null)
-        {
             quest.StartQuest();
-        }
 
         if (trainingZone != null)
             trainingZone.SetActive(true);
 
         if (trainingStartPoint != null && player != null)
-        {
             player.transform.position = trainingStartPoint.position;
-        }
 
         if (missSymbol != null) missSymbol.SetActive(false);
         if (panelNPC != null) panelNPC.SetActive(false);
@@ -209,6 +231,12 @@ public class NPCs : MonoBehaviour
         if (panelMiss != null) panelMiss.SetActive(true);
         if (panelHintFar != null) panelHintFar.SetActive(false);
         if (panelHintNear != null) panelHintNear.SetActive(false);
+
+        if (crosshair != null) crosshair.SetActive(true);
+
+        dialogueOpen = false;
+        EnablePlayerAfterDialogue();
+        LockGameplayCursor();
     }
 
     private void UpdateMissionText()
@@ -264,6 +292,36 @@ public class NPCs : MonoBehaviour
         if (panelNPC2 != null) panelNPC2.SetActive(false);
         if (panelMiss != null) panelMiss.SetActive(false);
 
+        if (crosshair != null) crosshair.SetActive(true);
+
+        dialogueOpen = false;
+        EnablePlayerAfterDialogue();
+        LockGameplayCursor();
+    }
+
+    private void DisablePlayerForDialogue()
+    {
+        if (player != null) player.enabled = false;
+        if (playerInputHandler != null) playerInputHandler.enabled = false;
+        if (playerCombat != null) playerCombat.enabled = false;
+    }
+
+    private void EnablePlayerAfterDialogue()
+    {
         if (player != null) player.enabled = true;
+        if (playerInputHandler != null) playerInputHandler.enabled = true;
+        if (playerCombat != null) playerCombat.enabled = true;
+    }
+
+    private void UnlockCursorForUI()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
+    private void LockGameplayCursor()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 }

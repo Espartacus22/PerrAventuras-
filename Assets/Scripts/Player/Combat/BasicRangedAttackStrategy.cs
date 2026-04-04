@@ -18,20 +18,33 @@ public class BasicRangedAttackStrategy : IRangedAttackStrategy
         if (combat.AudioSource != null && attack.sound != null)
             combat.AudioSource.PlayOneShot(attack.sound);
 
+        if (attack.projectilePrefab == null) return;
+
+        Vector3 spawnPosition = combat.transform.position + combat.transform.forward * 1.0f + Vector3.up * 0.8f;
         Vector3 shootDirection = combat.transform.forward;
 
         if (Camera.main != null)
         {
+            Vector3 screenCenter = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f);
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+            Vector3 targetPoint;
             if (Physics.Raycast(ray, out RaycastHit hit, 200f))
-                shootDirection = (hit.point - combat.transform.position).normalized;
+                targetPoint = hit.point;
+            else
+                targetPoint = ray.GetPoint(200f);
+
+            shootDirection = (targetPoint - spawnPosition).normalized;
         }
 
-        if (attack.projectilePrefab == null) return;
+        // Opcional: hacer que el personaje mire hacia donde dispara, sin inclinarse para arriba/abajo
+        Vector3 flatDir = new Vector3(shootDirection.x, 0f, shootDirection.z).normalized;
+        if (flatDir.sqrMagnitude > 0.001f)
+            combat.transform.forward = flatDir;
 
         GameObject projectile = Object.Instantiate(
             attack.projectilePrefab,
-            combat.transform.position + shootDirection,
+            spawnPosition,
             Quaternion.LookRotation(shootDirection)
         );
 

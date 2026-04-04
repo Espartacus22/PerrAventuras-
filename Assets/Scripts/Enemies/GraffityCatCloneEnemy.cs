@@ -66,12 +66,8 @@ public class GraffityCatCloneEnemy : MonoBehaviour
         {
             if (!hit.CompareTag("Player")) continue;
 
-            // Cambiá estos nombres por tu script real de vida del jugador
-            var hp1 = hit.GetComponent<PlayerLevel>();
-            if (hp1 != null) hp1.TakeDamage(meleeDamage);
-
-            var hp2 = hit.GetComponent<PlayerLevel>();
-            if (hp2 != null) hp2.TakeDamage(meleeDamage);
+            var hp = hit.GetComponent<PlayerLevel>();
+            if (hp != null) hp.TakeDamage(meleeDamage);
 
             Debug.Log($"Clon de GraffityCat golpeó al jugador por {meleeDamage}");
             break;

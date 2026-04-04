@@ -251,12 +251,17 @@ public class PlayerMovement : MonoBehaviour
 
     private void RotateTowardsMouse()
     {
-        if (Camera.main == null) return;
+        if (Camera.main == null || characterData == null) return;
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit, 200f))
+
+        // Plano horizontal a la altura del jugador
+        Plane plane = new Plane(Vector3.up, new Vector3(0f, transform.position.y, 0f));
+
+        if (plane.Raycast(ray, out float enter))
         {
-            Vector3 lookDir = hit.point - transform.position;
+            Vector3 hitPoint = ray.GetPoint(enter);
+            Vector3 lookDir = hitPoint - transform.position;
             lookDir.y = 0f;
 
             if (lookDir.sqrMagnitude > 0.01f)
