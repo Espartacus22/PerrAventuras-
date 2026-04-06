@@ -141,7 +141,7 @@ public class NPCs : MonoBehaviour
 
         if (dialogueOpen)
         {
-            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+            if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.KeypadEnter))
             {
                 YES();
             }
