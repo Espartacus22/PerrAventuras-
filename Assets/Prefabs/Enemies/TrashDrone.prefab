@@ -624,6 +624,7 @@ GameObject:
   - component: {fileID: 8500501904246159201}
   - component: {fileID: -4268107754245200327}
   - component: {fileID: 238940377480573588}
+  - component: {fileID: 6626172603624272146}
   m_Layer: 7
   m_Name: TrashDrone
   m_TagString: Enemy
@@ -708,6 +709,20 @@ MonoBehaviour:
     m_Bits: 320
   obstacleCheckDistance: 1.2
   obstacleRayHeight: 1.2
+--- !u!114 &6626172603624272146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7526836627258764377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1dc5d9a767dc4e40aa4a94d7461094e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RewardOnDeath
+  enemyData: {fileID: 11400000, guid: f699cca1c40e4da4b9d7a56bc0123463, type: 2}
+  dropSpawnPoint: {fileID: 0}
 --- !u!1 &8295190287298164584
 GameObject:
   m_ObjectHideFlags: 0

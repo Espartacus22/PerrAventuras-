@@ -26,6 +26,9 @@ public class PlayerLevel : MonoBehaviour
     public int shieldPerLevel = 10;
     public int defensePerLevel = 1;
 
+    [Header("Monedas")]
+    public int currentCoins = 0;
+
     [Header("Debug")]
     public bool restoreFullOnLevelUp = true;
 
@@ -48,9 +51,7 @@ public class PlayerLevel : MonoBehaviour
             currentHealth = maxHealth;
     }
 
-    // -------------------------
     // XP / NIVEL
-    // -------------------------
 
     public void GainXP(int amount)
     {
@@ -99,9 +100,27 @@ public class PlayerLevel : MonoBehaviour
         Debug.Log($"{name} mejoró stats -> HP: {maxHealth}, Escudo: {maxShield}, Defensa: {defense}");
     }
 
-    // -------------------------
+    // Coins
+
+    public void AddCoins(int amount)
+    {
+        if (amount <= 0) return;
+
+        currentCoins += amount;
+        Debug.Log($"{name} ganó {amount} monedas. Total: {currentCoins}");
+    }
+
+    public bool SpendCoins(int amount)
+    {
+        if (amount <= 0) return false;
+        if (currentCoins < amount) return false;
+
+        currentCoins -= amount;
+        Debug.Log($"{name} gastó {amount} monedas. Total: {currentCoins}");
+        return true;
+    }
+
     // VIDA / DAÑO
-    // -------------------------
 
     public void TakeDamage(int damage)
     {
@@ -167,9 +186,7 @@ public class PlayerLevel : MonoBehaviour
         return currentShield;
     }
 
-    // -------------------------
     // MUERTE
-    // -------------------------
 
     private void Die()
     {

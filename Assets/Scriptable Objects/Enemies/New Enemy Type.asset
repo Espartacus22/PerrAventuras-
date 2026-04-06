@@ -16,8 +16,12 @@ MonoBehaviour:
   maxHealth: 100
   moveSpeed: 5
   chaseRange: 50
-  xpReward: 5
+  xpReward: 10
   dropPrefab: {fileID: 4288601612095329630, guid: 5cd768c3c99935649a6c4e24cb8b88b9, type: 3}
+  hpReward: 1
+  shieldReward: 1
+  coinReward: 1
+  fullRestoreOnKill: 0
   meleeDamage: 30
   meleeCooldown: 1
   meleeRange: 2

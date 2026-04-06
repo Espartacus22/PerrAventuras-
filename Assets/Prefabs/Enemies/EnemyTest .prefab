@@ -642,6 +642,10 @@ MonoBehaviour:
   pointTolerance: 0.3
   currentPatrolIndex: 0
   attackDamage: 10
+  useProjectileAttack: 0
+  projectilePrefab: {fileID: 0}
+  firePoint: {fileID: 0}
+  projectileSpeed: 12
 --- !u!1 &6439778550189181946
 GameObject:
   m_ObjectHideFlags: 0
