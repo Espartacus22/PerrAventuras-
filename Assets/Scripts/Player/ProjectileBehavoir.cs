@@ -38,6 +38,8 @@ public class ProjectileBehavior : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+
+        Debug.Log("Projectile hit: " + other.name);
         // 1) Ignorar al player
         if (other.CompareTag("Player"))
             return;

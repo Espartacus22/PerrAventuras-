@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 3166765731722014647}
   - component: {fileID: 4107830387364104645}
   - component: {fileID: 2579499678183287955}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: HealtBarCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -127,7 +127,7 @@ GameObject:
   - component: {fileID: 47139530634567438}
   - component: {fileID: 1061779978056795138}
   - component: {fileID: 1038006951395946879}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -202,7 +202,7 @@ GameObject:
   - component: {fileID: 8985825387614331026}
   - component: {fileID: 8918295672565303627}
   - component: {fileID: 7008760775719356032}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -277,7 +277,7 @@ GameObject:
   - component: {fileID: 1876848529479280776}
   - component: {fileID: 7146770088486796730}
   - component: {fileID: 8814916913864282128}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Fill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -350,7 +350,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5745021739647671365}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: FPoint_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -384,7 +384,7 @@ GameObject:
   - component: {fileID: 4016250904889667583}
   - component: {fileID: 6678441107175599065}
   - component: {fileID: 4992728569129981615}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -496,7 +496,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3186072560674662652}
   - component: {fileID: 6891251007550045445}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: HealthSlider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -585,7 +585,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2231829020619893108}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Handle Slide Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -621,11 +621,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7623272905514402766}
+  - component: {fileID: 3916148923323758149}
   - component: {fileID: 8500501904246159201}
   - component: {fileID: -4268107754245200327}
   - component: {fileID: 238940377480573588}
   - component: {fileID: 6626172603624272146}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: TrashDrone
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -649,6 +650,29 @@ Transform:
   - {fileID: 6996282384541581334}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &3916148923323758149
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7526836627258764377}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &8500501904246159201
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -661,7 +685,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34288427ce13af44882bd40963a529d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyData: {fileID: 11400000, guid: ae6342742b833e84d8aa9719bb4f7348, type: 2}
+  enemyData: {fileID: 11400000, guid: f699cca1c40e4da4b9d7a56bc0123463, type: 2}
   healthSlider: {fileID: 6891251007550045445}
 --- !u!114 &-4268107754245200327
 MonoBehaviour:
@@ -688,9 +712,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f2e0635f29cccb4a80a0ed7bf87ead0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TrashDroneEnemy
-  enemyData: {fileID: 0}
+  enemyData: {fileID: 11400000, guid: f699cca1c40e4da4b9d7a56bc0123463, type: 2}
   patrolPoints: []
-  moveSpeed: 3
+  moveSpeed: 0
   pointTolerance: 0.5
   hoverHeight: 3
   detectRange: 20
@@ -722,7 +746,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RewardOnDeath
   enemyData: {fileID: 11400000, guid: f699cca1c40e4da4b9d7a56bc0123463, type: 2}
-  dropSpawnPoint: {fileID: 0}
 --- !u!1 &8295190287298164584
 GameObject:
   m_ObjectHideFlags: 0
@@ -732,7 +755,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6996282384541581334}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -766,7 +789,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4806006438295737908}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Fill Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -802,7 +825,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7758912035439495191}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: FPoint_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}

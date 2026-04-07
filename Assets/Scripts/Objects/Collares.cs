@@ -111,6 +111,17 @@ public class Collares : MonoBehaviour
         }
     }
 
+    private void HideQuestTrigger()
+    {
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+            col.enabled = false;
+
+        Renderer rend = GetComponent<Renderer>();
+        if (rend != null)
+            rend.enabled = false;
+    }
+
     public void CompleteQuest()
     {
         questCompleted = true;
@@ -136,6 +147,8 @@ public class Collares : MonoBehaviour
         {
             questGiver.OnQuestCompleted();
         }
+
+        HideQuestTrigger();
 
     }
 

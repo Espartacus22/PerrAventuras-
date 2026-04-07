@@ -296,6 +296,7 @@ GameObject:
   - component: {fileID: 2203099660460086362}
   - component: {fileID: 6614977043159272262}
   - component: {fileID: 8747780525555571112}
+  - component: {fileID: 3475759047977758519}
   m_Layer: 0
   m_Name: 'EnemyTest '
   m_TagString: Enemy
@@ -633,9 +634,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e16277d739e27a48b5e158dc5e3c02c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyController
-  enemyData: {fileID: 0}
+  enemyData: {fileID: 11400000, guid: ae6342742b833e84d8aa9719bb4f7348, type: 2}
   playerTag: Player
-  detectionRange: 10
+  detectionRange: 15
   attackRange: 2
   attackCooldown: 1
   patrolPoints: []
@@ -646,6 +647,19 @@ MonoBehaviour:
   projectilePrefab: {fileID: 0}
   firePoint: {fileID: 0}
   projectileSpeed: 12
+--- !u!114 &3475759047977758519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5949828187330856686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1dc5d9a767dc4e40aa4a94d7461094e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RewardOnDeath
+  enemyData: {fileID: 11400000, guid: ae6342742b833e84d8aa9719bb4f7348, type: 2}
 --- !u!1 &6439778550189181946
 GameObject:
   m_ObjectHideFlags: 0

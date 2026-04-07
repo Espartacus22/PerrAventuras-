@@ -22,7 +22,7 @@ MonoBehaviour:
   shieldReward: 5
   coinReward: 1
   fullRestoreOnKill: 0
-  meleeDamage: 5
+  meleeDamage: 10
   meleeCooldown: 1.5
   meleeRange: 1.8
   attackAnimation: {fileID: 0}
