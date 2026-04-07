@@ -2,33 +2,22 @@ using UnityEngine;
 
 public class Breakable : MonoBehaviour
 {
-    [Header("Container")]
-    public int maxHealth = 20;
+    public int maxHealth = 3;
     private int currentHealth;
 
     [Header("Rewards")]
+    public int coinReward = 5;
     public int hpReward = 0;
     public int shieldReward = 0;
-    public int xpReward = 0;
-    public int coinReward = 5;
 
-    [Header("Optional")]
-    public bool fullRestore = false;
-    public GameObject breakEffect;
-    public GameObject dropPrefab;
-
-    private bool broken = false;
-
-    private void Awake()
+    void Start()
     {
         currentHealth = maxHealth;
     }
 
     public void TakeDamage(int damage)
     {
-        if (broken) return;
-        if (damage <= 0) return;
-
+        Debug.Log($"{name} recibió {damage} de daño.");
         currentHealth -= damage;
 
         if (currentHealth <= 0)
@@ -37,34 +26,16 @@ public class Breakable : MonoBehaviour
         }
     }
 
-    private void Break()
+    void Break()
     {
-        if (broken) return;
-        broken = true;
+        PlayerLevel player = FindFirstObjectByType<PlayerLevel>();
 
-        PlayerLevel playerLevel = FindFirstObjectByType<PlayerLevel>();
-
-        if (playerLevel != null)
+        if (player != null)
         {
-            if (fullRestore)
-            {
-                playerLevel.RestoreFullState();
-            }
-            else
-            {
-                if (hpReward > 0) playerLevel.Heal(hpReward);
-                if (shieldReward > 0) playerLevel.RestoreShield(shieldReward);
-            }
-
-            if (xpReward > 0) playerLevel.AddXP(xpReward);
-            if (coinReward > 0) playerLevel.AddCoins(coinReward);
+            player.AddCoins(coinReward);
+            player.Heal(hpReward);
+            player.RestoreShield(shieldReward);
         }
-
-        if (breakEffect != null)
-            Instantiate(breakEffect, transform.position, Quaternion.identity);
-
-        if (dropPrefab != null)
-            Instantiate(dropPrefab, transform.position, Quaternion.identity);
 
         Destroy(gameObject);
     }

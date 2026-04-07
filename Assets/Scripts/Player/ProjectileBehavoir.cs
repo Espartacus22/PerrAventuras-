@@ -71,11 +71,12 @@ public class ProjectileBehavior : MonoBehaviour
         }
 
         // 4) Cofre destructible
-        BreakableChest chest = other.GetComponentInParent<BreakableChest>();
-        if (chest != null)
+        Breakable breakable = other.GetComponentInParent<Breakable>();
+
+        if (breakable != null)
         {
-            Debug.Log($"Impactó al COFRE: {chest.name} con {damage} de daño.");
-            chest.TakeDamage(Mathf.RoundToInt(damage));
+            Debug.Log($"Impactó al BREAKABLE: {breakable.name} con {damage} de daño.");
+            breakable.TakeDamage(Mathf.RoundToInt(damage));
             Destroy(gameObject);
             return;
         }
