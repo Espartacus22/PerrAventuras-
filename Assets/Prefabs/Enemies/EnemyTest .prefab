@@ -292,7 +292,6 @@ GameObject:
   - component: {fileID: 6098899520012633639}
   - component: {fileID: 4123054483093341348}
   - component: {fileID: 5147520452744884153}
-  - component: {fileID: 2206797610491184179}
   - component: {fileID: 2203099660460086362}
   - component: {fileID: 6614977043159272262}
   - component: {fileID: 8747780525555571112}
@@ -568,33 +567,6 @@ NavMeshAgent:
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &2206797610491184179
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5949828187330856686}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6110740b5243087498722f0c19387690, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 0}
-  playerTag: Player
-  enemyData: {fileID: 11400000, guid: ae6342742b833e84d8aa9719bb4f7348, type: 2}
-  patrolPoints: []
-  pointTolerance: 0.3
-  firePoint: {fileID: 0}
-  projectilePrefab: {fileID: 0}
-  sniperRange: 50
-  sniperCooldown: 1.5
-  sniperDamage: 20
-  furyRange: 8
-  furyFireRate: 5
-  furyDamage: 30
-  furyWindupTime: 2
-  retargetInterval: 0.35
 --- !u!114 &2203099660460086362
 MonoBehaviour:
   m_ObjectHideFlags: 0
