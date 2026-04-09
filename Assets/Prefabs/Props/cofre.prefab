@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: fd152f015416953408daf0a899bd96f4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.23932731
+      value: -16.791695
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fd152f015416953408daf0a899bd96f4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.06
+      value: -1.0445449
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fd152f015416953408daf0a899bd96f4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 15.0982485
+      value: 45.2874
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fd152f015416953408daf0a899bd96f4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -61,7 +61,7 @@ PrefabInstance:
       addedObject: {fileID: 2449585026542178040}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fd152f015416953408daf0a899bd96f4, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1633766732567677892}
+      addedObject: {fileID: 6417540051006453654}
   m_SourcePrefab: {fileID: 100100000, guid: fd152f015416953408daf0a899bd96f4, type: 3}
 --- !u!1 &3784036760157669980 stripped
 GameObject:
@@ -88,8 +88,8 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 0.015769618, y: 0.02799745, z: 0.017192807}
-  m_Center: {x: 0.0000041767416, y: 0.00001778105, z: 0.008045764}
---- !u!114 &1633766732567677892
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6417540051006453654
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -98,11 +98,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 3784036760157669980}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9e1df8efe8d169946a17beea5af82187, type: 3}
+  m_Script: {fileID: 11500000, guid: 6df681959cd099b458d09062e219902f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
-  maxHP: 20
-  xpDropPrefab: {fileID: 4288601612095329630, guid: 5cd768c3c99935649a6c4e24cb8b88b9, type: 3}
-  xpDropCount: 3
-  healthDropPrefab: {fileID: 2307162825395307599, guid: 35659fe0cd32fcf43a9e185b586284f6, type: 3}
-  healthDropCount: 1
+  m_EditorClassIdentifier: Assembly-CSharp::Breakable
+  maxHealth: 5
+  coinReward: 5
+  hpReward: 50
+  shieldReward: 20

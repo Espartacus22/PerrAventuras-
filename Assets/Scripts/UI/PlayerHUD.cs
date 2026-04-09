@@ -48,6 +48,6 @@ public class PlayerHUD : MonoBehaviour
         xpText.text = "XP: " + playerLevel.currentXP + " / " + playerLevel.xpToNextLevel;
 
         // Coins
-        coinsText.text = "Coins: 0";
+        coinsText.text = "Coins: " + playerLevel.currentCoins;
     }
 }
