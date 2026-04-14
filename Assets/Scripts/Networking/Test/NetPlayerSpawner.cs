@@ -24,6 +24,7 @@ public class NetPlayerSpawner : MonoBehaviour
         spawnedPlayers.Add(player, playerObject);
 
         Debug.Log($"Player spawned: {player.PlayerId}");
+        Debug.Log($"Spawning player {player.PlayerId} at {spawnPosition}");
     }
 
     public void DespawnPlayer(PlayerRef player)

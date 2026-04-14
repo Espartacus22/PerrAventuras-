@@ -4,6 +4,7 @@ using Fusion.Sockets;
 using UnityEngine;
 using UnityEngine.UI;
 using Networking;
+using TMPro;
 
 public class NetGameLauncher : MonoBehaviour, INetworkRunnerCallbacks
 {
@@ -18,6 +19,7 @@ public class NetGameLauncher : MonoBehaviour, INetworkRunnerCallbacks
     [SerializeField] private string sessionName = "Coop_Test";
 
     [SerializeField] private NetPlayerSpawner playerSpawner;
+    [SerializeField] private TMP_Text statusText;
 
     private bool leftMousePressed;
     private bool rightMousePressed;
@@ -51,9 +53,13 @@ public class NetGameLauncher : MonoBehaviour, INetworkRunnerCallbacks
         if (!result.Ok)
         {
             Debug.LogError($"Host error: {result.ShutdownReason} / {result.ErrorMessage}");
+            SetStatus($"Host error: {result.ShutdownReason}");
             hostButton.interactable = true;
             joinButton.interactable = true;
+            return;
         }
+
+        SetStatus("Hosting room...");
     }
 
     private async void StartClient()
@@ -73,16 +79,21 @@ public class NetGameLauncher : MonoBehaviour, INetworkRunnerCallbacks
         if (!result.Ok)
         {
             Debug.LogError($"Client error: {result.ShutdownReason} / {result.ErrorMessage}");
+            SetStatus($"Client error: {result.ShutdownReason}");
             hostButton.interactable = true;
             joinButton.interactable = true;
+            return;
         }
+
+        SetStatus("Joining room...");
     }
 
     void INetworkRunnerCallbacks.OnConnectedToServer(NetworkRunner runner)
     {
         Debug.Log("Connected to server.");
-        if (netPanel != null)
-            netPanel.SetActive(false);
+        if (hostButton != null) hostButton.gameObject.SetActive(false);
+        if (joinButton != null) joinButton.gameObject.SetActive(false);
+        SetStatus("Connected");
     }
 
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
@@ -137,13 +148,20 @@ public class NetGameLauncher : MonoBehaviour, INetworkRunnerCallbacks
     }
 
     public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
-    public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { }
+    public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) 
+    {
+        SetStatus($"Shutdown: {shutdownReason}");
+    }
     void INetworkRunnerCallbacks.OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason)
     {
         Debug.LogWarning($"Disconnected from server: {reason}");
+        SetStatus($"Disconnected: {reason}");
     }
     public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) { }
-    public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) { }
+    public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason)
+    {
+        SetStatus($"Connect failed: {reason}");
+    }
     public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
     public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList) { }
     public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }
@@ -154,5 +172,13 @@ public class NetGameLauncher : MonoBehaviour, INetworkRunnerCallbacks
     public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
     public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, System.ArraySegment<byte> data) { }
     public void OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress) { }
+
+    private void SetStatus(string message)
+    {
+        if (statusText != null)
+            statusText.text = message;
+
+        Debug.Log(message);
+    }
 
 }
