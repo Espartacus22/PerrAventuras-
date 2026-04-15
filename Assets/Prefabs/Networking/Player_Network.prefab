@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1419590273044371852}
   - component: {fileID: 2438445127651024330}
   - component: {fileID: 2140717069293485958}
+  - component: {fileID: 3198417283152242855}
   m_Layer: 3
   m_Name: Player_Network
   m_TagString: Player
@@ -59,6 +60,7 @@ MonoBehaviour:
   - {fileID: 1419590273044371852}
   - {fileID: 2438445127651024330}
   - {fileID: 2140717069293485958}
+  - {fileID: 3198417283152242855}
   ForceRemoteRenderTimeframe: 0
 --- !u!143 &7999783005460697304
 CharacterController:
@@ -131,7 +133,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetPlayerAttack
   playerRenderer: {fileID: 6415012615293988529}
+  atkPoint: {fileID: 3352473532767213813}
+  attackRadius: 1.25
+  damageAmount: 10
   attackCooldown: 0.35
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 8
+--- !u!114 &3198417283152242855
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 90855937469622021}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1669415a87054a4691e9cc74453fc07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetPlayerHealth
+  _CurrentHealth: 100
 --- !u!1 &2267138841569756741
 GameObject:
   m_ObjectHideFlags: 0
