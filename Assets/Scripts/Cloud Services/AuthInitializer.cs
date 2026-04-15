@@ -5,103 +5,123 @@ using Unity.Services.Authentication;
 using Unity.Services.Core;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
 public class AuthInitializer : MonoBehaviour
 {
     [SerializeField] private Button signInButton;
     [SerializeField] private Button signUpAccountButton;
-    [SerializeField] private Button signInUserPasswordButton;
+    [SerializeField] private Button signInEmailPasswordButton;
 
-
-    [Header("Username and Password")]
-    [SerializeField] private TMP_InputField usernameInput;
+    [Header("Email and Password")]
+    [SerializeField] private TMP_InputField emailInput;
     [SerializeField] private TMP_InputField passwordInput;
+    [SerializeField] private TMP_Text errorText;
 
     async void Start()
     {
         signInButton.interactable = false;
-        await UnityServices.InitializeAsync();
-        signInButton.interactable = true;
-        signInButton.onClick.AddListener(SignIn);
 
-        signUpAccountButton.onClick.AddListener(() => {
-            SignUpWithUsernamePasswordAsync(usernameInput.text, passwordInput.text);
+        // Inicializar servicios solo si no están inicializados
+        if (UnityServices.State != ServicesInitializationState.Initialized)
+        {
+            await UnityServices.InitializeAsync();
+        }
+
+        signInButton.interactable = true;
+
+        signInButton.onClick.AddListener(SignInAnonymously);
+
+        signUpAccountButton.onClick.AddListener(() =>
+        {
+            SignUpWithEmailPasswordAsync(emailInput.text, passwordInput.text);
         });
 
-
-        signInUserPasswordButton.onClick.AddListener(() => {
-            SignInWithUsernamePasswordAsync(usernameInput.text, passwordInput.text);
+        signInEmailPasswordButton.onClick.AddListener(() =>
+        {
+            SignInWithEmailPasswordAsync(emailInput.text, passwordInput.text);
         });
     }
 
-    private async void SignIn()
+    private async void SignInAnonymously()
     {
         signInButton.gameObject.SetActive(false);
         try
         {
-            await AuthenticationService.Instance.SignInAnonymouslyAsync();
-            
+            // Solo loguear si no está ya logueado
+            if (!AuthenticationService.Instance.IsSignedIn)
+            {
+                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            }
+
+            errorText.text = "";
+            Debug.Log("Player ID: " + AuthenticationService.Instance.PlayerId);
+
+            SceneManager.LoadScene("MainMenu");
         }
         catch (Exception e)
         {
-            Debug.LogError("Sign in failed: " + e.Message);
-            throw;
+            errorText.text = "Error al iniciar sesión anónima: " + e.Message;
         }
-
-        Debug.Log("Player ID: " + AuthenticationService.Instance.PlayerId);
-        await Task.Delay(3000);
-        Debug.Log("Sign in successful");
     }
 
-
-    private async void SignUpWithUsernamePasswordAsync(string username, string password)
+    private async void SignUpWithEmailPasswordAsync(string email, string password)
     {
         try
         {
-            await AuthenticationService.Instance.SignUpWithUsernamePasswordAsync(username, password);
-            Debug.Log("SignUp is successful.");
-            Debug.Log("Player ID: " + AuthenticationService.Instance.PlayerId);
+            await AuthenticationService.Instance.SignUpWithUsernamePasswordAsync(email, password);
+            errorText.text = "";
+            Debug.Log("Registro exitoso. Player ID: " + AuthenticationService.Instance.PlayerId);
+
+            // Login automático tras registro, solo si no está ya logueado
+            if (!AuthenticationService.Instance.IsSignedIn)
+            {
+                await AuthenticationService.Instance.SignInWithUsernamePasswordAsync(email, password);
+                Debug.Log("Login automático exitoso.");
+            }
+
+            SceneManager.LoadScene("MainMenu");
         }
         catch (AuthenticationException ex)
         {
-            // Compare error code to AuthenticationErrorCodes
-            // Notify the player with the proper error message
-            Debug.LogException(ex);
+            errorText.text = "Error de autenticación: " + ex.Message;
         }
         catch (RequestFailedException ex)
         {
-            // Compare error code to CommonErrorCodes
-            // Notify the player with the proper error message
-            Debug.LogException(ex);
+            errorText.text = "Error de solicitud: " + ex.Message;
         }
     }
 
-
-    async void SignInWithUsernamePasswordAsync(string username, string password)
+    private async void SignInWithEmailPasswordAsync(string email, string password)
     {
         try
         {
-            await AuthenticationService.Instance.SignInWithUsernamePasswordAsync(username, password);
-            Debug.Log("SignIn is successful.");
-            Debug.Log("Player ID: " + AuthenticationService.Instance.PlayerId);
+            // Solo loguear si no está ya logueado
+            if (!AuthenticationService.Instance.IsSignedIn)
+            {
+                await AuthenticationService.Instance.SignInWithUsernamePasswordAsync(email, password);
+            }
+
+            errorText.text = "";
+            Debug.Log("Login exitoso. Player ID: " + AuthenticationService.Instance.PlayerId);
+
+            SceneManager.LoadScene("MainMenu");
         }
         catch (AuthenticationException ex)
         {
-            // Compare error code to AuthenticationErrorCodes
-            // Notify the player with the proper error message
-            Debug.LogException(ex);
+            errorText.text = "Error de autenticación: " + ex.Message;
         }
         catch (RequestFailedException ex)
         {
-            // Compare error code to CommonErrorCodes
-            // Notify the player with the proper error message
-            Debug.LogException(ex);
+            errorText.text = "Error de solicitud: " + ex.Message;
         }
     }
 
-
+    // Método para Logout (se usa en la escena MainMenu)
+    public void Logout()
+    {
+        AuthenticationService.Instance.SignOut();
+        errorText.text = "";
+        SceneManager.LoadScene("AuthService");
+    }
 }
-
-// Inicializa Unity Game Services
-// Inicia sesión anónima del jugador
-// Imprime el Player ID en consola
-
