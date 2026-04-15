@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 5556441622023033696}
   - component: {fileID: 3262858353294049374}
   - component: {fileID: 2495370447254452948}
+  - component: {fileID: -8276148842239060171}
   m_Layer: 7
   m_Name: GraffityCat
   m_TagString: Enemy
@@ -72,6 +73,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -93,9 +96,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!136 &2073544111272693418
 CapsuleCollider:
@@ -127,10 +132,10 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 74118514222414092}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -181,6 +186,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73a8de48ca98d414bbf39c378ed0165a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentPhase: 0
+  enableEnragedPhase: 1
+  enragedHpThreshold: 0.4
   enemyData: {fileID: 11400000, guid: f9ce1aa5302aeb34b8e20104b3b0b609, type: 2}
   enemyStats: {fileID: 3262858353294049374}
   agent: {fileID: 2830971308372174443}
@@ -219,10 +227,6 @@ MonoBehaviour:
   - {fileID: 153438451708491840}
   - {fileID: 3916444578531202411}
   - {fileID: 5340581396857154137}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   maxClones: 2
   cloneCooldown: 4
   enableJump: 1
@@ -256,6 +260,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   healthSlider: {fileID: 3268386063715956890}
+--- !u!114 &-8276148842239060171
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 74118514222414092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1dc5d9a767dc4e40aa4a94d7461094e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RewardOnDeath
+  enemyData: {fileID: 11400000, guid: f9ce1aa5302aeb34b8e20104b3b0b609, type: 2}
+  dropSpawnPoint: {fileID: 0}
 --- !u!1 &197052101568732312
 GameObject:
   m_ObjectHideFlags: 0

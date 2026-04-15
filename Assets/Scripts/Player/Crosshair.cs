@@ -7,12 +7,14 @@ public class Crosshair : MonoBehaviour
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
     }
 
     private void Update()
     {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        if (rectTransform == null) return;
         rectTransform.position = Input.mousePosition;
     }
 }

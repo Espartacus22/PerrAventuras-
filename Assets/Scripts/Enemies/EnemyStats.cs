@@ -64,7 +64,16 @@ public class EnemyStats : MonoBehaviour
             core.OnCoreDestroyed();
         }
 
-        // Drop de XP / ítem, igual que antes
+        // Dar rewards directos al player (HP / Shield / Coins)
+        PlayerLevel playerLevel = FindFirstObjectByType<PlayerLevel>();
+        RewardOnDeath reward = GetComponent<RewardOnDeath>();
+
+        if (playerLevel != null && reward != null)
+        {
+            reward.GiveRewards(playerLevel);
+        }
+
+        // Drop de XP Orb, igual que antes
         if (enemyData.dropPrefab != null)
         {
             Vector3 dropPosition = GetOrbSpawnPosition();

@@ -10,6 +10,12 @@ public class EnemyType : ScriptableObject
     public int xpReward = 25;
     public GameObject dropPrefab;
 
+    [Header("Rewards")]
+    public int hpReward = 0;
+    public int shieldReward = 0;
+    public int coinReward = 0;
+    public bool fullRestoreOnKill = false;
+
     // ATAQUE MELEE 100% EDITABLE DESDE EL INSPECTOR
     [Header("Melee Attack")]
     public float meleeDamage = 20f;

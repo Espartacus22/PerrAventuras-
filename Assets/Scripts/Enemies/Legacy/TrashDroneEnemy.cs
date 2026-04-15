@@ -187,6 +187,7 @@ public class TrashDroneEnemy : MonoBehaviour
         nextShootTime = Time.time + shootCooldown;
     }
 
+    
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;

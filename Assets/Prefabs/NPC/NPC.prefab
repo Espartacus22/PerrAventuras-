@@ -12,9 +12,10 @@ GameObject:
   - component: {fileID: 1705475451594733635}
   - component: {fileID: 812522638297513903}
   - component: {fileID: 1498713724666757899}
+  - component: {fileID: 3208722747471300148}
   m_Layer: 0
   m_Name: NPC
-  m_TagString: Untagged
+  m_TagString: NPC
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -62,6 +63,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -83,9 +86,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!136 &1498713724666757899
 CapsuleCollider:
@@ -102,7 +107,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -110,3 +115,36 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &3208722747471300148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7115266445705776209}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87c030f70c9979f47b716c247e8c9abb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  quest: {fileID: 0}
+  goals: []
+  numGoals: 0
+  missSymbol: {fileID: 0}
+  panelHintFar: {fileID: 0}
+  panelHintNear: {fileID: 0}
+  panelNPC: {fileID: 0}
+  panelNPC2: {fileID: 0}
+  panelMiss: {fileID: 0}
+  textMiss: {fileID: 0}
+  buttonMiss: {fileID: 0}
+  outerRange: 25
+  innerRange: 10
+  player: {fileID: 0}
+  moveSpeed: 3
+  instructions: []
+  trainingZone: {fileID: 0}
+  trainingStartPoint: {fileID: 0}
+  trainingEndPoint: {fileID: 0}
+  givesDoubleJump: 1
+  interactKey: 101
