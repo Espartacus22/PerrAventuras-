@@ -1,5 +1,6 @@
-using System.Collections.Generic;
 using Fusion;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class NetPlayerSpawner : MonoBehaviour
@@ -7,6 +8,7 @@ public class NetPlayerSpawner : MonoBehaviour
     [SerializeField] private NetworkRunner runner;
     [SerializeField] private NetworkObject playerPrefab;
     [SerializeField] private Transform[] spawnPoints;
+    [SerializeField] private float respawnDelay = 2f;
 
     private readonly Dictionary<PlayerRef, NetworkObject> spawnedPlayers = new();
 
@@ -23,8 +25,13 @@ public class NetPlayerSpawner : MonoBehaviour
 
         spawnedPlayers.Add(player, playerObject);
 
-        Debug.Log($"Player spawned: {player.PlayerId}");
-        Debug.Log($"Spawning player {player.PlayerId} at {spawnPosition}");
+        NetPlayerHealth health = playerObject.GetComponent<NetPlayerHealth>();
+        if (health != null)
+        {
+            health.SetSpawner(this, player);
+        }
+
+        Debug.Log($"Player spawned: {player.PlayerId} at {spawnPosition}");
     }
 
     public void DespawnPlayer(PlayerRef player)
@@ -40,12 +47,27 @@ public class NetPlayerSpawner : MonoBehaviour
         }
     }
 
+    public void RequestRespawn(PlayerRef player)
+    {
+        if (!runner.IsServer)
+            return;
+
+        StartCoroutine(RespawnRoutine(player));
+    }
+
+    private IEnumerator RespawnRoutine(PlayerRef player)
+    {
+        DespawnPlayer(player);
+        yield return new WaitForSeconds(respawnDelay);
+        SpawnPlayer(player);
+    }
+
     private Vector3 GetSpawnPosition(PlayerRef player)
     {
         if (spawnPoints == null || spawnPoints.Length == 0)
             return Vector3.zero;
 
-        int index = spawnedPlayers.Count % spawnPoints.Length;
+        int index = player.PlayerId % spawnPoints.Length;
         return spawnPoints[index].position;
     }
 }
