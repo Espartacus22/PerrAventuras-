@@ -100,13 +100,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac598ccc66cba134191e81df7fbbdf2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetPlayerController
-  moveSpeed: 8
-  runMultiplier: 1.75
+  moveSpeed: 10
+  runMultiplier: 2
   gravity: -20
   jumpForce: 10
-  dashSpeed: 18
-  dashDuration: 0.3
-  dashCooldown: 1
+  dashSpeed: 20
+  dashDuration: 0.5
+  dashCooldown: 2
+  cameraPivot: {fileID: 3034355394191580258}
+  rotationSpeed: 12
 --- !u!114 &2438445127651024330
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -119,8 +121,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dd8b2b7a756146479e554bc4e0ac7f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetPlayerCamera
+  cameraPivot: {fileID: 3034355394191580258}
   playerCamera: {fileID: 6925104339576217406}
   audioListenerComp: {fileID: 5218308684397365420}
+  pivotOffset: {x: 0, y: 1.6, z: 0}
+  mouseSensitivity: 2.5
+  minPitch: -35
+  maxPitch: 60
 --- !u!114 &2140717069293485958
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -143,6 +150,8 @@ MonoBehaviour:
     m_Bits: 8
   projectilePrefab: {fileID: 1495281333005667801, guid: 75b145558ca36dd4a9ed98731add07ea, type: 3}
   shootPoint: {fileID: 7366549996388689824}
+  projectileForwardOffset: 1.2
+  projectileUpOffset: 1.1
 --- !u!114 &3198417283152242855
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -423,13 +432,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9108725113305871603}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.1564345, y: 0, z: 0, w: 0.98768836}
-  m_LocalPosition: {x: 0, y: 2.5, z: -5.5}
+  m_LocalRotation: {x: 0.13052616, y: 0, z: 0, w: 0.9914449}
+  m_LocalPosition: {x: 0, y: 2.2, z: -4.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3034355394191580258}
-  m_LocalEulerAnglesHint: {x: 18, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 15, y: 0, z: 0}
 --- !u!20 &6925104339576217406
 Camera:
   m_ObjectHideFlags: 0

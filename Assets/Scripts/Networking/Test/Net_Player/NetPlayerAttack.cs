@@ -1,7 +1,8 @@
 using Fusion;
-using UnityEngine;
 using Networking;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class NetPlayerAttack : NetworkBehaviour
 {
@@ -49,9 +50,7 @@ public class NetPlayerAttack : NetworkBehaviour
 
         if (inputData.buttons.IsSet(NetInputData.MOUSE_LEFT) && !AttackCooldownTimer.IsRunning)
         {
-            Vector3 attackCenter = atkPoint != null
-                ? atkPoint.position
-                : transform.position + Vector3.up + transform.forward;
+            Vector3 attackCenter = transform.position + Vector3.up * 1.0f + transform.forward * 1.2f;
 
             RPC_RequestMeleeAttack(attackCenter);
         }
@@ -65,6 +64,7 @@ public class NetPlayerAttack : NetworkBehaviour
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     private void RPC_RequestMeleeAttack(Vector3 attackCenter)
     {
+        Debug.Log($"RPC_RequestMeleeAttack from player {Object.InputAuthority.PlayerId} at {attackCenter}");
         if (AttackCooldownTimer.IsRunning)
             return;
 
@@ -126,7 +126,10 @@ public class NetPlayerAttack : NetworkBehaviour
     {
         Collider[] hits = Physics.OverlapSphere(attackCenter, attackRadius, playerLayer);
 
+        Debug.Log($"TryHitPlayers center: {attackCenter}");
         Debug.Log($"Hits found: {hits.Length}");
+
+        HashSet<NetworkObject> damagedPlayers = new HashSet<NetworkObject>();
 
         foreach (Collider hit in hits)
         {
@@ -137,6 +140,14 @@ public class NetPlayerAttack : NetworkBehaviour
 
             if (health.Object == Object)
                 continue;
+
+            if (health.Object == null)
+                continue;
+
+            if (damagedPlayers.Contains(health.Object))
+                continue;
+
+            damagedPlayers.Add(health.Object);
 
             Debug.Log($"Hit player: {health.Object.name}");
             health.TakeDamage(damageAmount);
@@ -183,6 +194,7 @@ public class NetPlayerAttack : NetworkBehaviour
         if (atkPoint != null)
         {
             Gizmos.color = Color.red;
+            Vector3 debugCenter = transform.position + Vector3.up * 1.0f + transform.forward * 1.2f;
             Gizmos.DrawWireSphere(atkPoint.position, attackRadius);
         }
     }

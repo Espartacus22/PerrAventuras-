@@ -16,6 +16,9 @@ public class NetPlayerController : NetworkBehaviour
     [SerializeField] private float dashDuration = 0.18f;
     [SerializeField] private float dashCooldown = 0.75f;
 
+    [SerializeField] private Transform cameraPivot;
+    [SerializeField] private float rotationSpeed = 12f;
+
     private CharacterController controller;
     private float verticalVelocity;
 
@@ -38,7 +41,17 @@ public class NetPlayerController : NetworkBehaviour
         if (!GetInput<NetInputData>(out var inputData))
             return;
 
-        Vector3 move = new Vector3(inputData.move.x, 0f, inputData.move.y);
+        // Movimiento relativo a cámara
+        Vector3 camForward = cameraPivot != null ? cameraPivot.forward : Vector3.forward;
+        Vector3 camRight = cameraPivot != null ? cameraPivot.right : Vector3.right;
+
+        camForward.y = 0f;
+        camRight.y = 0f;
+
+        camForward.Normalize();
+        camRight.Normalize();
+
+        Vector3 move = camForward * inputData.move.y + camRight * inputData.move.x;
 
         if (move.sqrMagnitude > 1f)
             move.Normalize();
@@ -48,7 +61,7 @@ public class NetPlayerController : NetworkBehaviour
         if (isGrounded)
         {
             if (verticalVelocity < 0f)
-                verticalVelocity = -0.01f;
+                verticalVelocity = -2f;
 
             if (inputData.buttons.IsSet(NetInputData.JUMP))
                 verticalVelocity = jumpForce;
@@ -58,13 +71,12 @@ public class NetPlayerController : NetworkBehaviour
             verticalVelocity += gravity * Runner.DeltaTime;
         }
 
-        // Iniciar dash
         bool canStartDash = !DashTimer.IsRunning && !DashCooldownTimer.IsRunning;
         bool hasMoveInput = move.sqrMagnitude > 0.001f;
 
         if (inputData.buttons.IsSet(NetInputData.DASH) && canStartDash && hasMoveInput)
         {
-            DashDirection = move;
+            DashDirection = move.normalized;
             DashTimer = TickTimer.CreateFromSeconds(Runner, dashDuration);
             DashCooldownTimer = TickTimer.CreateFromSeconds(Runner, dashCooldown);
         }
@@ -81,9 +93,7 @@ public class NetPlayerController : NetworkBehaviour
             horizontalVelocity = DashDirection * dashSpeed;
 
             if (DashTimer.Expired(Runner))
-            {
                 DashTimer = TickTimer.None;
-            }
         }
         else
         {
@@ -94,6 +104,16 @@ public class NetPlayerController : NetworkBehaviour
         finalVelocity.y = verticalVelocity;
 
         controller.Move(finalVelocity * Runner.DeltaTime);
+
+        if (move.sqrMagnitude > 0.001f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(move, Vector3.up);
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRotation,
+                rotationSpeed * Runner.DeltaTime
+            );
+        }
 
         if (DashCooldownTimer.IsRunning && DashCooldownTimer.Expired(Runner))
         {

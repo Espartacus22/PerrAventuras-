@@ -14,5 +14,14 @@ namespace Networking
 
         public NetworkButtons buttons;
         public Vector2 move;
+
+        // Helpers
+        public Vector2 moveInput => move;
+
+        public bool isRunning => buttons.IsSet(RUN);
+        public bool wasJumpPressed => buttons.IsSet(JUMP);
+        public bool wasDashPressed => buttons.IsSet(DASH);
+        public bool wasMouseLeftPressed => buttons.IsSet(MOUSE_LEFT);
+        public bool wasMouseRightPressed => buttons.IsSet(MOUSE_RIGHT);
     }
 }
