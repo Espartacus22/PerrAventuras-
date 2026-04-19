@@ -1,13 +1,14 @@
 using UnityEngine;
 using UnityEngine.AI;
+using Fusion; // ¡Añadido para el multijugador!
 
-public class SkaterCatEnemy : MonoBehaviour
+public class SkaterCatEnemy : NetworkBehaviour // Cambiado a NetworkBehaviour
 {
     [Header("Jugador")]
-    public Transform target;              // se auto-asigna por tag si lo dejas vacío
+    public Transform target;
 
     [Header("Datos generales")]
-    public EnemyType enemyData;           // usarás uno específico de SkaterCat
+    public EnemyType enemyData;
     private EnemyStats stats;
     private NavMeshAgent agent;
 
@@ -33,6 +34,7 @@ public class SkaterCatEnemy : MonoBehaviour
     public int furyDamage = 30;
     public float furyWindupTime = 2f;     // segundos de aviso antes de empezar
 
+    // Variables de tiempo actualizadas para la red
     private float nextShootTime;
     private bool furyCharging;
     private bool furyActive;
@@ -42,35 +44,45 @@ public class SkaterCatEnemy : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         stats = GetComponent<EnemyStats>();
-
-        if (enemyData != null)
-        {
-            agent.speed = enemyData.moveSpeed;
-            stats.enemyData = enemyData; // asegura mismo SO
-        }
     }
 
-    void Start()
+    public override void Spawned()
     {
-        if (target == null)
+        // Solo el servidor controla el NavMesh y las stats base
+        if (!HasStateAuthority)
         {
-            GameObject playerGO = GameObject.FindGameObjectWithTag("Player");
-            if (playerGO != null)
-                target = playerGO.transform;
+            if (agent != null) agent.enabled = false;
+            return;
         }
 
-        if (patrolPoints != null && patrolPoints.Length > 0)
+        if (enemyData != null && agent != null)
+        {
+            agent.speed = enemyData.moveSpeed;
+            if (stats != null) stats.enemyData = enemyData;
+        }
+
+        FindClosestPlayer();
+
+        if (patrolPoints != null && patrolPoints.Length > 0 && agent != null)
         {
             agent.SetDestination(patrolPoints[0].position);
         }
     }
 
-    void Update()
+    // Cambiado Update por FixedUpdateNetwork
+    public override void FixedUpdateNetwork()
     {
-        if (target == null)
+        // REGLA DE ORO: Solo el servidor piensa, se mueve y dispara
+        if (!HasStateAuthority) return;
+
+        if (target == null || !target.gameObject.activeInHierarchy)
         {
-            Patrol();
-            return;
+            FindClosestPlayer();
+            if (target == null)
+            {
+                Patrol();
+                return;
+            }
         }
 
         float distance = Vector3.Distance(transform.position, target.position);
@@ -94,9 +106,27 @@ public class SkaterCatEnemy : MonoBehaviour
         }
     }
 
+    void FindClosestPlayer()
+    {
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        float closestDist = float.MaxValue;
+        Transform bestTarget = null;
+
+        foreach (var p in players)
+        {
+            float d = Vector3.Distance(transform.position, p.transform.position);
+            if (d < closestDist)
+            {
+                closestDist = d;
+                bestTarget = p.transform;
+            }
+        }
+        target = bestTarget;
+    }
+
     void Patrol()
     {
-        if (patrolPoints == null || patrolPoints.Length == 0) return;
+        if (patrolPoints == null || patrolPoints.Length == 0 || agent == null) return;
 
         agent.isStopped = false;
 
@@ -112,10 +142,11 @@ public class SkaterCatEnemy : MonoBehaviour
         agent.isStopped = true;
         LookAtTarget();
 
-        if (Time.time >= nextShootTime)
+        // Usamos Runner.SimulationTime en lugar de Time.time
+        if (Runner.SimulationTime >= nextShootTime)
         {
             Shoot(sniperDamage, sniperRange);
-            nextShootTime = Time.time + sniperCooldown;
+            nextShootTime = Runner.SimulationTime + sniperCooldown;
         }
     }
 
@@ -128,22 +159,21 @@ public class SkaterCatEnemy : MonoBehaviour
         if (!furyCharging && !furyActive)
         {
             furyCharging = true;
-            furyStartTime = Time.time;
-            // acá podrías disparar animación/FX de aviso
+            furyStartTime = Runner.SimulationTime; // Actualizado a red
         }
 
-        // después de los 3s de ventaja, pasamos a modo activo
-        if (furyCharging && Time.time >= furyStartTime + furyWindupTime)
+        // después de los 2s de ventaja, pasamos a modo activo
+        if (furyCharging && Runner.SimulationTime >= furyStartTime + furyWindupTime)
         {
             furyCharging = false;
             furyActive = true;
         }
 
         // mientras esté activo, dispara ráfagas
-        if (furyActive && Time.time >= nextShootTime)
+        if (furyActive && Runner.SimulationTime >= nextShootTime)
         {
             Shoot(furyDamage, furyRange);
-            nextShootTime = Time.time + (1f / furyFireRate);
+            nextShootTime = Runner.SimulationTime + furyFireRate; // Ajustado cálculo de fireRate
         }
     }
 
@@ -162,7 +192,8 @@ public class SkaterCatEnemy : MonoBehaviour
         if (dir.sqrMagnitude > 0.001f)
         {
             Quaternion desiredRot = Quaternion.LookRotation(dir);
-            transform.rotation = Quaternion.Slerp(transform.rotation, desiredRot, 10f * Time.deltaTime);
+            // Usamos Runner.DeltaTime para rotar suavemente
+            transform.rotation = Quaternion.Slerp(transform.rotation, desiredRot, 10f * Runner.DeltaTime);
         }
     }
 
@@ -172,39 +203,25 @@ public class SkaterCatEnemy : MonoBehaviour
             return;
 
         Vector3 dir = (target.position + Vector3.up * 1.2f - firePoint.position).normalized;
-        GameObject go = Instantiate(projectilePrefab, firePoint.position, Quaternion.LookRotation(dir));
 
-        EnemyProjectileBehavior proj = go.GetComponent<EnemyProjectileBehavior>();
-        if (proj != null)
+        // Extraemos el componente de red del prefab de la bala
+        NetworkObject netPrefab = projectilePrefab.GetComponent<NetworkObject>();
+
+        if (netPrefab != null)
         {
-            proj.SetDamage(damage);
-            proj.SetRange(range);
+            // Disparo oficial por la red
+            NetworkObject go = Runner.Spawn(netPrefab, firePoint.position, Quaternion.LookRotation(dir));
+
+            EnemyProjectileBehavior proj = go.GetComponent<EnemyProjectileBehavior>();
+            if (proj != null)
+            {
+                proj.SetDamage(damage);
+                proj.SetRange(range);
+            }
         }
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        // Rango sniper
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, sniperRange);
-
-        // Rango fury
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, furyRange);
-
-        // Línea hacia target actual si existe
-        if (target != null)
+        else
         {
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawLine(transform.position, target.position);
-        }
-
-        // Fire point
-        if (firePoint != null)
-        {
-            Gizmos.color = Color.green;
-            Gizmos.DrawSphere(firePoint.position, 0.15f);
-            Gizmos.DrawLine(firePoint.position, firePoint.position + firePoint.forward * 2f);
+            Debug.LogWarning($"¡El prefab del proyectil del {gameObject.name} necesita un NetworkObject!");
         }
     }
 }

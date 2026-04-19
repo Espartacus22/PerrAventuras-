@@ -1,7 +1,8 @@
 using UnityEngine;
+using Fusion;
 
 [RequireComponent(typeof(LineRenderer))]
-public class LaserTurret : MonoBehaviour
+public class LaserTurret : NetworkBehaviour
 {
     [Header("Referencias")]
     public Transform head;
@@ -13,91 +14,82 @@ public class LaserTurret : MonoBehaviour
     public int damagePerSecond = 20;
     public LayerMask playerMask;
 
-    LineRenderer line;
-    Transform currentTarget;
-    bool isActive = true;   // <- ESTADO DE LA TORRETA
+    [Networked] public NetworkBool isTurretEnabled { get; set; }
+
+    private LineRenderer line;
+    private float _damageAccumulator;
 
     void Awake()
     {
         line = GetComponent<LineRenderer>();
-        if (line != null)
+        line.positionCount = 2;
+        line.enabled = false;
+        line.startWidth = 0.05f;
+        line.endWidth = 0.05f;
+    }
+
+    public override void Spawned()
+    {
+        if (HasStateAuthority) isTurretEnabled = true;
+    }
+
+    public override void FixedUpdateNetwork()
+    {
+        if (!isTurretEnabled)
         {
-            line.positionCount = 2;
             line.enabled = false;
-        }
-    }
-
-    void Update()
-    {
-        // Si la torreta está apagada, no hace NADA
-        if (!isActive)
-        {
-            if (line != null && line.enabled)
-                line.enabled = false;
             return;
         }
-
-        UpdateTarget();
-
-        if (currentTarget == null)
-        {
-            if (line != null && line.enabled)
-                line.enabled = false;
-            return;
-        }
-
-        AimAtTarget();
-        FireLaser();
-    }
-
-    void UpdateTarget()
-    {
-        currentTarget = null;
 
         Collider[] hits = Physics.OverlapSphere(transform.position, range, playerMask);
-        if (hits.Length == 0) return;
+        if (hits.Length == 0)
+        {
+            line.enabled = false;
+            return;
+        }
 
-        float bestDist = Mathf.Infinity;
-        for (int i = 0; i < hits.Length; i++)
+        // Buscar al más cercano
+        Transform target = hits[0].transform;
+        float bestDist = Vector3.Distance(transform.position, target.position);
+        for (int i = 1; i < hits.Length; i++)
         {
             float d = Vector3.Distance(transform.position, hits[i].transform.position);
-            if (d < bestDist)
-            {
-                bestDist = d;
-                currentTarget = hits[i].transform;
-            }
+            if (d < bestDist) { bestDist = d; target = hits[i].transform; }
         }
-    }
 
-    void AimAtTarget()
-    {
-        if (currentTarget == null) return;
+        // --- PUNTERÍA 3D CORREGIDA ---
+        // Apuntamos al pecho del jugador para que el láser no pase por arriba
+        Vector3 targetCenter = target.position + Vector3.up * 1.2f;
+        Vector3 fullDir = (targetCenter - head.position).normalized;
 
-        Vector3 toTarget = (currentTarget.position + Vector3.up * 1.2f) - head.position;
-        if (toTarget.sqrMagnitude < 0.001f) return;
+        if (fullDir.sqrMagnitude > 0.001f)
+        {
+            // Ahora la cabeza de la torreta puede rotar hacia abajo
+            Quaternion lookRot = Quaternion.LookRotation(fullDir);
+            head.rotation = Quaternion.Slerp(head.rotation, lookRot, rotateSpeed * Runner.DeltaTime);
+        }
 
-        Quaternion lookRot = Quaternion.LookRotation(toTarget.normalized);
-        head.rotation = Quaternion.Slerp(head.rotation, lookRot, rotateSpeed * Time.deltaTime);
-    }
-
-    void FireLaser()
-    {
-        if (line == null) return;
-
+        // El raycast sale hacia donde mira la cabeza (head.forward)
         RaycastHit hit;
-        Vector3 dir = firePoint.forward;
-
-        if (Physics.Raycast(firePoint.position, dir, out hit, range))
+        if (Physics.Raycast(firePoint.position, head.forward, out hit, range))
         {
             line.enabled = true;
             line.SetPosition(0, firePoint.position);
             line.SetPosition(1, hit.point);
 
-            PlayerLevel lvl = hit.collider.GetComponentInParent<PlayerLevel>();
-            if (lvl != null)
+            if (HasStateAuthority && hit.collider.CompareTag("Player"))
             {
-                int damageThisFrame = Mathf.Max(1, Mathf.RoundToInt(damagePerSecond * Time.deltaTime));
-                lvl.TakeDamage(damageThisFrame);
+                PlayerLevel lvl = hit.collider.GetComponent<PlayerLevel>();
+                if (lvl != null)
+                {
+                    _damageAccumulator += damagePerSecond * Runner.DeltaTime;
+                    if (_damageAccumulator >= 1f)
+                    {
+                        int damageToApply = Mathf.FloorToInt(_damageAccumulator);
+                        _damageAccumulator -= damageToApply;
+                        lvl.TakeDamage(damageToApply);
+                    }
+                }
             }
         }
         else
@@ -106,16 +98,9 @@ public class LaserTurret : MonoBehaviour
         }
     }
 
-    // Llamado por EnergyCore
     public void DisableTurret()
     {
-        isActive = false;
-
-        if (line != null)
-            line.enabled = false;
-
-        // también podemos desactivar cualquier collider que tenga
-        Collider col = GetComponent<Collider>();
-        if (col != null) col.enabled = false;
+        if (HasStateAuthority) isTurretEnabled = false;
+        line.enabled = false;
     }
 }

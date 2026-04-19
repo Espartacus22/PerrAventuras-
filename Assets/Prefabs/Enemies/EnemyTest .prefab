@@ -296,6 +296,8 @@ GameObject:
   - component: {fileID: 6614977043159272262}
   - component: {fileID: 8747780525555571112}
   - component: {fileID: 3475759047977758519}
+  - component: {fileID: 2086601786686841688}
+  - component: {fileID: 416613911884154054}
   m_Layer: 0
   m_Name: 'EnemyTest '
   m_TagString: Enemy
@@ -581,6 +583,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyData: {fileID: 11400000, guid: ae6342742b833e84d8aa9719bb4f7348, type: 2}
   healthSlider: {fileID: 47722981101343283}
+  _currentHealth: 0
 --- !u!114 &6614977043159272262
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -632,6 +635,44 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RewardOnDeath
   enemyData: {fileID: 11400000, guid: ae6342742b833e84d8aa9719bb4f7348, type: 2}
+--- !u!114 &2086601786686841688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5949828187330856686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 286278733
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 2203099660460086362}
+  - {fileID: 8747780525555571112}
+  - {fileID: 416613911884154054}
+  ForceRemoteRenderTimeframe: 0
+--- !u!114 &416613911884154054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5949828187330856686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkTransform
+  _stateAuthorityChangeErrorCorrectionDelta: 0
+  SyncScale: 0
+  SyncParent: 0
+  _autoAOIOverride: 1
+  DisableSharedModeInterpolation: 0
 --- !u!1 &6439778550189181946
 GameObject:
   m_ObjectHideFlags: 0

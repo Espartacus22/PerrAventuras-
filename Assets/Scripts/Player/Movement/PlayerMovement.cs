@@ -1,11 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
+using Fusion;
+using Fusion.Addons.Physics;
 using UnityEngine;
+using Networking;
 
-[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(NetworkRigidbody3D))] // CRÍTICO para networking
 [RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(PlayerInputHandler))]
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : NetworkBehaviour
 {
     [Header("Datos del personaje")]
     public CharacterType characterData;
@@ -15,10 +16,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float groundCheckDistance = 1.2f;
     [SerializeField] private float groundRayOffset = 0.1f;
 
-    [Header("Saltos")]
+    [Header("Saltos y Gravedad")]
     [SerializeField] private bool hasDoubleJump = false;
-
-    [Header("Gravity")]
     [SerializeField] private float extraFallGravity = 2.5f;
     [SerializeField] private float lowJumpGravityMultiplier = 2f;
 
@@ -26,17 +25,15 @@ public class PlayerMovement : MonoBehaviour
     private CapsuleCollider capsule;
     private PlayerInputHandler inputHandler;
 
-    private bool isGrounded;
+    public bool isGrounded;
     private bool isCrouching;
     private bool isDashing;
     private int jumpCount;
-
     private float originalHeight;
     private Vector3 originalCenter;
     private Vector3 dashDirection;
 
     public PStateMachine StateMachine { get; private set; }
-
     public PIdleState IdleState { get; private set; }
     public PMoveState MoveState { get; private set; }
     public PRunState RunState { get; private set; }
@@ -57,7 +54,6 @@ public class PlayerMovement : MonoBehaviour
 
         originalHeight = capsule.height;
         originalCenter = capsule.center;
-
         rb.freezeRotation = true;
 
         StateMachine = new PStateMachine();
@@ -67,38 +63,61 @@ public class PlayerMovement : MonoBehaviour
         JumpState = new PJumpState(this, StateMachine);
         DashState = new PDashState(this, StateMachine);
         CrouchState = new PCrouchState(this, StateMachine);
-
-        hasDoubleJump = false;
     }
 
-    private void Start()
+    // --- AQUÍ ESTÁ LA MAGIA FUSIONADA ---
+    public override void Spawned()
     {
+        // 1. Inicializamos tu máquina de estados
         StateMachine.Initialize(IdleState);
-    }
 
-    private void Update()
+        // 2. Conectamos la cámara
+        if (HasInputAuthority)
+        {
+            // Forzamos "UnityEngine.Object" para evitar confusiones, 
+            // y usamos el nuevo nombre de Unity 6: "CinemachineCamera"
+            var vcam = UnityEngine.Object.FindFirstObjectByType<Unity.Cinemachine.CinemachineCamera>();
+
+            if (vcam != null)
+            {
+                vcam.Follow = this.transform;
+                vcam.LookAt = this.transform;
+                Debug.Log("[CAMARA] ¡Conectada al jugador local en red!");
+            }
+        }
+    }
+   
+
+    public override void FixedUpdateNetwork()
     {
         if (characterData == null) return;
 
-        UpdateGroundCheck();
-        RotateTowardsMouse();
+        // Leemos el input de la red (lo envía el NetworkController)
+        if (GetInput(out NetworkInputPlayer input))
+        {
+            // Alimentamos al títere (InputHandler) para que la máquina de estados funcione intacta
+            inputHandler.MoveInput = input.moveInput;
+            inputHandler.JumpPressed = input.buttons.IsSet(NetworkInputPlayer.JUMP);
+            inputHandler.RunHeld = input.buttons.IsSet(NetworkInputPlayer.RUN);
+            inputHandler.DashPressed = input.buttons.IsSet(NetworkInputPlayer.DASH);
+            inputHandler.CrouchPressed = input.buttons.IsSet(NetworkInputPlayer.CROUCH);
+            inputHandler.MeleePressed = input.buttons.IsSet(NetworkInputPlayer.MOUSE_BUTTON_0);
+            inputHandler.RangedPressed = input.buttons.IsSet(NetworkInputPlayer.MOUSE_BUTTON_1);
 
-        StateMachine.CurrentState.HandleInput();
-        StateMachine.CurrentState.LogicUpdate();
-    }
+            UpdateGroundCheck();
+            RotateTowardsNetwork(input.lookDirection);
 
-    private void FixedUpdate()
-    {
-        if (characterData == null) return;
+            // La máquina de estados original hace su magia sin saber que está en red
+            StateMachine.CurrentState.LogicUpdate();
+            StateMachine.CurrentState.PhysicsUpdate();
 
-        StateMachine.CurrentState.PhysicsUpdate();
-        HandleBetterGravity();
+            HandleBetterGravity();
+        }
     }
 
     private void UpdateGroundCheck()
     {
         bool wasGrounded = isGrounded;
-
         Vector3 origin = transform.position + Vector3.up * groundRayOffset;
         isGrounded = Physics.Raycast(origin, Vector3.down, groundCheckDistance, groundMask);
 
@@ -108,18 +127,13 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    public bool HasMovementInput()
-    {
-        return inputHandler.MoveInput.sqrMagnitude > 0.01f;
-    }
+    public bool HasMovementInput() => inputHandler.MoveInput.sqrMagnitude > 0.01f;
 
     public void Move(bool running)
     {
         if (isDashing) return;
 
-        Vector2 moveInput = inputHandler.MoveInput;
-        Vector3 input = new Vector3(moveInput.x, 0f, moveInput.y);
-
+        Vector3 input = new Vector3(inputHandler.MoveInput.x, 0f, inputHandler.MoveInput.y);
         if (input.sqrMagnitude <= 0.01f)
         {
             StopHorizontalMovement();
@@ -129,39 +143,23 @@ public class PlayerMovement : MonoBehaviour
         Vector3 moveDir = GetCameraRelativeDirection(input);
         float speed = characterData.walkSpeed;
 
-        if (isCrouching)
-            speed *= characterData.crouchMultiplier;
-        else if (running)
-            speed *= characterData.runMultiplier;
+        if (isCrouching) speed *= characterData.crouchMultiplier;
+        else if (running) speed *= characterData.runMultiplier;
 
-        rb.linearVelocity = new Vector3(
-            moveDir.x * speed,
-            rb.linearVelocity.y,
-            moveDir.z * speed
-        );
+        rb.linearVelocity = new Vector3(moveDir.x * speed, rb.linearVelocity.y, moveDir.z * speed);
     }
 
     public void MoveInAir()
     {
-        Vector2 moveInput = inputHandler.MoveInput;
-        Vector3 input = new Vector3(moveInput.x, 0f, moveInput.y);
-
+        Vector3 input = new Vector3(inputHandler.MoveInput.x, 0f, inputHandler.MoveInput.y);
         if (input.sqrMagnitude <= 0.01f) return;
 
         Vector3 moveDir = GetCameraRelativeDirection(input);
         float speed = characterData.walkSpeed * 0.8f;
-
-        rb.linearVelocity = new Vector3(
-            moveDir.x * speed,
-            rb.linearVelocity.y,
-            moveDir.z * speed
-        );
+        rb.linearVelocity = new Vector3(moveDir.x * speed, rb.linearVelocity.y, moveDir.z * speed);
     }
 
-    public void MoveCrouched()
-    {
-        Move(false);
-    }
+    public void MoveCrouched() => Move(false);
 
     public void StopHorizontalMovement()
     {
@@ -171,56 +169,34 @@ public class PlayerMovement : MonoBehaviour
     public void Jump()
     {
         int maxJumps = hasDoubleJump ? 2 : 1;
-
         if (jumpCount < maxJumps)
         {
-            rb.linearVelocity = new Vector3(
-                rb.linearVelocity.x,
-                characterData.jumpForce,
-                rb.linearVelocity.z
-            );
-
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, characterData.jumpForce, rb.linearVelocity.z);
             jumpCount++;
-            Debug.Log($"Salto ejecutado. jumpCount={jumpCount}, maxJumps={maxJumps}, hasDoubleJump={hasDoubleJump}");
-
         }
     }
 
     public void BeginDash()
     {
         isDashing = true;
-
-        Vector2 moveInput = inputHandler.MoveInput;
-        Vector3 input = new Vector3(moveInput.x, 0f, moveInput.y);
-
+        Vector3 input = new Vector3(inputHandler.MoveInput.x, 0f, inputHandler.MoveInput.y);
         dashDirection = GetCameraRelativeDirection(input);
-        if (dashDirection == Vector3.zero)
-            dashDirection = transform.forward;
+        if (dashDirection == Vector3.zero) dashDirection = transform.forward;
     }
 
     public void DashMove()
     {
-        rb.linearVelocity = new Vector3(
-            dashDirection.x * characterData.dashSpeed,
-            rb.linearVelocity.y,
-            dashDirection.z * characterData.dashSpeed
-        );
+        rb.linearVelocity = new Vector3(dashDirection.x * characterData.dashSpeed, rb.linearVelocity.y, dashDirection.z * characterData.dashSpeed);
     }
 
-    public void EndDash()
-    {
-        isDashing = false;
-    }
+    public void EndDash() => isDashing = false;
 
     public void StartCrouch()
     {
         if (isCrouching) return;
-
         isCrouching = true;
-
         float newHeight = originalHeight * characterData.crouchHeight;
         capsule.height = newHeight;
-
         float heightDelta = (originalHeight - newHeight) * 0.5f;
         capsule.center = originalCenter - new Vector3(0f, heightDelta, 0f);
     }
@@ -228,7 +204,6 @@ public class PlayerMovement : MonoBehaviour
     public void StopCrouch()
     {
         if (!isCrouching) return;
-
         isCrouching = false;
         capsule.height = originalHeight;
         capsule.center = originalCenter;
@@ -245,34 +220,29 @@ public class PlayerMovement : MonoBehaviour
             Vector3 camRight = Vector3.Scale(cam.right, new Vector3(1, 0, 1)).normalized;
             moveDir = (camForward * input.z + camRight * input.x).normalized;
         }
-
         return moveDir;
     }
 
-    private void RotateTowardsMouse()
+    private void RotateTowardsNetwork(Vector3 lookPosition)
     {
-        if (Camera.main == null || characterData == null) return;
-
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        // Plano horizontal a la altura del jugador
-        Plane plane = new Plane(Vector3.up, new Vector3(0f, transform.position.y, 0f));
-
-        if (plane.Raycast(ray, out float enter))
+        Vector3 lookDir = lookPosition - transform.position;
+        lookDir.y = 0f;
+        if (lookDir.sqrMagnitude > 0.01f)
         {
-            Vector3 hitPoint = ray.GetPoint(enter);
-            Vector3 lookDir = hitPoint - transform.position;
-            lookDir.y = 0f;
+            Quaternion lookRotation = Quaternion.LookRotation(lookDir);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, characterData.rotationSpeed * Runner.DeltaTime);
+        }
+    }
 
-            if (lookDir.sqrMagnitude > 0.01f)
-            {
-                Quaternion lookRotation = Quaternion.LookRotation(lookDir);
-                transform.rotation = Quaternion.Slerp(
-                    transform.rotation,
-                    lookRotation,
-                    characterData.rotationSpeed * Time.deltaTime
-                );
-            }
+    private void HandleBetterGravity()
+    {
+        if (rb.linearVelocity.y < 0f)
+        {
+            rb.linearVelocity += Vector3.up * Physics.gravity.y * (extraFallGravity - 1f) * Runner.DeltaTime;
+        }
+        else if (rb.linearVelocity.y > 0f && !inputHandler.JumpPressed)
+        {
+            rb.linearVelocity += Vector3.up * Physics.gravity.y * (lowJumpGravityMultiplier - 1f) * Runner.DeltaTime;
         }
     }
 
@@ -291,28 +261,5 @@ public class PlayerMovement : MonoBehaviour
     public bool HasDoubleJump()
     {
         return hasDoubleJump;
-    }
-
-    private void HandleBetterGravity()
-    {
-        if (rb.linearVelocity.y < 0f)
-        {
-            rb.linearVelocity += Vector3.up * Physics.gravity.y * (extraFallGravity - 1f) * Time.deltaTime;
-        }
-        else if (rb.linearVelocity.y > 0f && !Input.GetButton("Jump"))
-        {
-            rb.linearVelocity += Vector3.up * Physics.gravity.y * (lowJumpGravityMultiplier - 1f) * Time.deltaTime;
-        }
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = isGrounded ? Color.green : Color.red;
-
-        Vector3 origin = transform.position + Vector3.up * groundRayOffset;
-        Vector3 end = origin + Vector3.down * groundCheckDistance;
-
-        Gizmos.DrawLine(origin, end);
-        Gizmos.DrawSphere(end, 0.05f);
     }
 }

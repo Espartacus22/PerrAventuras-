@@ -1,35 +1,58 @@
 using UnityEngine;
+using Fusion; // ¡Añadido para multijugador!
 
-public class PaintProjectileBehavior : MonoBehaviour
+public class PaintProjectileBehavior : NetworkBehaviour // Cambiado a NetworkBehaviour
 {
     public float speed = 15f;
     public float lifeTime = 4f;
-    public int damage = 20;
 
-    void Start()
+    // Lo hacemos Networked por si el Boss decide cambiar el daño dinámicamente
+    [Networked] public int damage { get; set; } = 20;
+
+    // Reloj oficial del servidor para saber cuándo destruir la lata
+    [Networked] private TickTimer lifeTimer { get; set; }
+
+    public override void Spawned()
     {
-        Destroy(gameObject, lifeTime);
+        // Solo el servidor inicializa el reloj de destrucción
+        if (HasStateAuthority)
+        {
+            lifeTimer = TickTimer.CreateFromSeconds(Runner, lifeTime);
+        }
     }
 
-    void Update()
+    public override void FixedUpdateNetwork()
     {
-        transform.Translate(Vector3.forward * speed * Time.deltaTime);
+        // 1. Todos mueven la lata visualmente al mismo tiempo
+        transform.Translate(Vector3.forward * speed * Runner.DeltaTime);
+
+        // 2. Solo el servidor controla si ya se le acabó el tiempo de vida
+        if (HasStateAuthority)
+        {
+            if (lifeTimer.Expired(Runner))
+            {
+                Runner.Despawn(Object);
+                return; // Cortamos aquí para que no siga ejecutando código
+            }
+        }
     }
 
     void OnTriggerEnter(Collider other)
     {
+        // CANDADO DE RED: Solo el servidor procesa colisiones para evitar doble daño
+        if (!HasStateAuthority) return;
+
         // Dañar al jugador
         if (other.CompareTag("Player"))
         {
-            // Cambiá estos nombres por tu script real de vida del jugador
-            var hp1 = other.GetComponent<PlayerLevel>();
-            if (hp1 != null) hp1.TakeDamage(damage);
+            var hp = other.GetComponent<PlayerLevel>();
+            if (hp != null)
+            {
+                hp.TakeDamage(damage);
+                Debug.Log($"Lata de pintura impactó al jugador por {damage}");
+            }
 
-            var hp2 = other.GetComponent<PlayerLevel>();
-            if (hp2 != null) hp2.TakeDamage(damage);
-
-            Debug.Log($"Lata de pintura impactó al jugador por {damage}");
-            Destroy(gameObject);
+            Runner.Despawn(Object);
             return;
         }
 
@@ -38,14 +61,14 @@ public class PaintProjectileBehavior : MonoBehaviour
         if (wall != null)
         {
             wall.TakeDamage(damage);
-            Destroy(gameObject);
+            Runner.Despawn(Object);
             return;
         }
 
-        // Choca con algo que no nos interesa
+        // Choca con el mapa u otra cosa que no sea enemigo
         if (!other.CompareTag("Enemy"))
         {
-            Destroy(gameObject);
+            Runner.Despawn(Object);
         }
     }
 }

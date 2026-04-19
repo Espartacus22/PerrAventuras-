@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6164904772642633900}
   - component: {fileID: 2686282237655172179}
   - component: {fileID: 5290482861019447224}
+  - component: {fileID: 7750030856717711639}
   m_Layer: 0
   m_Name: XPOrb
   m_TagString: Untagged
@@ -63,6 +64,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -84,9 +87,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!135 &2686282237655172179
 SphereCollider:
@@ -121,4 +126,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52f692c9ace8c084dad5f6ce03cee2f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xpAmount: 0
+  _xpAmount: 10
+  attractRadius: 5
+  attractSpeed: 8
+--- !u!114 &7750030856717711639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4288601612095329630}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 864974981
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 5290482861019447224}
+  ForceRemoteRenderTimeframe: 0

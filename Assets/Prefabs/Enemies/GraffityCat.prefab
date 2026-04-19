@@ -18,6 +18,8 @@ GameObject:
   - component: {fileID: 3262858353294049374}
   - component: {fileID: 2495370447254452948}
   - component: {fileID: -8276148842239060171}
+  - component: {fileID: 8401248127481390952}
+  - component: {fileID: -8055244794034085339}
   m_Layer: 7
   m_Name: GraffityCat
   m_TagString: Enemy
@@ -186,7 +188,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73a8de48ca98d414bbf39c378ed0165a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentPhase: 0
   enableEnragedPhase: 1
   enragedHpThreshold: 0.4
   enemyData: {fileID: 11400000, guid: f9ce1aa5302aeb34b8e20104b3b0b609, type: 2}
@@ -247,6 +248,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyData: {fileID: 11400000, guid: f9ce1aa5302aeb34b8e20104b3b0b609, type: 2}
   healthSlider: {fileID: 3268386063715956890}
+  _currentHealth: 0
 --- !u!114 &2495370447254452948
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -273,7 +275,44 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RewardOnDeath
   enemyData: {fileID: 11400000, guid: f9ce1aa5302aeb34b8e20104b3b0b609, type: 2}
-  dropSpawnPoint: {fileID: 0}
+--- !u!114 &8401248127481390952
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 74118514222414092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 1658491631
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 5556441622023033696}
+  - {fileID: 3262858353294049374}
+  - {fileID: -8055244794034085339}
+  ForceRemoteRenderTimeframe: 0
+--- !u!114 &-8055244794034085339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 74118514222414092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkTransform
+  _stateAuthorityChangeErrorCorrectionDelta: 0
+  SyncScale: 0
+  SyncParent: 0
+  _autoAOIOverride: 1
+  DisableSharedModeInterpolation: 0
 --- !u!1 &197052101568732312
 GameObject:
   m_ObjectHideFlags: 0

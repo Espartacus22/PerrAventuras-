@@ -1,4 +1,5 @@
 using UnityEngine;
+using Fusion; // ¡Añadido!
 
 public class BasicMeleeAttackStrategy : IMeleeAttackStrategy
 {
@@ -9,8 +10,8 @@ public class BasicMeleeAttackStrategy : IMeleeAttackStrategy
 
         var attack = combat.CharacterData.meleeAttacks[combat.SelectedMeleeIndex];
 
-        if (Time.time < combat.LastAttackTime + attack.cooldown) return;
-        combat.LastAttackTime = Time.time;
+        if (combat.Runner.SimulationTime < combat.LastAttackTime + attack.cooldown) return;
+        combat.LastAttackTime = combat.Runner.SimulationTime;
 
         if (combat.Animator != null && attack.animation != null)
             combat.Animator.Play(attack.animation.name);
@@ -21,20 +22,24 @@ public class BasicMeleeAttackStrategy : IMeleeAttackStrategy
         if (attack.impactEffectPrefab != null)
             Object.Instantiate(attack.impactEffectPrefab, combat.transform.position + combat.transform.forward, combat.transform.rotation);
 
-        Collider[] hitEnemies = Physics.OverlapSphere(
-            combat.transform.position + combat.transform.forward * attack.range * 0.5f,
-            attack.range * 0.5f
-        );
-
-        foreach (Collider col in hitEnemies)
+        // CANDADO DE RED: Solo el servidor aplica el daño a los enemigos
+        if (combat.HasStateAuthority)
         {
-            if (col.CompareTag("Enemy"))
+            Collider[] hitEnemies = Physics.OverlapSphere(
+                combat.transform.position + combat.transform.forward * attack.range * 0.5f,
+                attack.range * 0.5f
+            );
+
+            foreach (Collider col in hitEnemies)
             {
-                EnemyStats enemy = col.GetComponent<EnemyStats>();
-                if (enemy != null)
+                if (col.CompareTag("Enemy"))
                 {
-                    int damageDealt = Mathf.RoundToInt(attack.damage);
-                    enemy.TakeDamage(damageDealt);
+                    EnemyStats enemy = col.GetComponent<EnemyStats>();
+                    if (enemy != null)
+                    {
+                        int damageDealt = Mathf.RoundToInt(attack.damage);
+                        enemy.TakeDamage(damageDealt);
+                    }
                 }
             }
         }

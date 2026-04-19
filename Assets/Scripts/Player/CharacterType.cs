@@ -25,12 +25,6 @@ public class CharacterType : ScriptableObject
     [Header("Agacharse")]
     public float crouchHeight = 0.5f;
 
-    [Header("Defensa")]
-    [Range(0f, 0.9f)]
-    public float defensePercent = 0f; // Reducción de daño en porcentaje (0.2 = 20%)
-    public int shieldMax = 0; // Escudo máximo (absorbe daño antes de la vida)
-    public float shieldRegen = 0f; // Regeneración de escudo por segundo
-
     [Header("Ataques Cuerpo a Cuerpo")]
     public List<MeleeAttackData> meleeAttacks;
 

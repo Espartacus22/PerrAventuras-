@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.AI;
+using Fusion; // Añadido
 
-public class GraffityCatCloneEnemy : MonoBehaviour
+public class GraffityCatCloneEnemy : NetworkBehaviour // Cambiado
 {
     public EnemyType enemyData;
     public EnemyStats enemyStats;
@@ -29,64 +30,49 @@ public class GraffityCatCloneEnemy : MonoBehaviour
         if (enemyStats == null) enemyStats = GetComponent<EnemyStats>();
     }
 
-    void Start()
+    public override void Spawned()
     {
-        if (enemyData != null && agent != null)
+        if (!HasStateAuthority)
         {
-            agent.speed = enemyData.moveSpeed * 1.1f; // un poco más rápido que minion normal
-            agent.stoppingDistance = meleeRange * 0.7f;
+            if (agent != null) agent.enabled = false;
+            return;
         }
 
-        if (playerTarget == null)
+        if (enemyData != null && agent != null)
         {
-            GameObject playerGO = GameObject.FindGameObjectWithTag("Player");
-            if (playerGO != null) playerTarget = playerGO.transform;
+            agent.speed = enemyData.moveSpeed * 1.1f;
+            agent.stoppingDistance = meleeRange * 0.7f;
         }
     }
 
-    void Update()
+    public override void FixedUpdateNetwork()
     {
-        if (playerTarget == null || enemyStats == null) return;
+        if (!HasStateAuthority || playerTarget == null || enemyStats == null) return;
 
         agent.SetDestination(playerTarget.position);
-
         float dist = Vector3.Distance(transform.position, playerTarget.position);
-        if (dist <= meleeRange)
-        {
-            TryMelee();
-        }
+
+        if (dist <= meleeRange) TryMelee();
     }
 
     void TryMelee()
     {
-        if (Time.time < nextMeleeTime) return;
+        if (Runner.SimulationTime < nextMeleeTime) return;
 
         Collider[] hits = Physics.OverlapSphere(transform.position, meleeRange, playerLayer);
         foreach (var hit in hits)
         {
             if (!hit.CompareTag("Player")) continue;
-
             var hp = hit.GetComponent<PlayerLevel>();
             if (hp != null) hp.TakeDamage(meleeDamage);
-
-            Debug.Log($"Clon de GraffityCat golpeó al jugador por {meleeDamage}");
             break;
         }
 
-        nextMeleeTime = Time.time + meleeCooldown;
+        nextMeleeTime = Runner.SimulationTime + meleeCooldown;
     }
 
-    void OnDestroy()
+    public override void Despawned(NetworkRunner runner, bool hasState)
     {
-        if (bossOwner != null)
-        {
-            bossOwner.NotifyCloneDead(this);
-        }
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, meleeRange);
+        if (bossOwner != null) bossOwner.NotifyCloneDead(this);
     }
 }

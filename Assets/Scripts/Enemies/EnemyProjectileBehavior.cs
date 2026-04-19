@@ -1,42 +1,49 @@
 using UnityEngine;
+using Fusion; // ¡Añadido!
 
-public class EnemyProjectileBehavior : MonoBehaviour
+public class EnemyProjectileBehavior : NetworkBehaviour // Cambiado a NetworkBehaviour
 {
     public float speed = 15f;
 
-    private float damage;
-    private float maxRange;
-    private Vector3 startPosition;
+    // Variables sincronizadas
+    [Networked] private float damage { get; set; }
+    [Networked] private float maxRange { get; set; } = 50f; // Le damos un rango máximo por seguridad
+    [Networked] private Vector3 startPosition { get; set; }
 
-    public void SetRange(float range)
+    public void SetRange(float range) { maxRange = range; }
+    public void SetDamage(float value) { damage = value; }
+
+    public override void Spawned()
     {
-        maxRange = range;
-    }
-
-    public void SetDamage(float value)
-    {
-        damage = value;
-    }
-
-    void Start()
-    {
-        startPosition = transform.position;
-    }
-
-    void Update()
-    {
-        transform.Translate(Vector3.forward * speed * Time.deltaTime);
-
-        float distanceTraveled = Vector3.Distance(startPosition, transform.position);
-        if (distanceTraveled > maxRange)
+        if (HasStateAuthority)
         {
-            Destroy(gameObject);
+            startPosition = transform.position;
+        }
+    }
+
+    // Cambiamos Update por FixedUpdateNetwork para que vuele al ritmo del servidor
+    public override void FixedUpdateNetwork()
+    {
+        // Todos los clientes mueven la bala visualmente
+        transform.Translate(Vector3.forward * speed * Runner.DeltaTime);
+
+        // Solo el servidor verifica si voló demasiado lejos para destruirla
+        if (HasStateAuthority)
+        {
+            float distanceTraveled = Vector3.Distance(startPosition, transform.position);
+            if (distanceTraveled > maxRange)
+            {
+                Runner.Despawn(Object); // Despawn en lugar de Destroy
+            }
         }
     }
 
     void OnTriggerEnter(Collider other)
     {
-        // daño al player
+        // CANDADO DE RED: Solo el servidor procesa las colisiones y el daño
+        if (!HasStateAuthority) return;
+
+        // Daño al player
         if (other.CompareTag("Player"))
         {
             PlayerLevel playerLevel = other.GetComponent<PlayerLevel>();
@@ -45,12 +52,13 @@ public class EnemyProjectileBehavior : MonoBehaviour
                 playerLevel.TakeDamage(Mathf.RoundToInt(damage));
             }
 
-            Destroy(gameObject);
+            Runner.Despawn(Object);
+            return;
         }
-        // ignoramos otros enemigos, pero chocamos con escenario, etc.
+        // Ignoramos a otros enemigos, pero chocamos con muros, piso, etc.
         else if (!other.CompareTag("Enemy"))
         {
-            Destroy(gameObject);
+            Runner.Despawn(Object);
         }
     }
 }

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6061165497761851178}
   - component: {fileID: 2994971811361267983}
   - component: {fileID: 2951357752276630974}
+  - component: {fileID: 811002704344778352}
   m_Layer: 0
   m_Name: SkaterBullet
   m_TagString: Untagged
@@ -126,3 +127,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 120
+--- !u!114 &811002704344778352
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2572775131501275393}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 2881104741
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 2951357752276630974}
+  ForceRemoteRenderTimeframe: 0

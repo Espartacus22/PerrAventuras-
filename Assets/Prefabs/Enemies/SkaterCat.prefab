@@ -283,6 +283,8 @@ GameObject:
   - component: {fileID: 5550293187765840945}
   - component: {fileID: 2615155847528998439}
   - component: {fileID: 7282281765442146920}
+  - component: {fileID: 7080638419784799938}
+  - component: {fileID: 216505053972991657}
   m_Layer: 7
   m_Name: SkaterCat
   m_TagString: Enemy
@@ -480,6 +482,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyData: {fileID: 11400000, guid: fbd08f54396cbe14fbc506ee84e9de70, type: 2}
   healthSlider: {fileID: 0}
+  _currentHealth: 0
 --- !u!114 &2557369550303149547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -625,7 +628,44 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RewardOnDeath
   enemyData: {fileID: 11400000, guid: fbd08f54396cbe14fbc506ee84e9de70, type: 2}
-  dropSpawnPoint: {fileID: 0}
+--- !u!114 &7080638419784799938
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2750055640213073792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 2813790241
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 8146861949022120714}
+  - {fileID: 1993956735322181211}
+  - {fileID: 216505053972991657}
+  ForceRemoteRenderTimeframe: 0
+--- !u!114 &216505053972991657
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2750055640213073792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkTransform
+  _stateAuthorityChangeErrorCorrectionDelta: 0
+  SyncScale: 0
+  SyncParent: 0
+  _autoAOIOverride: 1
+  DisableSharedModeInterpolation: 0
 --- !u!1 &3342617541564019730
 GameObject:
   m_ObjectHideFlags: 0

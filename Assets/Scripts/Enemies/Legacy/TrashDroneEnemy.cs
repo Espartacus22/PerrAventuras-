@@ -1,94 +1,75 @@
-ï»¿using UnityEngine;
+using UnityEngine;
+using Fusion; // ¡Añadido para el multijugador!
 
-
-public class TrashDroneEnemy : MonoBehaviour
+public class TrashDroneEnemy : NetworkBehaviour // Cambiado a NetworkBehaviour
 {
-    [Header("Data (opcional)")]
-    public EnemyType enemyData;
-
-    [Header("Patrulla (opcional)")]
+    [Header("Patrulla")]
     public Transform[] patrolPoints;
     public float moveSpeed = 4f;
     public float pointTolerance = 0.5f;
     public float hoverHeight = 3f;
 
-    [Header("DetecciÃ³n / Combate")]
-    public float detectRange = 20f;
-    public float desiredCombatDistance = 3f;
-    public float combatMoveSpeed = 4.5f;
-    public float distanceDeadZone = 0.5f;
-
     [Header("Disparo")]
-    public Transform[] firePoints;
+    public Transform[] firePoints;          // dos extremos del cilindro
     public GameObject trashProjectilePrefab;
     public float shootRange = 15f;
     public float shootCooldown = 1.2f;
-    public float projectileDamage = 10f;
 
-    [Header("Obstacle Avoidance")]
-    public LayerMask obstacleMask;
-    public float obstacleCheckDistance = 1f;
-    public float obstacleRayHeight = 0.2f;
+    // Agregamos el daño aquí para poder pasárselo a la basura al instanciarla
+    public int projectileDamage = 10;
 
-    private Transform targetPlayer;
-    private int currentPoint;
-    private float nextShootTime;
+    Transform targetPlayer;
+    int currentPoint;
+    float nextShootTime;
 
-    private void Start()
+    public override void Spawned()
     {
-        GameObject p = GameObject.FindGameObjectWithTag("Player");
-        if (p != null)
-            targetPlayer = p.transform;
-
-        if (enemyData != null)
+        // Solo el servidor inicializa la posición oficial
+        if (HasStateAuthority)
         {
-            moveSpeed = enemyData.moveSpeed;
-            detectRange = enemyData.chaseRange;
-            projectileDamage = enemyData.meleeDamage;
-        }
+            FindClosestPlayer();
 
-        Vector3 pos = transform.position;
-        transform.position = new Vector3(pos.x, hoverHeight, pos.z);
-
-        if (patrolPoints != null && patrolPoints.Length > 0 && patrolPoints[0] != null)
-        {
-            Vector3 start = patrolPoints[0].position;
-            transform.position = new Vector3(start.x, hoverHeight, start.z);
+            // Aseguramos que el dron arranque flotando
+            Vector3 pos = transform.position;
+            transform.position = new Vector3(pos.x, hoverHeight, pos.z);
         }
     }
 
-    private void Update()
+    // Cambiamos Update por FixedUpdateNetwork
+    public override void FixedUpdateNetwork()
     {
-        if (targetPlayer == null) return;
+        // REGLA DE ORO: Solo el servidor mueve al dron y efectúa los disparos
+        if (!HasStateAuthority) return;
 
-        float distToPlayerXZ = GetFlatDistance(transform.position, targetPlayer.position);
-        bool playerInDetectRange = distToPlayerXZ <= detectRange;
-
-        if (!playerInDetectRange && patrolPoints != null && patrolPoints.Length > 0 && patrolPoints[0] != null)
+        // Si el jugador objetivo se desconectó o murió, buscar a otro
+        if (targetPlayer == null || !targetPlayer.gameObject.activeInHierarchy)
         {
-            HandlePatrol();
+            FindClosestPlayer();
         }
-        else if (playerInDetectRange)
+
+        HandlePatrol();
+        HandleShooting();
+    }
+
+    void FindClosestPlayer()
+    {
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        float closestDist = float.MaxValue;
+        Transform bestTarget = null;
+
+        foreach (var p in players)
         {
-            HandleCombatMovement();
-            HandleShooting(distToPlayerXZ);
+            float d = Vector3.Distance(transform.position, p.transform.position);
+            if (d < closestDist)
+            {
+                closestDist = d;
+                bestTarget = p.transform;
+            }
         }
+        targetPlayer = bestTarget;
     }
 
-    private float GetFlatDistance(Vector3 a, Vector3 b)
-    {
-        Vector2 a2 = new Vector2(a.x, a.z);
-        Vector2 b2 = new Vector2(b.x, b.z);
-        return Vector2.Distance(a2, b2);
-    }
-
-    private bool IsPathBlocked(Vector3 moveDir)
-    {
-        Vector3 origin = transform.position + Vector3.up * obstacleRayHeight;
-        return Physics.Raycast(origin, moveDir.normalized, obstacleCheckDistance, obstacleMask);
-    }
-
-    private void HandlePatrol()
+    void HandlePatrol()
     {
         if (patrolPoints == null || patrolPoints.Length == 0) return;
 
@@ -96,112 +77,54 @@ public class TrashDroneEnemy : MonoBehaviour
         if (point == null) return;
 
         Vector3 targetPos = new Vector3(point.position.x, hoverHeight, point.position.z);
-        Vector3 moveDir = (targetPos - transform.position);
-        moveDir.y = 0f;
 
-        if (moveDir.sqrMagnitude > 0.001f)
-            transform.rotation = Quaternion.LookRotation(moveDir.normalized);
+        // Usamos Runner.DeltaTime para que se mueva suavemente en la red
+        transform.position = Vector3.MoveTowards(transform.position,
+                                                 targetPos,
+                                                 moveSpeed * Runner.DeltaTime);
 
-        if (!IsPathBlocked(moveDir))
-        {
-            transform.position = Vector3.MoveTowards(
-                transform.position,
-                targetPos,
-                moveSpeed * Time.deltaTime
-            );
-        }
-
-        float dist = GetFlatDistance(transform.position, targetPos);
+        float dist = Vector3.Distance(transform.position, targetPos);
         if (dist <= pointTolerance)
         {
             currentPoint = (currentPoint + 1) % patrolPoints.Length;
         }
     }
 
-    private void HandleCombatMovement()
+    void HandleShooting()
     {
-        Vector3 playerFlat = new Vector3(targetPlayer.position.x, hoverHeight, targetPlayer.position.z);
-        Vector3 droneFlat = new Vector3(transform.position.x, hoverHeight, transform.position.z);
+        if (targetPlayer == null) return;
 
-        Vector3 toPlayerFlat = playerFlat - droneFlat;
-        float distance = toPlayerFlat.magnitude;
+        float dist = Vector3.Distance(transform.position, targetPlayer.position);
+        if (dist > shootRange) return;
+        if (Runner.SimulationTime < nextShootTime) return;
 
-        Vector3 lookDir = new Vector3(toPlayerFlat.x, 0f, toPlayerFlat.z);
-        if (lookDir.sqrMagnitude > 0.001f)
-            transform.rotation = Quaternion.LookRotation(lookDir.normalized);
+        // --- EL AJUSTE DE PUNTERÍA ---
+        // Calculamos la dirección real (incluyendo la altura)
+        // Le sumamos Vector3.up * 1.2f para que apunte al pecho del player y no a los pies
+        Vector3 targetCenter = targetPlayer.position + Vector3.up * 1.2f;
+        Vector3 dirToTarget = (targetCenter - transform.position).normalized;
 
-        if (distance > desiredCombatDistance + distanceDeadZone)
+        if (dirToTarget.sqrMagnitude > 0.001f)
         {
-            Vector3 moveDir = lookDir.normalized;
-            float moveStep = combatMoveSpeed * Time.deltaTime;
-
-            if (!IsPathBlocked(moveDir))
-            {
-                Vector3 newPos = droneFlat + moveDir * moveStep;
-                transform.position = new Vector3(newPos.x, hoverHeight, newPos.z);
-            }
+            // El dron entero rota para mirar al jugador
+            transform.rotation = Quaternion.LookRotation(dirToTarget);
         }
-        else if (distance < desiredCombatDistance - distanceDeadZone)
-        {
-            Vector3 moveDir = -lookDir.normalized;
-            float moveStep = combatMoveSpeed * Time.deltaTime;
 
-            if (!IsPathBlocked(moveDir))
+        // Disparar desde todos los firePoints
+        if (trashProjectilePrefab != null && firePoints != null)
+        {
+            NetworkObject netPrefab = trashProjectilePrefab.GetComponent<NetworkObject>();
+            if (netPrefab != null)
             {
-                Vector3 newPos = droneFlat + moveDir * moveStep;
-                transform.position = new Vector3(newPos.x, hoverHeight, newPos.z);
-            }
-        }
-        else
-        {
-            transform.position = new Vector3(transform.position.x, hoverHeight, transform.position.z);
-        }
-    }
-
-    private void HandleShooting(float distToPlayerXZ)
-    {
-        if (trashProjectilePrefab == null || firePoints == null || firePoints.Length == 0)
-            return;
-
-        if (distToPlayerXZ > shootRange) return;
-        if (Time.time < nextShootTime) return;
-
-        foreach (Transform fp in firePoints)
-        {
-            if (fp == null) continue;
-
-            Vector3 toTarget = (targetPlayer.position + Vector3.up * 1.2f) - fp.position;
-            if (toTarget.sqrMagnitude < 0.001f) continue;
-
-            Quaternion rot = Quaternion.LookRotation(toTarget.normalized);
-            GameObject projectile = Instantiate(trashProjectilePrefab, fp.position, rot);
-
-            EnemyProjectileBehavior proj = projectile.GetComponent<EnemyProjectileBehavior>();
-            if (proj != null)
-            {
-                proj.SetDamage(projectileDamage);
-                proj.SetRange(shootRange);
+                foreach (var fp in firePoints)
+                {
+                    if (fp == null) continue;
+                    // Ahora fp.rotation ya está inclinado hacia abajo porque el dron rotó
+                    Runner.Spawn(netPrefab, fp.position, fp.rotation);
+                }
             }
         }
 
-        nextShootTime = Time.time + shootCooldown;
-    }
-
-    
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, detectRange);
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, shootRange);
-
-        Gizmos.color = Color.cyan;
-        Vector3 flatCenter = new Vector3(transform.position.x, hoverHeight, transform.position.z);
-        Gizmos.DrawWireSphere(flatCenter, desiredCombatDistance);
-
-        Gizmos.color = Color.magenta;
-        Vector3 origin = transform.position + Vector3.up * obstacleRayHeight;
-        Gizmos.DrawRay(origin, transform.forward * obstacleCheckDistance);
+        nextShootTime = Runner.SimulationTime + shootCooldown;
     }
 }

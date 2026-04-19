@@ -1,29 +1,26 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Fusion; // ¡Añadido para multijugador!
 
-public class GraffityCatEnemy : MonoBehaviour
+public class GraffityCatEnemy : NetworkBehaviour // Cambiado a NetworkBehaviour
 {
-    public enum BossPhase
-    {
-        Patrol,
-        Combat,
-        Enraged
-    }
-    [SerializeField] private BossPhase currentPhase = BossPhase.Patrol;
+    public enum BossPhase { Patrol, Combat, Enraged }
+
+    // Sincronizamos la fase para que todos sepan si está enojado
+    [Networked] private BossPhase currentPhase { get; set; }
 
     [SerializeField] private bool enableEnragedPhase = true;
     [SerializeField] private float enragedHpThreshold = 0.4f;
     private bool _enragedApplied = false;
 
     [Header("Datos base")]
-    public EnemyType enemyData;          // ScriptableObject del boss
-    public EnemyStats enemyStats;        // Mismo componente que usan otros enemigos
+    public EnemyType enemyData;
+    public EnemyStats enemyStats;
 
     [Header("Refs")]
     public NavMeshAgent agent;
-    public Transform playerTarget;       // Se autocompleta por tag Player si se deja vacío
+    public Transform playerTarget;
 
     // ---------------- PATRULLA ----------------
     [Header("Patrulla")]
@@ -33,17 +30,15 @@ public class GraffityCatEnemy : MonoBehaviour
 
     private int _currentPatrolIndex = 0;
     private bool _hasPatrolRoute = false;
-
-    // Estado de combate
     private bool _inCombat = false;
 
     [Header("Distancia con el jugador")]
     public float desiredCombatDistance = 2f;
 
     // ---------------- RANGED ----------------
-    [Header("Ataque a distancia (latas de pintura)")]
+    [Header("Ataque a distancia")]
     public GameObject paintProjectilePrefab;
-    public Transform firePoint;          // Boca de disparo
+    public Transform firePoint;
     public float rangedRange = 18f;
     public float rangedCooldown = 2f;
     public int rangedDamage = 20;
@@ -53,7 +48,7 @@ public class GraffityCatEnemy : MonoBehaviour
     public float meleeRange = 2.5f;
     public float meleeCooldown = 1.5f;
     public int meleeDamage = 40;
-    public Transform meleeOrigin;        // centro del golpe (puede ser el mismo que firePoint)
+    public Transform meleeOrigin;
     public LayerMask playerLayer;
 
     // ---------------- MUROS ----------------
@@ -85,6 +80,8 @@ public class GraffityCatEnemy : MonoBehaviour
 
     private float _nextJumpTime;
     private bool _isJumping = false;
+    private float _jumpTimer = 0f;
+    private Vector3 _jumpStartPos;
 
     // Timers ataques
     private float _nextRangedTime;
@@ -96,43 +93,71 @@ public class GraffityCatEnemy : MonoBehaviour
         if (enemyStats == null) enemyStats = GetComponent<EnemyStats>();
     }
 
-    void Start()
+    public override void Spawned()
     {
-        if (playerTarget == null)
+        // Solo el servidor inicializa la IA y maneja el NavMesh
+        if (!HasStateAuthority)
         {
-            GameObject playerGO = GameObject.FindGameObjectWithTag("Player");
-            if (playerGO != null)
-                playerTarget = playerGO.transform;
+            if (agent != null) agent.enabled = false;
+            return;
         }
+
+        currentPhase = BossPhase.Patrol;
+        FindClosestPlayer();
 
         if (enemyData != null && agent != null)
         {
             agent.speed = enemyData.moveSpeed;
+            agent.stoppingDistance = desiredCombatDistance;
         }
 
-        if (agent != null)
-        {
-            agent.stoppingDistance = desiredCombatDistance;   // mantiene ~2 unidades
-        }
-
-        // Patrulla
         _hasPatrolRoute = patrolPoints != null && patrolPoints.Length > 0;
         _currentPatrolIndex = 0;
     }
 
-    void Update()
+    // Cambiamos Update por FixedUpdateNetwork
+    public override void FixedUpdateNetwork()
     {
-        if (playerTarget == null || enemyStats == null) return;
+        if (!HasStateAuthority) return;
 
+        // Si el jugador se desconectó o murió, buscamos otro
+        if (playerTarget == null || !playerTarget.gameObject.activeInHierarchy)
+        {
+            FindClosestPlayer();
+            if (playerTarget == null) return; // Si no hay nadie, esperamos
+        }
+
+        HandleEnragedPhase();
+
+        // 1. Lógica de Salto (Convertida para funcionar en red sin Corrutinas)
+        if (_isJumping)
+        {
+            _jumpTimer += Runner.DeltaTime;
+            float t = _jumpTimer / jumpDuration;
+
+            if (t >= 1f)
+            {
+                _isJumping = false;
+                agent.isStopped = false;
+                Vector3 finalPos = transform.position;
+                finalPos.y = _jumpStartPos.y;
+                transform.position = finalPos;
+            }
+            else
+            {
+                float height = 4f * jumpHeight * t * (1f - t);
+                Vector3 pos = _jumpStartPos;
+                pos.y += height;
+                transform.position = pos;
+            }
+            return; // Mientras salta, no hace nada más
+        }
+
+        // 2. Lógica normal
         float dist = Vector3.Distance(transform.position, playerTarget.position);
+        bool playerInChaseRange = enemyData != null ? dist <= enemyData.chaseRange : dist <= rangedRange;
 
-        bool playerInChaseRange = enemyData != null
-            ? dist <= enemyData.chaseRange
-            : dist <= rangedRange;
-
-        // Una vez que entra en rango, consideramos que está en combate
-        if (playerInChaseRange)
-            _inCombat = true;
+        if (playerInChaseRange) _inCombat = true;
 
         HandleMovement(dist, playerInChaseRange);
 
@@ -143,6 +168,24 @@ public class GraffityCatEnemy : MonoBehaviour
             HandleClones();
             HandleJump(dist);
         }
+    }
+
+    void FindClosestPlayer()
+    {
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        float closestDist = float.MaxValue;
+        Transform bestTarget = null;
+
+        foreach (var p in players)
+        {
+            float d = Vector3.Distance(transform.position, p.transform.position);
+            if (d < closestDist)
+            {
+                closestDist = d;
+                bestTarget = p.transform;
+            }
+        }
+        playerTarget = bestTarget;
     }
 
     void HandleEnragedPhase()
@@ -161,37 +204,28 @@ public class GraffityCatEnemy : MonoBehaviour
         }
     }
 
-    // ---------------- MOVIMIENTO ----------------
     void HandleMovement(float distToPlayer, bool playerInChaseRange)
     {
         if (agent == null) return;
-        if (_isJumping) return;    // mientras está saltando no le damos órdenes nuevas
 
-        // Persecución (mantiene "desiredCombatDistance")
         if (playerInChaseRange)
         {
             agent.isStopped = false;
-            if (enemyData != null)
-                agent.speed = enemyData.moveSpeed;
-
+            if (enemyData != null) agent.speed = enemyData.moveSpeed;
             agent.stoppingDistance = desiredCombatDistance;
             agent.SetDestination(playerTarget.position);
 
-            // Mirar hacia el player (solo en XZ)
             Vector3 lookDir = playerTarget.position - transform.position;
             lookDir.y = 0;
             if (lookDir.sqrMagnitude > 0.001f)
             {
-                Quaternion rot = Quaternion.LookRotation(lookDir);
-                transform.rotation = rot;
+                transform.rotation = Quaternion.LookRotation(lookDir);
             }
         }
-        // Patrulla
         else if (_hasPatrolRoute)
         {
             agent.isStopped = false;
-            if (enemyData != null)
-                agent.speed = enemyData.moveSpeed * patrolSpeedMultiplier;
+            if (enemyData != null) agent.speed = enemyData.moveSpeed * patrolSpeedMultiplier;
 
             Transform targetPoint = patrolPoints[_currentPatrolIndex];
             if (targetPoint != null)
@@ -201,240 +235,144 @@ public class GraffityCatEnemy : MonoBehaviour
 
                 Vector3 lookDir = targetPoint.position - transform.position;
                 lookDir.y = 0;
-                if (lookDir.sqrMagnitude > 0.001f)
-                {
-                    Quaternion rot = Quaternion.LookRotation(lookDir);
-                    transform.rotation = rot;
-                }
+                if (lookDir.sqrMagnitude > 0.001f) transform.rotation = Quaternion.LookRotation(lookDir);
 
-                float distToPoint = Vector3.Distance(transform.position, targetPoint.position);
-                if (distToPoint <= patrolPointTolerance)
+                if (Vector3.Distance(transform.position, targetPoint.position) <= patrolPointTolerance)
                 {
-                    _currentPatrolIndex++;
-                    if (_currentPatrolIndex >= patrolPoints.Length)
-                        _currentPatrolIndex = 0;
+                    _currentPatrolIndex = (_currentPatrolIndex + 1) % patrolPoints.Length;
                 }
             }
         }
         else
         {
-            // Sin patrulla ni player cerca -> quieto
             agent.isStopped = true;
         }
     }
 
-    // ---------------- JUMP ----------------
     void HandleJump(float distToPlayer)
     {
-        if (!enableJump || agent == null) return;
-        if (!_inCombat) return;
-        if (_isJumping) return;
-        if (Time.time < _nextJumpTime) return;
+        if (!enableJump || agent == null || !_inCombat || _isJumping) return;
+        if (Runner.SimulationTime < _nextJumpTime) return;
 
-        // Ejemplo: solo salta si está a media distancia
         if (distToPlayer > meleeRange && distToPlayer < rangedRange)
         {
-            StartCoroutine(JumpRoutine());
-            _nextJumpTime = Time.time + jumpCooldown;
+            _isJumping = true;
+            _jumpTimer = 0f;
+            _jumpStartPos = transform.position;
+            agent.isStopped = true;
+
+            _nextJumpTime = Runner.SimulationTime + jumpCooldown;
         }
     }
 
-    IEnumerator JumpRoutine()
-    {
-        _isJumping = true;
-        agent.isStopped = true;
-
-        Vector3 startPos = transform.position;
-        float elapsed = 0f;
-
-        while (elapsed < jumpDuration)
-        {
-            float t = elapsed / jumpDuration;
-            // Parabola sencilla 0 -> 1 -> 0
-            float height = 4f * jumpHeight * t * (1f - t);
-
-            Vector3 pos = startPos;
-            pos.y += height;
-            transform.position = pos;
-
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        // Asegurar que vuelve al suelo
-        Vector3 finalPos = transform.position;
-        finalPos.y = startPos.y;
-        transform.position = finalPos;
-
-        agent.isStopped = false;
-        _isJumping = false;
-    }
-
-    // ---------------- ATAQUES ----------------
     void HandleAttacks(float dist)
     {
-        if (dist <= meleeRange)
-        {
-            TryMeleeAttack();
-        }
-        else if (dist <= rangedRange)
-        {
-            TryRangedAttack();
-        }
+        if (dist <= meleeRange) TryMeleeAttack();
+        else if (dist <= rangedRange) TryRangedAttack();
     }
 
     void TryRangedAttack()
     {
-        if (Time.time < _nextRangedTime) return;
+        if (Runner.SimulationTime < _nextRangedTime) return;
         if (paintProjectilePrefab == null || firePoint == null) return;
 
         Vector3 dir = (playerTarget.position + Vector3.up * 1.2f - firePoint.position).normalized;
 
-        Quaternion rot = Quaternion.LookRotation(dir);
-        GameObject projGO = Instantiate(paintProjectilePrefab, firePoint.position, rot);
-
-        PaintProjectileBehavior proj = projGO.GetComponent<PaintProjectileBehavior>();
-        if (proj != null)
+        NetworkObject netPrefab = paintProjectilePrefab.GetComponent<NetworkObject>();
+        if (netPrefab != null)
         {
-            proj.damage = rangedDamage;
+            NetworkObject projGO = Runner.Spawn(netPrefab, firePoint.position, Quaternion.LookRotation(dir));
+            PaintProjectileBehavior proj = projGO.GetComponent<PaintProjectileBehavior>();
+            if (proj != null) proj.damage = rangedDamage;
         }
 
-        _nextRangedTime = Time.time + rangedCooldown;
+        _nextRangedTime = Runner.SimulationTime + rangedCooldown;
     }
 
     void TryMeleeAttack()
     {
-        if (Time.time < _nextMeleeTime) return;
+        if (Runner.SimulationTime < _nextMeleeTime) return;
 
         Vector3 origin = meleeOrigin != null ? meleeOrigin.position : transform.position;
-        float radius = meleeRange;
+        Collider[] hits = Physics.OverlapSphere(origin, meleeRange, playerLayer);
 
-        Collider[] hits = Physics.OverlapSphere(origin, radius, playerLayer);
         foreach (var hit in hits)
         {
             if (!hit.CompareTag("Player")) continue;
-
             var hp = hit.GetComponent<PlayerLevel>();
             if (hp != null) hp.TakeDamage(meleeDamage);
-
-            Debug.Log($"GraffityCat dio golpe melee al jugador por {meleeDamage}");
             break;
         }
 
-        _nextMeleeTime = Time.time + meleeCooldown;
+        _nextMeleeTime = Runner.SimulationTime + meleeCooldown;
     }
 
-    // ---------------- MUROS ----------------
     void HandleWalls(float distToPlayer)
     {
-        if (!_inCombat) return;
-        if (paintWallPrefab == null || wallSpawnPoints == null || wallSpawnPoints.Length == 0)
-            return;
-        if (Time.time < _nextWallTime) return;
-        if (distToPlayer > wallUseRange) return;
+        if (!_inCombat || paintWallPrefab == null || wallSpawnPoints.Length == 0) return;
+        if (Runner.SimulationTime < _nextWallTime || distToPlayer > wallUseRange) return;
 
-        // Spawnea muros en todos los puntos configurados (por ejemplo 2 hijos delante del boss)
-        foreach (Transform spawn in wallSpawnPoints)
+        NetworkObject wallNetPrefab = paintWallPrefab.GetComponent<NetworkObject>();
+        if (wallNetPrefab != null)
         {
-            if (spawn == null) continue;
-
-            GameObject wallGO = Instantiate(paintWallPrefab, spawn.position, spawn.rotation);
-            PaintWall wall = wallGO.GetComponent<PaintWall>();
-            if (wall != null)
+            foreach (Transform spawn in wallSpawnPoints)
             {
-                _activeWalls.Add(wall);
+                if (spawn == null) continue;
+                NetworkObject wallGO = Runner.Spawn(wallNetPrefab, spawn.position, spawn.rotation);
+                PaintWall wall = wallGO.GetComponent<PaintWall>();
+                if (wall != null) _activeWalls.Add(wall);
             }
         }
 
-        _nextWallTime = Time.time + wallCooldown;
+        _nextWallTime = Runner.SimulationTime + wallCooldown;
     }
 
-    // ---------------- CLONES ----------------
     void HandleClones()
     {
-        if (!_inCombat) return;
-        if (clonePrefab == null || cloneSpawnPoints == null || cloneSpawnPoints.Length == 0)
-            return;
+        if (!_inCombat || clonePrefab == null || cloneSpawnPoints.Length == 0) return;
 
-        // limpiar clones muertos
         _aliveClones.RemoveAll(c => c == null);
+        if (_aliveClones.Count >= maxClones || Runner.SimulationTime < _nextCloneTime) return;
 
-        if (_aliveClones.Count >= maxClones) return;
-        if (Time.time < _nextCloneTime) return;
-
-        // Spawn en un punto aleatorio
         Transform spawn = cloneSpawnPoints[Random.Range(0, cloneSpawnPoints.Length)];
-        if (spawn != null)
+        NetworkObject cloneNetPrefab = clonePrefab.GetComponent<NetworkObject>();
+
+        if (spawn != null && cloneNetPrefab != null)
         {
-            GameObject cloneGO = Instantiate(clonePrefab, spawn.position, spawn.rotation);
+            NetworkObject cloneGO = Runner.Spawn(cloneNetPrefab, spawn.position, spawn.rotation);
             GraffityCatCloneEnemy clone = cloneGO.GetComponent<GraffityCatCloneEnemy>();
             if (clone != null)
             {
-                // El clon ya tiene lógica para perseguir y atacar al player
                 clone.InitClone(playerTarget, this);
                 _aliveClones.Add(clone);
             }
         }
 
-        _nextCloneTime = Time.time + cloneCooldown;
+        _nextCloneTime = Runner.SimulationTime + cloneCooldown;
     }
 
-    // Llamado por los clones si mueren
     public void NotifyCloneDead(GraffityCatCloneEnemy clone)
     {
         _aliveClones.Remove(clone);
     }
 
-    // ---------------- CLEANUP AL MORIR ----------------
-    void OnDestroy()
+    // ---------------- CLEANUP EN RED ----------------
+    // Usamos Despawned en lugar de OnDestroy para manejar la limpieza oficial en el servidor
+    public override void Despawned(NetworkRunner runner, bool hasState)
     {
-        // Destruir clones que queden vivos
-        foreach (var clone in _aliveClones)
+        if (hasState) // Solo el servidor destruye los objetos hijos
         {
-            if (clone != null)
-                Destroy(clone.gameObject);
-        }
-        _aliveClones.Clear();
-
-        // Destruir muros activos
-        foreach (var wall in _activeWalls)
-        {
-            if (wall != null)
-                Destroy(wall.gameObject);
-        }
-        _activeWalls.Clear();
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        // Gizmo melee
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(meleeOrigin ? meleeOrigin.position : transform.position, meleeRange);
-
-        // Gizmo rango ranged
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, rangedRange);
-
-        // Gizmos de puntos de muros
-        if (wallSpawnPoints != null)
-        {
-            Gizmos.color = Color.cyan;
-            foreach (var t in wallSpawnPoints)
+            foreach (var clone in _aliveClones)
             {
-                if (t == null) continue;
-                Gizmos.DrawWireSphere(t.position, 0.3f);
+                if (clone != null && clone.Object != null) runner.Despawn(clone.Object);
             }
-        }
+            _aliveClones.Clear();
 
-        // Gizmos de puntos de clones
-        if (cloneSpawnPoints != null)
-        {
-            Gizmos.color = Color.magenta;
-            foreach (var t in cloneSpawnPoints)
+            foreach (var wall in _activeWalls)
             {
-                if (t == null) continue;
-                Gizmos.DrawWireSphere(t.position, 0.3f);
+                if (wall != null && wall.Object != null) runner.Despawn(wall.Object);
             }
+            _activeWalls.Clear();
         }
     }
 }

@@ -809,7 +809,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 255109a1da6baca4cbddf1928ee24f73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameSceneName: SampleScene
+  gameSceneName: Lobby
   loginSceneName: AuthService
 --- !u!4 &1882537238
 Transform:

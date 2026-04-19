@@ -626,6 +626,8 @@ GameObject:
   - component: {fileID: -4268107754245200327}
   - component: {fileID: 238940377480573588}
   - component: {fileID: 6626172603624272146}
+  - component: {fileID: 3202445986583181669}
+  - component: {fileID: -72161107650740283}
   m_Layer: 0
   m_Name: TrashDrone
   m_TagString: Enemy
@@ -687,6 +689,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyData: {fileID: 11400000, guid: f699cca1c40e4da4b9d7a56bc0123463, type: 2}
   healthSlider: {fileID: 6891251007550045445}
+  _currentHealth: 0
 --- !u!114 &-4268107754245200327
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -712,15 +715,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f2e0635f29cccb4a80a0ed7bf87ead0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TrashDroneEnemy
-  enemyData: {fileID: 11400000, guid: f699cca1c40e4da4b9d7a56bc0123463, type: 2}
   patrolPoints: []
   moveSpeed: 0
   pointTolerance: 0.5
   hoverHeight: 3
-  detectRange: 20
-  desiredCombatDistance: 3
-  combatMoveSpeed: 3.5
-  distanceDeadZone: 0.5
   firePoints:
   - {fileID: 7758912035439495191}
   - {fileID: 5745021739647671365}
@@ -728,11 +726,6 @@ MonoBehaviour:
   shootRange: 15
   shootCooldown: 1.2
   projectileDamage: 10
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 320
-  obstacleCheckDistance: 1.2
-  obstacleRayHeight: 1.2
 --- !u!114 &6626172603624272146
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -746,6 +739,44 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RewardOnDeath
   enemyData: {fileID: 11400000, guid: f699cca1c40e4da4b9d7a56bc0123463, type: 2}
+--- !u!114 &3202445986583181669
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7526836627258764377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 4014658079
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 8500501904246159201}
+  - {fileID: 238940377480573588}
+  - {fileID: -72161107650740283}
+  ForceRemoteRenderTimeframe: 0
+--- !u!114 &-72161107650740283
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7526836627258764377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkTransform
+  _stateAuthorityChangeErrorCorrectionDelta: 0
+  SyncScale: 0
+  SyncParent: 0
+  _autoAOIOverride: 1
+  DisableSharedModeInterpolation: 0
 --- !u!1 &8295190287298164584
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,33 +1,38 @@
-﻿using UnityEngine;
-using System.Collections;
+using UnityEngine;
+using Fusion;
 
-public class PlayerLevel : MonoBehaviour
+public class PlayerLevel : NetworkBehaviour
 {
     [Header("Compatibilidad / referencias")]
     public CharacterType characterData;
 
+    [Header("Efectos Visuales (Cliente)")]
+    public DamageFlash damageFlash;
+    private int _lastVisibleHealth;
+
+    // --- VARIABLES DE RED (Sincronizadas por el servidor) ---
     [Header("Nivel y experiencia")]
-    public int currentLevel = 0;
-    public int currentXP = 0;
-    public int xpToNextLevel = 100;
+    [Networked] public int currentLevel { get; set; }
+    [Networked] public int currentXP { get; set; }
+    [Networked] public int xpToNextLevel { get; set; }
 
     [Header("Vida y escudo")]
-    public int maxHealth = 100;
-    public int currentHealth = 100;
-
-    public int maxShield = 0;
-    public int currentShield = 0;
+    [Networked] public int maxHealth { get; set; }
+    [Networked] public int currentHealth { get; set; }
+    [Networked] public int maxShield { get; set; }
+    [Networked] public int currentShield { get; set; }
 
     [Header("Defensa")]
-    public int defense = 0;
+    [Networked] public int defense { get; set; }
 
+    [Header("Monedas")]
+    [Networked] public int currentCoins { get; set; }
+
+    // --- VARIABLES LOCALES FIJAS ---
     [Header("Escalado por nivel")]
     public int healthPerLevel = 20;
     public int shieldPerLevel = 10;
     public int defensePerLevel = 1;
-
-    [Header("Monedas")]
-    public int currentCoins = 0;
 
     [Header("Debug")]
     public bool restoreFullOnLevelUp = true;
@@ -42,28 +47,65 @@ public class PlayerLevel : MonoBehaviour
         }
     }
 
-    private void Start()
+    public override void Spawned()
     {
-        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
-        currentShield = Mathf.Clamp(currentShield, 0, maxShield);
-
-        if (currentHealth <= 0)
+        if (HasStateAuthority)
+        {
+            xpToNextLevel = 100;
+            maxHealth = 100; // O characterData.baseHealth si lo prefieres
             currentHealth = maxHealth;
+            maxShield = 0;
+            currentShield = 0;
+            defense = 0;
+            currentCoins = 0;
+        }
+
+        _lastVisibleHealth = currentHealth;
+
+        // �EL ARREGLO DE LA UI EST� AQU�!
+        if (HasInputAuthority)
+        {
+            // Le agregamos "UnityEngine." para que Fusion no tire el error CS0176
+            PlayerHUD hud = UnityEngine.Object.FindFirstObjectByType<PlayerHUD>();
+
+            if (hud != null)
+            {
+                hud.playerLevel = this;
+                hud.RefreshHUD();
+                Debug.Log("[UI] �Barras de vida y escudo conectadas!");
+            }
+        }
     }
 
-    // XP / NIVEL
-
-    public void GainXP(int amount)
+    public override void Render()
     {
-        AddXP(amount);
+        if (_lastVisibleHealth != currentHealth)
+        {
+            if (currentHealth < _lastVisibleHealth)
+            {
+                if (damageFlash != null)
+                {
+                    damageFlash.Flash();
+                }
+
+                // Actualizamos la UI al recibir da�o
+                if (HasInputAuthority)
+                {
+                    PlayerHUD hud = UnityEngine.Object.FindFirstObjectByType<PlayerHUD>();
+                    if (hud != null) hud.RefreshHUD();
+                }
+            }
+            _lastVisibleHealth = currentHealth;
+        }
     }
+
+    public void GainXP(int amount) => AddXP(amount);
 
     public void AddXP(int amount)
     {
+        if (!HasStateAuthority) return;
         if (amount <= 0) return;
-
         currentXP += amount;
-        Debug.Log($"{name} ganó {amount} XP. XP actual: {currentXP}");
 
         while (currentXP >= xpToNextLevel)
         {
@@ -75,8 +117,6 @@ public class PlayerLevel : MonoBehaviour
     private void LevelUp()
     {
         currentLevel++;
-        Debug.Log($"{name} subió a nivel {currentLevel}");
-
         ApplyLevelRewards();
     }
 
@@ -96,34 +136,28 @@ public class PlayerLevel : MonoBehaviour
             currentHealth = Mathf.Min(currentHealth, maxHealth);
             currentShield = Mathf.Min(currentShield, maxShield);
         }
-
-        Debug.Log($"{name} mejoró stats -> HP: {maxHealth}, Escudo: {maxShield}, Defensa: {defense}");
     }
-
-    // Coins
 
     public void AddCoins(int amount)
     {
+        if (!HasStateAuthority) return;
         if (amount <= 0) return;
-
         currentCoins += amount;
-        Debug.Log($"{name} ganó {amount} monedas. Total: {currentCoins}");
     }
 
     public bool SpendCoins(int amount)
     {
+        if (!HasStateAuthority) return false;
         if (amount <= 0) return false;
         if (currentCoins < amount) return false;
 
         currentCoins -= amount;
-        Debug.Log($"{name} gastó {amount} monedas. Total: {currentCoins}");
         return true;
     }
 
-    // VIDA / DAÑO
-
     public void TakeDamage(int damage)
     {
+        if (!HasStateAuthority) return;
         if (damage <= 0) return;
 
         int finalDamage = Mathf.Max(damage - defense, 1);
@@ -140,8 +174,6 @@ public class PlayerLevel : MonoBehaviour
             currentHealth -= finalDamage;
         }
 
-        Debug.Log($"{name} recibió daño. HP: {currentHealth}, Escudo: {currentShield}");
-
         if (currentHealth <= 0)
         {
             Die();
@@ -150,48 +182,31 @@ public class PlayerLevel : MonoBehaviour
 
     public void Heal(int amount)
     {
+        if (!HasStateAuthority) return;
         if (amount <= 0) return;
-
         currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
-        Debug.Log($"{name} se curó. HP actual: {currentHealth}");
     }
 
     public void RestoreShield(int amount)
     {
+        if (!HasStateAuthority) return;
         if (amount <= 0) return;
-
         currentShield = Mathf.Min(currentShield + amount, maxShield);
-        Debug.Log($"{name} recuperó escudo. Escudo actual: {currentShield}");
     }
 
     public void RestoreFullState()
     {
+        if (!HasStateAuthority) return;
         currentHealth = maxHealth;
         currentShield = maxShield;
-        Debug.Log($"{name} restauró vida y escudo al máximo.");
     }
 
-    public int GetMaxHP()
-    {
-        return maxHealth;
-    }
-
-    public int GetCurrentHP()
-    {
-        return currentHealth;
-    }
-
-    public int GetCurrentShield()
-    {
-        return currentShield;
-    }
-
-    // MUERTE
+    public int GetMaxHP() => maxHealth;
+    public int GetCurrentHP() => currentHealth;
+    public int GetCurrentShield() => currentShield;
 
     private void Die()
     {
-        Debug.Log($"{name} murió.");
-
         PlayerRespawn respawn = GetComponent<PlayerRespawn>();
         if (respawn != null)
         {
@@ -200,7 +215,8 @@ public class PlayerLevel : MonoBehaviour
         else
         {
             RestoreFullState();
-            Debug.LogWarning("No se encontró PlayerRespawn en el Player.");
         }
     }
 }
+
+

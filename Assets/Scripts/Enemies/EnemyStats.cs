@@ -1,25 +1,28 @@
 using UnityEngine;
 using UnityEngine.UI;
+using Fusion; // ¡Añadido para el multijugador!
 
-public class EnemyStats : MonoBehaviour
+public class EnemyStats : NetworkBehaviour
 {
     public EnemyType enemyData;
     [SerializeField] private Slider healthSlider;
 
-    private int currentHealth;
-    public int CurrentHealth => currentHealth;
+    // 1. ¡VIDA EN RED! Ahora todos los jugadores ven exactamente la misma vida del enemigo
+    [Networked] public int currentHealth { get; set; }
 
-    void Start()
+    // 2. ¡EL ARREGLO DEL ERROR! Restauramos estas propiedades para que los scripts del Jefe no se rompan
+    public int CurrentHealth => currentHealth;
+    public int GetCurrentHealth() => currentHealth;
+
+    public override void Spawned()
     {
-        if (enemyData == null)
+        // Al iniciar, solo el servidor dicta cuánta vida máxima tiene
+        if (HasStateAuthority)
         {
-            Debug.LogError("EnemyStats: Falta EnemyType!");
-            return;
+            currentHealth = enemyData.maxHealth;
         }
 
-        currentHealth = enemyData.maxHealth;
-        Debug.Log($"{gameObject.name} spawn con {currentHealth} HP");
-
+        // Todos ajustan el tamaño de su barra de vida local
         if (healthSlider != null)
         {
             healthSlider.maxValue = enemyData.maxHealth;
@@ -27,21 +30,27 @@ public class EnemyStats : MonoBehaviour
         }
     }
 
+    // Render() se ejecuta constantemente en la pantalla de todos los jugadores. Ideal para actualizar UIs.
+    public override void Render()
+    {
+        if (healthSlider != null)
+        {
+            healthSlider.value = currentHealth;
+        }
+    }
+
     public void TakeDamage(int amount)
     {
-        currentHealth -= amount;
-        Debug.Log($"{gameObject.name} recibió {amount} daño. HP: {currentHealth}");
+        // CANDADO DE RED: Solo el servidor resta la vida
+        if (!HasStateAuthority) return;
 
-        if (healthSlider != null)
-            healthSlider.value = currentHealth;
+        currentHealth -= amount;
 
         if (currentHealth <= 0)
         {
             Die();
         }
     }
-
-    public int GetCurrentHealth() => currentHealth;
 
     Vector3 GetOrbSpawnPosition()
     {
@@ -55,35 +64,44 @@ public class EnemyStats : MonoBehaviour
         return transform.position + Vector3.up * 1f;
     }
 
-    void Die()
+    private void Die()
     {
-        // Si este enemigo es un EnergyCore, avisarle antes de destruirlo
+        // 1. Avisos a otros sistemas (Núcleo)
         EnergyCore core = GetComponent<EnergyCore>();
         if (core != null)
         {
             core.OnCoreDestroyed();
         }
 
-        // Dar rewards directos al player (HP / Shield / Coins)
-        PlayerLevel playerLevel = FindFirstObjectByType<PlayerLevel>();
+        // 2. Dar rewards directos al player (HP / Shield / Coins)
+        // Usamos UnityEngine.Object para que Fusion no se confunda
+        PlayerLevel playerLevel = UnityEngine.Object.FindFirstObjectByType<PlayerLevel>();
         RewardOnDeath reward = GetComponent<RewardOnDeath>();
-
         if (playerLevel != null && reward != null)
         {
             reward.GiveRewards(playerLevel);
         }
 
-        // Drop de XP Orb, igual que antes
-        if (enemyData.dropPrefab != null)
+        // 3. Drop de XP Orb (Versión Multijugador)
+        if (HasStateAuthority && enemyData.dropPrefab != null)
         {
             Vector3 dropPosition = GetOrbSpawnPosition();
-            GameObject drop = Instantiate(enemyData.dropPrefab, dropPosition, Quaternion.identity);
+            NetworkObject dropNetObj = enemyData.dropPrefab.GetComponent<NetworkObject>();
 
-            XPOrb orb = drop.GetComponent<XPOrb>();
-            if (orb != null)
-                orb.xpAmount = enemyData.xpReward;
+            if (dropNetObj != null)
+            {
+                // Usamos el Runner de este enemigo para spawnear el orbe
+                NetworkObject orbObj = Runner.Spawn(dropNetObj, dropPosition, Quaternion.identity);
+
+                XPOrb orb = orbObj.GetComponent<XPOrb>();
+                if (orb != null) orb.xpAmount = enemyData.xpReward;
+            }
         }
 
-        Destroy(gameObject);
+        // 4. Destrucción oficial del enemigo en toda la red
+        if (Object != null && Runner != null)
+        {
+            Runner.Despawn(Object);
+        }
     }
 }

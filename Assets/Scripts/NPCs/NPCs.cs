@@ -89,7 +89,7 @@ public class NPCs : MonoBehaviour
 
         if (quest != null)
         {
-            quest.questGiver = this;
+            quest.questGiver = GetComponent<NPClogical>();
 
             if (textMiss != null)
                 textMiss.text = quest.missionDescription;

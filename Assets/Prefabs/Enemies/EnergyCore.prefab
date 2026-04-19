@@ -518,6 +518,8 @@ GameObject:
   - component: {fileID: 5069929441061710971}
   - component: {fileID: 8931900379992520846}
   - component: {fileID: 3779899516693620392}
+  - component: {fileID: 7397270662016356145}
+  - component: {fileID: -675809252770785721}
   m_Layer: 7
   m_Name: EnergyCore
   m_TagString: Enemy
@@ -569,6 +571,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -590,9 +594,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!65 &3284758940605045295
 BoxCollider:
@@ -627,7 +633,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59107d46ddd1703489805cad2d356186, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHP: 20
   linkedTurrets:
   - {fileID: 0}
   - {fileID: 0}
@@ -655,6 +660,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyData: {fileID: 11400000, guid: b9a0b18a3cfdca145ac7c9221445e67b, type: 2}
   healthSlider: {fileID: 3032762157870868029}
+  _currentHealth: 0
 --- !u!114 &3779899516693620392
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -668,3 +674,40 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   healthSlider: {fileID: 3032762157870868029}
+--- !u!114 &7397270662016356145
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7133858896426652950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 804958819
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 8931900379992520846}
+  - {fileID: -675809252770785721}
+  ForceRemoteRenderTimeframe: 0
+--- !u!114 &-675809252770785721
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7133858896426652950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkTransform
+  _stateAuthorityChangeErrorCorrectionDelta: 0
+  SyncScale: 0
+  SyncParent: 0
+  _autoAOIOverride: 1
+  DisableSharedModeInterpolation: 0

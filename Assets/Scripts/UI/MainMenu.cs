@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 public class MainMenu : MonoBehaviour
 {
-    [SerializeField] string gameSceneName = "SampleScene";  
+    [SerializeField] string gameSceneName = "Lobby";  
     [SerializeField] string loginSceneName = "AuthService"; 
 
     async void Start()

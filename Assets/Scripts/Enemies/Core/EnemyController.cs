@@ -1,9 +1,10 @@
+using Fusion;
 using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(EnemyStats))]
-public class EnemyController : MonoBehaviour
+public class EnemyController : NetworkBehaviour
 {
     [Header("Data")]
     public EnemyType enemyData;
@@ -75,8 +76,17 @@ public class EnemyController : MonoBehaviour
             attackStrategy = new MeleeEnemyAttackStrategy();
     }
 
-    private void Start()
+    // CAMBIO MULTIJUGADOR: Usamos Spawned en lugar de Start
+    public override void Spawned()
     {
+        // Solo el servidor inicializa la IA
+        if (!HasStateAuthority)
+        {
+            // Apagamos el NavMesh en los clientes para que no pelee contra el NetworkTransform
+            Agent.enabled = false;
+            return;
+        }
+
         FindTarget();
 
         if (patrolPoints != null && patrolPoints.Length > 0)
@@ -85,18 +95,37 @@ public class EnemyController : MonoBehaviour
             StateMachine.Initialize(IdleState);
     }
 
-    private void Update()
+    // CAMBIO MULTIJUGADOR: Usamos FixedUpdateNetwork en lugar de Update
+    public override void FixedUpdateNetwork()
     {
-        if (Target == null)
+        // REGLA DE ORO: Solo el servidor piensa y mueve a los enemigos
+        if (!HasStateAuthority) return;
+
+        // Si perdimos al objetivo (ej. se desconectó o murió), buscamos otro
+        if (Target == null || !Target.gameObject.activeInHierarchy)
             FindTarget();
 
         StateMachine.CurrentState?.LogicUpdate();
     }
 
+    // CAMBIO MULTIJUGADOR: Ahora busca al jugador más cercano
     public void FindTarget()
     {
-        GameObject playerObj = GameObject.FindGameObjectWithTag(playerTag);
-        Target = playerObj != null ? playerObj.transform : null;
+        GameObject[] players = GameObject.FindGameObjectsWithTag(playerTag);
+        float closestDist = float.MaxValue;
+        Transform bestTarget = null;
+
+        foreach (var p in players)
+        {
+            float d = Vector3.Distance(transform.position, p.transform.position);
+            if (d < closestDist)
+            {
+                closestDist = d;
+                bestTarget = p.transform;
+            }
+        }
+
+        Target = bestTarget;
     }
 
     public float DistanceToTarget()
@@ -150,15 +179,17 @@ public class EnemyController : MonoBehaviour
         if (dir.sqrMagnitude > 0.001f)
         {
             Quaternion rot = Quaternion.LookRotation(dir);
-            transform.rotation = Quaternion.Slerp(transform.rotation, rot, 10f * Time.deltaTime);
+            // CAMBIO MULTIJUGADOR: Runner.DeltaTime en vez de Time.deltaTime
+            transform.rotation = Quaternion.Slerp(transform.rotation, rot, 10f * Runner.DeltaTime);
         }
     }
 
     public void Attack()
     {
-        if (Time.time < LastAttackTime + attackCooldown) return;
+        // CAMBIO MULTIJUGADOR: Runner.SimulationTime en vez de Time.time
+        if (Runner.SimulationTime < LastAttackTime + attackCooldown) return;
 
-        LastAttackTime = Time.time;
+        LastAttackTime = Runner.SimulationTime;
         attackStrategy.Execute(this);
     }
 }
