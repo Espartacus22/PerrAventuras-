@@ -18,11 +18,19 @@ public class NetworkPickup : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!Runner.IsServer) return;
+        if (Runner == null || Object == null)
+        {
+            Debug.LogWarning("[PICKUP] Runner u Object es null, se ignora trigger.");
+            return;
+        }
+
+        if (!Runner.IsServer)
+            return;
 
         Debug.Log($"[PICKUP] Trigger con {other.name}");
 
         Transform current = other.transform;
+
         while (current != null)
         {
             if (current.TryGetComponent<NetworkObject>(out var playerNetObj))
@@ -30,14 +38,21 @@ public class NetworkPickup : NetworkBehaviour
                 Debug.Log($"[PICKUP] Encontrado NetworkObject en {current.name}");
 
                 var inventory = playerNetObj.GetComponent<InventorySystem>();
-                if (inventory != null)
+
+                if (inventory == null)
                 {
-                    Debug.Log($"[PICKUP] Procesando TryPickup en el servidor para {playerNetObj.name}");
-                    inventory.TryPickup(Object);
+                    Debug.LogWarning($"[PICKUP] {playerNetObj.name} no tiene InventorySystem.");
+                    return;
                 }
+
+                Debug.Log($"[PICKUP] Procesando TryPickup en el servidor para {playerNetObj.name}");
+                inventory.TryPickup(Object);
                 return;
             }
+
             current = current.parent;
         }
+
+        Debug.LogWarning($"[PICKUP] No se encontró NetworkObject válido en {other.name}");
     }
 }

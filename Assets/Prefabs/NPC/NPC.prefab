@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 812522638297513903}
   - component: {fileID: 1498713724666757899}
   - component: {fileID: 3208722747471300148}
+  - component: {fileID: 2923815352092600811}
   m_Layer: 0
   m_Name: NPC
   m_TagString: NPC
@@ -138,13 +139,30 @@ MonoBehaviour:
   panelMiss: {fileID: 0}
   textMiss: {fileID: 0}
   buttonMiss: {fileID: 0}
+  crosshair: {fileID: 0}
   outerRange: 25
   innerRange: 10
-  player: {fileID: 0}
+  player: {fileID: -8032962389977165870, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
   moveSpeed: 3
+  playerInputHandler: {fileID: 4451884497081364338, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
+  playerCombat: {fileID: 3131878559870406579, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
   instructions: []
   trainingZone: {fileID: 0}
   trainingStartPoint: {fileID: 0}
   trainingEndPoint: {fileID: 0}
   givesDoubleJump: 1
   interactKey: 101
+--- !u!114 &2923815352092600811
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7115266445705776209}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e28c94802412689488e99643ae963371, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Dialogue
+  gameplayCamera: {fileID: 0}
+  dialogueCamera: {fileID: 0}

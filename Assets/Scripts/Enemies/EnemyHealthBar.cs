@@ -9,15 +9,26 @@ public class EnemyHealthBar : MonoBehaviour
     void Start()
     {
         enemyStats = GetComponentInParent<EnemyStats>();
-        healthSlider.maxValue = enemyStats.enemyData.maxHealth;
-        healthSlider.value = enemyStats.enemyData.maxHealth;
+
+        if (enemyStats != null && healthSlider != null && enemyStats.enemyData != null)
+        {
+            healthSlider.maxValue = enemyStats.enemyData.maxHealth;
+            healthSlider.value = enemyStats.enemyData.maxHealth;
+        }
     }
 
     void Update()
     {
-        if (enemyStats != null)
+        if (enemyStats == null || healthSlider == null)
+            return;
+
+        if (!enemyStats.IsReady())
+            return;
+
+        healthSlider.value = enemyStats.GetCurrentHealth();
+
+        if (Camera.main != null)
         {
-            healthSlider.value = enemyStats.GetCurrentHealth();
             transform.LookAt(Camera.main.transform);
         }
     }
