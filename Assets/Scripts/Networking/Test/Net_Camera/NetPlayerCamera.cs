@@ -19,6 +19,9 @@ namespace Networking
         [SerializeField] private float minPitch = -35f;
         [SerializeField] private float maxPitch = 60f;
 
+        public static Camera LocalPlayerCamera { get; private set; }
+        public static Transform LocalCameraPivot { get; private set; }
+
         private float yaw;
         private float pitch;
 
@@ -27,7 +30,13 @@ namespace Networking
             if (Object.HasInputAuthority)
             {
                 if (playerCamera != null)
+                {
                     playerCamera.gameObject.SetActive(true);
+                    LocalPlayerCamera = playerCamera;
+                }
+
+                if (cameraPivot != null)
+                    LocalCameraPivot = cameraPivot;
 
                 if (audioListenerComp != null)
                     audioListenerComp.enabled = true;
@@ -50,6 +59,15 @@ namespace Networking
                 if (audioListenerComp != null)
                     audioListenerComp.enabled = false;
             }
+        }
+
+        public override void Despawned(NetworkRunner runner, bool hasState)
+        {
+            if (LocalPlayerCamera == playerCamera)
+                LocalPlayerCamera = null;
+
+            if (LocalCameraPivot == cameraPivot)
+                LocalCameraPivot = null;
         }
 
         private void LateUpdate()

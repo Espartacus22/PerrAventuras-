@@ -3,6 +3,7 @@ using UnityEngine;
 using Networking;
 
 [RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(NetPlayerCamera))]
 public class NetPlayerController : NetworkBehaviour
 {
     [Header("Movement")]
@@ -16,10 +17,10 @@ public class NetPlayerController : NetworkBehaviour
     [SerializeField] private float dashDuration = 0.18f;
     [SerializeField] private float dashCooldown = 0.75f;
 
-    [SerializeField] private Transform cameraPivot;
     [SerializeField] private float rotationSpeed = 12f;
 
     private CharacterController controller;
+    private NetPlayerCamera netPlayerCamera;
     private float verticalVelocity;
 
     [Networked] private TickTimer DashTimer { get; set; }
@@ -29,6 +30,7 @@ public class NetPlayerController : NetworkBehaviour
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+        netPlayerCamera = GetComponent<NetPlayerCamera>();
     }
 
     public override void Spawned()
@@ -38,20 +40,32 @@ public class NetPlayerController : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
-        if (!GetInput<NetInputData>(out var inputData))
+        if (!GetInput<NetworkInputPlayer>(out var inputData))
             return;
 
-        // Movimiento relativo a cámara
-        Vector3 camForward = cameraPivot != null ? cameraPivot.forward : Vector3.forward;
-        Vector3 camRight = cameraPivot != null ? cameraPivot.right : Vector3.right;
+        // Base de cámara para movimiento:
+        // - Local: usa la cámara real del jugador
+        // - Remoto/servidor: usa la dirección enviada en el input
+        Vector3 camForward;
 
-        camForward.y = 0f;
-        camRight.y = 0f;
+        if (HasInputAuthority && netPlayerCamera != null)
+        {
+            camForward = netPlayerCamera.GetCameraPlanarForward();
+        }
+        else
+        {
+            camForward = inputData.lookDirection - transform.position;
+            camForward.y = 0f;
 
-        camForward.Normalize();
-        camRight.Normalize();
+            if (camForward.sqrMagnitude < 0.001f)
+                camForward = transform.forward;
 
-        Vector3 move = camForward * inputData.move.y + camRight * inputData.move.x;
+            camForward.Normalize();
+        }
+
+        Vector3 camRight = Vector3.Cross(Vector3.up, camForward).normalized;
+
+        Vector3 move = camForward * inputData.moveInput.y + camRight * inputData.moveInput.x;
 
         if (move.sqrMagnitude > 1f)
             move.Normalize();
@@ -63,7 +77,7 @@ public class NetPlayerController : NetworkBehaviour
             if (verticalVelocity < 0f)
                 verticalVelocity = -2f;
 
-            if (inputData.buttons.IsSet(NetInputData.JUMP))
+            if (inputData.buttons.IsSet(NetworkInputPlayer.JUMP))
                 verticalVelocity = jumpForce;
         }
         else
@@ -74,7 +88,7 @@ public class NetPlayerController : NetworkBehaviour
         bool canStartDash = !DashTimer.IsRunning && !DashCooldownTimer.IsRunning;
         bool hasMoveInput = move.sqrMagnitude > 0.001f;
 
-        if (inputData.buttons.IsSet(NetInputData.DASH) && canStartDash && hasMoveInput)
+        if (inputData.buttons.IsSet(NetworkInputPlayer.DASH) && canStartDash && hasMoveInput)
         {
             DashDirection = move.normalized;
             DashTimer = TickTimer.CreateFromSeconds(Runner, dashDuration);
@@ -83,7 +97,7 @@ public class NetPlayerController : NetworkBehaviour
 
         float currentSpeed = moveSpeed;
 
-        if (inputData.buttons.IsSet(NetInputData.RUN))
+        if (inputData.buttons.IsSet(NetworkInputPlayer.RUN))
             currentSpeed *= runMultiplier;
 
         Vector3 horizontalVelocity;

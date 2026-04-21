@@ -42,20 +42,20 @@ public class NetPlayerAttack : NetworkBehaviour
             AttackCooldownTimer = TickTimer.None;
         }
 
-        if (!GetInput<NetInputData>(out var inputData))
+        if (!GetInput<NetworkInputPlayer>(out var inputData))
             return;
 
         if (!HasInputAuthority)
             return;
 
-        if (inputData.buttons.IsSet(NetInputData.MOUSE_LEFT) && !AttackCooldownTimer.IsRunning)
+        if (inputData.buttons.IsSet(NetworkInputPlayer.MOUSE_BUTTON_0) && !AttackCooldownTimer.IsRunning)
         {
             Vector3 attackCenter = transform.position + Vector3.up * 1.0f + transform.forward * 1.2f;
 
             RPC_RequestMeleeAttack(attackCenter);
         }
 
-        if (inputData.buttons.IsSet(NetInputData.MOUSE_RIGHT) && !AttackCooldownTimer.IsRunning)
+        if (inputData.buttons.IsSet(NetworkInputPlayer.MOUSE_BUTTON_1) && !AttackCooldownTimer.IsRunning)
         {
             RPC_RequestProjectileAttack();
         }

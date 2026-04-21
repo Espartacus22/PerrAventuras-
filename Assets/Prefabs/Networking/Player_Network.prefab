@@ -107,7 +107,6 @@ MonoBehaviour:
   dashSpeed: 20
   dashDuration: 0.5
   dashCooldown: 2
-  cameraPivot: {fileID: 3034355394191580258}
   rotationSpeed: 12
 --- !u!114 &2438445127651024330
 MonoBehaviour:
@@ -419,7 +418,7 @@ GameObject:
   - component: {fileID: 5218308684397365420}
   m_Layer: 3
   m_Name: PlayerCamera
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

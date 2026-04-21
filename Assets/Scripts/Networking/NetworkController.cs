@@ -185,15 +185,18 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
         inputPlayer.buttons.Set(NetworkInputPlayer.MOUSE_BUTTON_0, Input.GetMouseButton(0));
         inputPlayer.buttons.Set(NetworkInputPlayer.MOUSE_BUTTON_1, Input.GetMouseButton(1));
         inputPlayer.buttons.Set(NetworkInputPlayer.JUMP, Input.GetButton("Jump"));
-        inputPlayer.buttons.Set(NetworkInputPlayer.DASH, Input.GetKey(KeyCode.LeftAlt));
+        inputPlayer.buttons.Set(NetworkInputPlayer.DASH, Input.GetKey(KeyCode.LeftShift));
         inputPlayer.buttons.Set(NetworkInputPlayer.CROUCH, Input.GetKey(KeyCode.LeftControl));
-        inputPlayer.buttons.Set(NetworkInputPlayer.RUN, Input.GetKey(KeyCode.LeftShift));
+        inputPlayer.buttons.Set(NetworkInputPlayer.RUN, Input.GetKey(KeyCode.LeftAlt));
 
         // 3. Dirección de la mirada (Mouse)
-        if (Camera.main != null)
+        Camera cam = Networking.NetPlayerCamera.LocalPlayerCamera;
+
+        if (cam != null)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             Plane plane = new Plane(Vector3.up, new Vector3(0f, 0.5f, 0f));
+
             if (plane.Raycast(ray, out float enter))
             {
                 inputPlayer.lookDirection = ray.GetPoint(enter);
