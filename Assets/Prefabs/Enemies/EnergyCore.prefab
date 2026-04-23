@@ -660,7 +660,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyData: {fileID: 11400000, guid: b9a0b18a3cfdca145ac7c9221445e67b, type: 2}
   healthSlider: {fileID: 3032762157870868029}
-  _currentHealth: 0
+  _currentHealth: 10
 --- !u!114 &3779899516693620392
 MonoBehaviour:
   m_ObjectHideFlags: 0

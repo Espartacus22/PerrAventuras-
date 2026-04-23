@@ -103,7 +103,7 @@ public class NPCs : MonoBehaviour
         if (panelHintFar != null) panelHintFar.SetActive(false);
         if (panelHintNear != null) panelHintNear.SetActive(false);
 
-        LockGameplayCursor();
+        //LockGameplayCursor();
     }
 
     private void Update()

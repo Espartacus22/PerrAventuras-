@@ -959,18 +959,12 @@ MonoBehaviour:
   _networkSceneManagerDefault: {fileID: 1410783903}
   _playerPrefab: {fileID: -6566311147260112500, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
   _pickupPrefabs:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 3434287982648183104, guid: fc6b9e922ddcd6f4f90868c2d2a04d59, type: 3}
+  - {fileID: 1968695779458781458, guid: b270a69422d74534c9f54fb1b23ff170, type: 3}
+  - {fileID: 1422488841406037356, guid: 296e6e581df4f8f48b5841820a8683a5, type: 3}
+  - {fileID: 7943514242683856230, guid: 520048e6874c35542900d5224dfef493, type: 3}
   _pickupAmount: 25
-  _pickupRadius: 12
+  _pickupRadius: 10
 --- !u!114 &1410783906
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1054,7 +1048,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fusion.Addons.Physics::Fusion.Addons.Physics.RunnerSimulatePhysics3D
   _physicsAuthority: 2
   _physicsTiming: 3
-  ClientPhysicsSimulation: 0
+  ClientPhysicsSimulation: 2
   DeltaTimeMultiplier: 1
   SetUnityFixedTimestep: 0
 --- !u!1 &1435402133

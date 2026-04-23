@@ -10,12 +10,14 @@ public class EnemyStats : NetworkBehaviour
     // 1. ¡VIDA EN RED! Ahora todos los jugadores ven exactamente la misma vida del enemigo
     [Networked] public int currentHealth { get; set; }
 
-    // 2. ¡EL ARREGLO DEL ERROR! Restauramos estas propiedades para que los scripts del Jefe no se rompan
-    public int CurrentHealth => currentHealth;
-    public int GetCurrentHealth() => currentHealth;
+    // 2. ¡EL ARREGLO DEL ERROR! Restauramos estas propiedades para que los scripts del Jefe no se rompa.
+
+    private bool _isSpawned;
 
     public override void Spawned()
     {
+        _isSpawned = true;
+
         // Al iniciar, solo el servidor dicta cuánta vida máxima tiene
         if (HasStateAuthority)
         {
@@ -29,6 +31,16 @@ public class EnemyStats : NetworkBehaviour
             healthSlider.value = currentHealth;
         }
     }
+
+    public int GetCurrentHealth()
+    {
+        if (!_isSpawned || Object == null)
+            return 0;
+
+        return currentHealth;
+    }
+
+    public int CurrentHealth => GetCurrentHealth();
 
     // Render() se ejecuta constantemente en la pantalla de todos los jugadores. Ideal para actualizar UIs.
     public override void Render()

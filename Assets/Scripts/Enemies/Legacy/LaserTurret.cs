@@ -28,6 +28,18 @@ public class LaserTurret : NetworkBehaviour
         line.endWidth = 0.05f;
     }
 
+    void OnValidate()
+    {
+        if (line == null)
+            line = GetComponent<LineRenderer>();
+
+        if (line != null)
+        {
+            line.enabled = false;
+            line.positionCount = 0;
+        }
+    }
+
     public override void Spawned()
     {
         if (HasStateAuthority) isTurretEnabled = true;

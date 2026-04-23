@@ -21,8 +21,8 @@ public class ToggleInventory : MonoBehaviour
             else
             {
                 // Bloquea el mouse para volver a jugar/atacar
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
+                //Cursor.lockState = CursorLockMode.Locked;
+                //Cursor.visible = false;
             }
         }
     }

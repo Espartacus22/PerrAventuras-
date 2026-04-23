@@ -37,6 +37,8 @@ public class PlayerLevel : NetworkBehaviour
     [Header("Debug")]
     public bool restoreFullOnLevelUp = true;
 
+    private bool _isSpawned;
+
     private void Awake()
     {
         if (characterData == null)
@@ -49,6 +51,8 @@ public class PlayerLevel : NetworkBehaviour
 
     public override void Spawned()
     {
+        _isSpawned = true;
+
         if (HasStateAuthority)
         {
             xpToNextLevel = 100;
@@ -201,9 +205,9 @@ public class PlayerLevel : NetworkBehaviour
         currentShield = maxShield;
     }
 
-    public int GetMaxHP() => maxHealth;
-    public int GetCurrentHP() => currentHealth;
-    public int GetCurrentShield() => currentShield;
+    public int GetMaxHP() => (!_isSpawned || Object == null) ? 0 : maxHealth;
+    public int GetCurrentHP() => (!_isSpawned || Object == null) ? 0 : currentHealth;
+    public int GetCurrentShield() => (!_isSpawned || Object == null) ? 0 : currentShield;
 
     private void Die()
     {

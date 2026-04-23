@@ -21,6 +21,8 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private float extraFallGravity = 2.5f;
     [SerializeField] private float lowJumpGravityMultiplier = 2f;
 
+    [SerializeField] private Transform gameplayCamera;
+
     private Rigidbody rb;
     private CapsuleCollider capsule;
     private PlayerInputHandler inputHandler;
@@ -84,12 +86,20 @@ public class PlayerMovement : NetworkBehaviour
                 vcam.LookAt = this.transform;
                 Debug.Log("[CAMARA] ¡Conectada al jugador local en red!");
             }
+
+            if (Camera.main != null)
+            {
+                gameplayCamera = Camera.main.transform;
+                Debug.Log("[CAMARA] GameplayCamera asignada al player local.");
+            }
         }
     }
    
 
     public override void FixedUpdateNetwork()
     {
+        if (!HasStateAuthority) return;
+
         if (characterData == null) return;
 
         // Leemos el input de la red (lo envía el NetworkController)
@@ -211,15 +221,17 @@ public class PlayerMovement : NetworkBehaviour
 
     private Vector3 GetCameraRelativeDirection(Vector3 input)
     {
-        Transform cam = Camera.main != null ? Camera.main.transform : null;
-        Vector3 moveDir = input.normalized;
+        Transform cam = gameplayCamera;
 
-        if (cam != null)
+        if (cam == null)
         {
-            Vector3 camForward = Vector3.Scale(cam.forward, new Vector3(1, 0, 1)).normalized;
-            Vector3 camRight = Vector3.Scale(cam.right, new Vector3(1, 0, 1)).normalized;
-            moveDir = (camForward * input.z + camRight * input.x).normalized;
+            return input.normalized;
         }
+
+        Vector3 camForward = Vector3.Scale(cam.forward, new Vector3(1, 0, 1)).normalized;
+        Vector3 camRight = Vector3.Scale(cam.right, new Vector3(1, 0, 1)).normalized;
+
+        Vector3 moveDir = (camForward * input.z + camRight * input.x).normalized;
         return moveDir;
     }
 
