@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: fd152f015416953408daf0a899bd96f4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -16.791695
+      value: -77.01587
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fd152f015416953408daf0a899bd96f4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.0445449
+      value: -229.78854
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fd152f015416953408daf0a899bd96f4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 45.2874
+      value: 374.8883
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fd152f015416953408daf0a899bd96f4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -62,6 +62,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fd152f015416953408daf0a899bd96f4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6417540051006453654}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fd152f015416953408daf0a899bd96f4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5320127529482802789}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fd152f015416953408daf0a899bd96f4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4123542275581243702}
   m_SourcePrefab: {fileID: 100100000, guid: fd152f015416953408daf0a899bd96f4, type: 3}
 --- !u!1 &3784036760157669980 stripped
 GameObject:
@@ -105,3 +111,38 @@ MonoBehaviour:
   coinReward: 5
   hpReward: 50
   shieldReward: 20
+--- !u!114 &5320127529482802789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3784036760157669980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 2804305219
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours: []
+  ForceRemoteRenderTimeframe: 0
+--- !u!114 &4123542275581243702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3784036760157669980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e1df8efe8d169946a17beea5af82187, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BreakableChest
+  maxHP: 5
+  xpDropPrefab: {fileID: 4288601612095329630, guid: 5cd768c3c99935649a6c4e24cb8b88b9, type: 3}
+  xpDropCount: 3
+  healthDropPrefab: {fileID: 2307162825395307599, guid: 35659fe0cd32fcf43a9e185b586284f6, type: 3}
+  healthDropCount: 1

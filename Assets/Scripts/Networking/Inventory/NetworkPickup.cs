@@ -9,16 +9,19 @@ public class NetworkPickup : NetworkBehaviour
 
     public void ServerCollect()
     {
-        if (Runner != null && Object)
+        if (Runner != null && Object != null)
         {
-            Debug.Log($"[PICKUP] Despawneando {itemData.itemName}");
+            string pickupName = itemData != null ? itemData.itemName : gameObject.name;
+            Debug.Log($"[PICKUP] Despawneando {pickupName}");
             Runner.Despawn(Object);
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        if (Runner == null || Object == null) return;
         if (!Runner.IsServer) return;
+        if (itemData == null) return;
 
         Debug.Log($"[PICKUP] Trigger con {other.name}");
 
@@ -35,8 +38,10 @@ public class NetworkPickup : NetworkBehaviour
                     Debug.Log($"[PICKUP] Procesando TryPickup en el servidor para {playerNetObj.name}");
                     inventory.TryPickup(Object);
                 }
+
                 return;
             }
+
             current = current.parent;
         }
     }
