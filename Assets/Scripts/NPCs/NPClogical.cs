@@ -64,7 +64,7 @@ public class NPClogical : MonoBehaviour
     void Update()
     {
         // Si el jugador está cerca, no aceptó la misión y aprieta E
-        if (playerClose && !acceptMiss && Input.GetKeyDown(KeyCode.E) && player != null && player.isGrounded)
+        if (playerClose && !acceptMiss && Input.GetKeyDown(KeyCode.E) && player != null && player.IsGrounded)
         {
             // Hacer que mire al NPC
             Vector3 positionPlayer = new Vector3(transform.position.x, player.transform.position.y, transform.position.z);

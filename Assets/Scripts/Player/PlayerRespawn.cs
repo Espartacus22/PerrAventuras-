@@ -1,6 +1,5 @@
 using UnityEngine;
 using Fusion;
-using Fusion.Addons.Physics; // Obligatorio para teletransportar físicas en red
 
 public class PlayerRespawn : NetworkBehaviour
 {
@@ -8,16 +7,15 @@ public class PlayerRespawn : NetworkBehaviour
     [SerializeField] private float voidY = -10f;
 
     // --- VARIABLES DE RED ---
-    // El servidor debe recordar dónde es el checkpoint oficial
     [Networked] private Vector3 lastCheckpointPosition { get; set; }
     [Networked] private Quaternion lastCheckpointRotation { get; set; }
 
-    private NetworkRigidbody3D nrb;
+    private NetworkCharacterController ncc;
     private PlayerLevel playerLevel;
 
     private void Awake()
     {
-        nrb = GetComponent<NetworkRigidbody3D>();
+        ncc = GetComponent<NetworkCharacterController>();
         playerLevel = GetComponent<PlayerLevel>();
     }
 
@@ -31,7 +29,6 @@ public class PlayerRespawn : NetworkBehaviour
         }
     }
 
-    // Reemplazamos Update() por FixedUpdateNetwork() para leer caídas al vacío en tiempo de red
     public override void FixedUpdateNetwork()
     {
         if (!HasStateAuthority) return; // Solo el servidor controla las caídas al vacío
@@ -57,12 +54,11 @@ public class PlayerRespawn : NetworkBehaviour
     {
         if (HasStateAuthority)
         {
-            // 1. La magia de Fusion: Teletransportar sin romper las físicas
-            nrb.Teleport(lastCheckpointPosition, lastCheckpointRotation);
+            // 1. Teletransportar usando el NetworkCharacterController
+            ncc.Teleport(lastCheckpointPosition, lastCheckpointRotation);
 
-            // 2. Frenar el impulso para que el personaje no siga "cayendo" después de revivir
-            nrb.Rigidbody.linearVelocity = Vector3.zero;
-            nrb.Rigidbody.angularVelocity = Vector3.zero;
+            // 2. Frenar el impulso para que el personaje no siga "cayendo"
+            ncc.Velocity = Vector3.zero;
 
             // 3. Restaurar vida
             if (playerLevel != null)

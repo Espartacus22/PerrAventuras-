@@ -1,33 +1,19 @@
 using Fusion;
-using Fusion.Addons.Physics;
-using UnityEngine;
 using Networking;
+using UnityEngine;
 
-[RequireComponent(typeof(NetworkRigidbody3D))] // CRÍTICO para networking
-[RequireComponent(typeof(CapsuleCollider))]
+[RequireComponent(typeof(NetworkCharacterController))]
+[RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(PlayerInputHandler))]
 public class PlayerMovement : NetworkBehaviour
 {
     [Header("Datos del personaje")]
-    public CharacterType characterData;
+    public CharacterType characterData; // El ScriptableObject
 
-    [Header("Ground")]
-    public LayerMask groundMask;
-    [SerializeField] private float groundCheckDistance = 1.2f;
-    [SerializeField] private float groundRayOffset = 0.1f;
-
-    [Header("Saltos y Gravedad")]
-    [SerializeField] private bool hasDoubleJump = false;
-    [SerializeField] private float extraFallGravity = 2.5f;
-    [SerializeField] private float lowJumpGravityMultiplier = 2f;
-
-    [SerializeField] private Transform gameplayCamera;
-
-    private Rigidbody rb;
-    private CapsuleCollider capsule;
+    private NetworkCharacterController ncc;
+    private CharacterController unityCC;
     private PlayerInputHandler inputHandler;
 
-    public bool isGrounded;
     private bool isCrouching;
     private bool isDashing;
     private int jumpCount;
@@ -35,6 +21,10 @@ public class PlayerMovement : NetworkBehaviour
     private Vector3 originalCenter;
     private Vector3 dashDirection;
 
+    // Variable para recordar si un NPC nos regaló el salto en esta partida
+    private bool _unlockedDoubleJump = false;
+
+    // --- MÁQUINA DE ESTADOS ---
     public PStateMachine StateMachine { get; private set; }
     public PIdleState IdleState { get; private set; }
     public PMoveState MoveState { get; private set; }
@@ -45,18 +35,18 @@ public class PlayerMovement : NetworkBehaviour
 
     public PlayerInputHandler InputHandler => inputHandler;
     public CharacterType CharacterData => characterData;
-    public bool IsGrounded => isGrounded;
-    public float VerticalVelocity => rb.linearVelocity.y;
+
+    public bool IsGrounded => ncc.Grounded;
+    public float VerticalVelocity => ncc.Velocity.y;
 
     private void Awake()
     {
-        rb = GetComponent<Rigidbody>();
-        capsule = GetComponent<CapsuleCollider>();
+        ncc = GetComponent<NetworkCharacterController>();
+        unityCC = GetComponent<CharacterController>();
         inputHandler = GetComponent<PlayerInputHandler>();
 
-        originalHeight = capsule.height;
-        originalCenter = capsule.center;
-        rb.freezeRotation = true;
+        originalHeight = unityCC.height;
+        originalCenter = unityCC.center;
 
         StateMachine = new PStateMachine();
         IdleState = new PIdleState(this, StateMachine);
@@ -67,45 +57,35 @@ public class PlayerMovement : NetworkBehaviour
         CrouchState = new PCrouchState(this, StateMachine);
     }
 
-    // --- AQUÍ ESTÁ LA MAGIA FUSIONADA ---
     public override void Spawned()
     {
-        // 1. Inicializamos tu máquina de estados
         StateMachine.Initialize(IdleState);
 
-        // 2. Conectamos la cámara
+        // Volcamos los valores iniciales del Scriptable Object al CC de red
+        if (characterData != null)
+        {
+            ncc.maxSpeed = characterData.walkSpeed;
+            ncc.jumpImpulse = characterData.jumpForce;
+            ncc.rotationSpeed = characterData.rotationSpeed;
+        }
+
         if (HasInputAuthority)
         {
-            // Forzamos "UnityEngine.Object" para evitar confusiones, 
-            // y usamos el nuevo nombre de Unity 6: "CinemachineCamera"
             var vcam = UnityEngine.Object.FindFirstObjectByType<Unity.Cinemachine.CinemachineCamera>();
-
             if (vcam != null)
             {
                 vcam.Follow = this.transform;
                 vcam.LookAt = this.transform;
-                Debug.Log("[CAMARA] ¡Conectada al jugador local en red!");
-            }
-
-            if (Camera.main != null)
-            {
-                gameplayCamera = Camera.main.transform;
-                Debug.Log("[CAMARA] GameplayCamera asignada al player local.");
             }
         }
     }
-   
 
     public override void FixedUpdateNetwork()
     {
-        if (!HasStateAuthority) return;
-
         if (characterData == null) return;
 
-        // Leemos el input de la red (lo envía el NetworkController)
         if (GetInput(out NetworkInputPlayer input))
         {
-            // Alimentamos al títere (InputHandler) para que la máquina de estados funcione intacta
             inputHandler.MoveInput = input.moveInput;
             inputHandler.JumpPressed = input.buttons.IsSet(NetworkInputPlayer.JUMP);
             inputHandler.RunHeld = input.buttons.IsSet(NetworkInputPlayer.RUN);
@@ -114,26 +94,31 @@ public class PlayerMovement : NetworkBehaviour
             inputHandler.MeleePressed = input.buttons.IsSet(NetworkInputPlayer.MOUSE_BUTTON_0);
             inputHandler.RangedPressed = input.buttons.IsSet(NetworkInputPlayer.MOUSE_BUTTON_1);
 
-            UpdateGroundCheck();
-            RotateTowardsNetwork(input.lookDirection);
+            if (ncc.Grounded)
+            {
+                jumpCount = 0;
+            }
 
-            // La máquina de estados original hace su magia sin saber que está en red
+            // --- LÓGICA DE ROTACIÓN INTELIGENTE ---
+            bool isAiming = inputHandler.RangedPressed || inputHandler.MeleePressed;
+
+            if (isAiming)
+            {
+                // Si ataca, mira al mouse (strafing)
+                RotateTowardsNetwork(input.lookDirection);
+            }
+            else
+            {
+                // Si no ataca, mira hacia donde camina
+                Vector3 moveDir = new Vector3(inputHandler.MoveInput.x, 0f, inputHandler.MoveInput.y);
+                if (moveDir.sqrMagnitude > 0.01f)
+                {
+                    RotateTowardsNetwork(transform.position + moveDir);
+                }
+            }
+
             StateMachine.CurrentState.LogicUpdate();
             StateMachine.CurrentState.PhysicsUpdate();
-
-            HandleBetterGravity();
-        }
-    }
-
-    private void UpdateGroundCheck()
-    {
-        bool wasGrounded = isGrounded;
-        Vector3 origin = transform.position + Vector3.up * groundRayOffset;
-        isGrounded = Physics.Raycast(origin, Vector3.down, groundCheckDistance, groundMask);
-
-        if (isGrounded && !wasGrounded)
-        {
-            jumpCount = 0;
         }
     }
 
@@ -143,45 +128,55 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (isDashing) return;
 
-        Vector3 input = new Vector3(inputHandler.MoveInput.x, 0f, inputHandler.MoveInput.y);
-        if (input.sqrMagnitude <= 0.01f)
+        // El vector ya viene mundializado desde el NetworkController
+        Vector3 moveDir = new Vector3(inputHandler.MoveInput.x, 0f, inputHandler.MoveInput.y);
+
+        float currentSpeed = characterData.walkSpeed;
+        if (isCrouching) currentSpeed *= characterData.crouchMultiplier;
+        else if (running) currentSpeed *= characterData.runMultiplier;
+
+        ncc.maxSpeed = currentSpeed;
+
+        if (moveDir.sqrMagnitude <= 0.01f)
         {
-            StopHorizontalMovement();
+            ncc.Move(Vector3.zero);
             return;
         }
 
-        Vector3 moveDir = GetCameraRelativeDirection(input);
-        float speed = characterData.walkSpeed;
-
-        if (isCrouching) speed *= characterData.crouchMultiplier;
-        else if (running) speed *= characterData.runMultiplier;
-
-        rb.linearVelocity = new Vector3(moveDir.x * speed, rb.linearVelocity.y, moveDir.z * speed);
+        ncc.Move(moveDir);
     }
 
     public void MoveInAir()
     {
-        Vector3 input = new Vector3(inputHandler.MoveInput.x, 0f, inputHandler.MoveInput.y);
-        if (input.sqrMagnitude <= 0.01f) return;
+        if (isDashing) return;
 
-        Vector3 moveDir = GetCameraRelativeDirection(input);
-        float speed = characterData.walkSpeed * 0.8f;
-        rb.linearVelocity = new Vector3(moveDir.x * speed, rb.linearVelocity.y, moveDir.z * speed);
+        Vector3 moveDir = new Vector3(inputHandler.MoveInput.x, 0f, inputHandler.MoveInput.y);
+        ncc.maxSpeed = characterData.walkSpeed * 0.8f; // Penalización ligera en el aire
+
+        if (moveDir.sqrMagnitude > 0.01f)
+        {
+            ncc.Move(moveDir);
+        }
+        else
+        {
+            ncc.Move(Vector3.zero);
+        }
     }
 
     public void MoveCrouched() => Move(false);
 
     public void StopHorizontalMovement()
     {
-        rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+        ncc.Move(Vector3.zero);
     }
 
     public void Jump()
     {
-        int maxJumps = hasDoubleJump ? 2 : 1;
+        int maxJumps = HasDoubleJump() ? 2 : 1;
+
         if (jumpCount < maxJumps)
         {
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, characterData.jumpForce, rb.linearVelocity.z);
+            ncc.Jump(true, characterData.jumpForce);
             jumpCount++;
         }
     }
@@ -189,14 +184,15 @@ public class PlayerMovement : NetworkBehaviour
     public void BeginDash()
     {
         isDashing = true;
-        Vector3 input = new Vector3(inputHandler.MoveInput.x, 0f, inputHandler.MoveInput.y);
-        dashDirection = GetCameraRelativeDirection(input);
+        dashDirection = new Vector3(inputHandler.MoveInput.x, 0f, inputHandler.MoveInput.y);
         if (dashDirection == Vector3.zero) dashDirection = transform.forward;
     }
 
     public void DashMove()
     {
-        rb.linearVelocity = new Vector3(dashDirection.x * characterData.dashSpeed, rb.linearVelocity.y, dashDirection.z * characterData.dashSpeed);
+        Vector3 dashVel = dashDirection * characterData.dashSpeed;
+        ncc.Velocity = new Vector3(dashVel.x, 0f, dashVel.z);
+        unityCC.Move(ncc.Velocity * Runner.DeltaTime);
     }
 
     public void EndDash() => isDashing = false;
@@ -205,40 +201,26 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (isCrouching) return;
         isCrouching = true;
+
         float newHeight = originalHeight * characterData.crouchHeight;
-        capsule.height = newHeight;
+        unityCC.height = newHeight;
         float heightDelta = (originalHeight - newHeight) * 0.5f;
-        capsule.center = originalCenter - new Vector3(0f, heightDelta, 0f);
+        unityCC.center = originalCenter - new Vector3(0f, heightDelta, 0f);
     }
 
     public void StopCrouch()
     {
         if (!isCrouching) return;
         isCrouching = false;
-        capsule.height = originalHeight;
-        capsule.center = originalCenter;
-    }
-
-    private Vector3 GetCameraRelativeDirection(Vector3 input)
-    {
-        Transform cam = gameplayCamera;
-
-        if (cam == null)
-        {
-            return input.normalized;
-        }
-
-        Vector3 camForward = Vector3.Scale(cam.forward, new Vector3(1, 0, 1)).normalized;
-        Vector3 camRight = Vector3.Scale(cam.right, new Vector3(1, 0, 1)).normalized;
-
-        Vector3 moveDir = (camForward * input.z + camRight * input.x).normalized;
-        return moveDir;
+        unityCC.height = originalHeight;
+        unityCC.center = originalCenter;
     }
 
     private void RotateTowardsNetwork(Vector3 lookPosition)
     {
         Vector3 lookDir = lookPosition - transform.position;
         lookDir.y = 0f;
+
         if (lookDir.sqrMagnitude > 0.01f)
         {
             Quaternion lookRotation = Quaternion.LookRotation(lookDir);
@@ -246,32 +228,23 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
-    private void HandleBetterGravity()
-    {
-        if (rb.linearVelocity.y < 0f)
-        {
-            rb.linearVelocity += Vector3.up * Physics.gravity.y * (extraFallGravity - 1f) * Runner.DeltaTime;
-        }
-        else if (rb.linearVelocity.y > 0f && !inputHandler.JumpPressed)
-        {
-            rb.linearVelocity += Vector3.up * Physics.gravity.y * (lowJumpGravityMultiplier - 1f) * Runner.DeltaTime;
-        }
-    }
+    // --- MÉTODOS DE DESBLOQUEO DE SALTO (Para los NPCs) ---
 
     public void UnlockDoubleJump()
     {
-        hasDoubleJump = true;
-        Debug.Log($"{name}: Doble salto desbloqueado.");
+        _unlockedDoubleJump = true;
+        Debug.Log($"{name}: Doble salto desbloqueado por NPC/Evento.");
     }
 
     public void LockDoubleJump()
     {
-        hasDoubleJump = false;
+        _unlockedDoubleJump = false;
         Debug.Log($"{name}: Doble salto bloqueado.");
     }
 
     public bool HasDoubleJump()
     {
-        return hasDoubleJump;
+        // Verifica si lo tiene de base en el SO, o si un NPC se lo dio
+        return (characterData != null && characterData.dobleSalto) || _unlockedDoubleJump;
     }
 }

@@ -17,17 +17,21 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
     [Header("Network Components")]
     [SerializeField] private NetworkRunner _networkRunner;
     [SerializeField] private NetworkSceneManagerDefault _networkSceneManagerDefault;
+
+    // Nuestro único Prefab que contiene ambos modelos
     [SerializeField] private NetworkObject _playerPrefab;
 
+    [Header("Puntos de Aparición (Spawns)")]
+    // Arrastra aquí tus Empty GameObjects desde la escena (Spawn 1, Spawn 2...)
+    [SerializeField] private Transform[] _spawnPoints;
+
     [Header("Pickups (spawneados por server al crear sala)")]
-    [SerializeField] private NetworkObject[] _pickupPrefabs;     
+    [SerializeField] private NetworkObject[] _pickupPrefabs;
     [SerializeField] private int _pickupAmount = 25;
     [SerializeField] private float _pickupRadius = 12f;
 
     private Dictionary<PlayerRef, NetworkObject> _players = new Dictionary<PlayerRef, NetworkObject>();
-    private bool _mouseButton1Pressed;
-    private bool _mouseButton2Pressed;
-    private bool _pickupsSpawned = false;   
+    private bool _pickupsSpawned = false;
 
     private void Start()
     {
@@ -37,14 +41,12 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0)) _mouseButton1Pressed = true;
-        if (Input.GetMouseButtonDown(1)) _mouseButton2Pressed = true;
+        // Los inputs del mouse ahora se manejan directamente en el OnInput
     }
 
     private async void CreateRoom()
     {
-        Debug.Log("[NETWORK] 1. Creando sala como Host...");
-
+        Debug.Log("[NETWORK] Creando sala como Host...");
         try
         {
             var gameArg = new StartGameArgs()
@@ -52,14 +54,10 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
                 GameMode = GameMode.Host,
                 SessionName = "Room_01",
                 SceneManager = _networkSceneManagerDefault,
-                Scene = SceneRef.FromIndex(3)
+                Scene = SceneRef.FromIndex(3) // Asegúrate de que este sea el índice correcto de tu escena
             };
 
-            Debug.Log("[NETWORK] 2. Argumentos listos. Esperando a Fusion...");
-
             var result = await _networkRunner.StartGame(gameArg);
-
-            Debug.Log("[NETWORK] 3. Fusion terminó el proceso.");
 
             if (!result.Ok)
             {
@@ -67,15 +65,13 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
                 return;
             }
 
-            Debug.Log("[NETWORK] 4. ¡SALA CREADA CON ÉXITO! Cargando escena...");
+            Debug.Log("[NETWORK] ¡SALA CREADA CON ÉXITO!");
 
-            // Spawn de items (tu lógica original)
             if (_networkRunner.IsServer && !_pickupsSpawned)
             {
                 _pickupsSpawned = true;
                 if (_pickupPrefabs != null && _pickupPrefabs.Length > 0)
                 {
-                    Debug.Log($"[SPAWN] Spawneando {_pickupAmount} items...");
                     for (int i = 0; i < _pickupAmount; i++)
                     {
                         int randomIndex = Random.Range(0, _pickupPrefabs.Length);
@@ -99,8 +95,9 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
             GameMode = GameMode.Client,
             SessionName = "Room_01",
             SceneManager = _networkSceneManagerDefault,
-            Scene = SceneRef.FromIndex(3) 
+            Scene = SceneRef.FromIndex(3)
         };
+
         var result = await _networkRunner.StartGame(gameArg);
         if (!result.Ok)
         {
@@ -110,57 +107,47 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
 
     public void OnConnectedToServer(NetworkRunner runner)
     {
-        if (runner.IsServer && !_pickupsSpawned)
-        {
-            _pickupsSpawned = true;
-            for (int i = 0; i < _pickupAmount; i++)
-            {
-                var prefab = _pickupPrefabs[Random.Range(0, _pickupPrefabs.Length)];
-                Vector3 pos = new Vector3(
-                    Random.Range(-_pickupRadius, _pickupRadius),
-                    0.5f,
-                    Random.Range(-_pickupRadius, _pickupRadius)
-                );
-                runner.Spawn(prefab, pos, Quaternion.identity);
-            }
-            Debug.Log($"[SERVER] Spawned {_pickupAmount} pickups!");
-        }
-    }
-
-    private void SpawnPickups(NetworkRunner runner)
-    {
-        for (int i = 0; i < _pickupAmount; i++)
-        {
-            var prefab = _pickupPrefabs[Random.Range(0, _pickupPrefabs.Length)];
-            Vector3 pos = new Vector3(
-                Random.Range(-_pickupRadius, _pickupRadius),
-                0.5f,
-                Random.Range(-_pickupRadius, _pickupRadius)
-            );
-            runner.Spawn(prefab, pos, Quaternion.identity);
-        }
-        Debug.Log($"[SERVER] Spawned {_pickupAmount} pickups al crear la sala!");
-
-
-
+        // El spawn de pickups ya se maneja en el CreateRoom, pero se deja por seguridad
     }
 
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
     {
-        Debug.Log("OnPlayerJoined");
+        Debug.Log($"OnPlayerJoined: Player {player.PlayerId} se ha unido.");
 
-        // ESCUDO ANTI-CRASH: Solo apagamos la UI si todavía existe en la escena
-        if (_lobbyPanel != null)
-        {
-            _lobbyPanel.SetActive(false);
-        }
+        if (_lobbyPanel != null) _lobbyPanel.SetActive(false);
 
         if (!runner.IsServer) return;
 
-        // El servidor spawnea el player y le asigna InputAuthority al cliente
-        var playerSpawned = runner.Spawn(_playerPrefab,
-            new Vector3(Random.Range(-3f, 3f), 3f, Random.Range(-3f, 3f)), // Lo subí a 3f en Y para que no caiga por el piso
-            Quaternion.identity, player);
+        int spawnIndex = _players.Count;
+
+        // 1. Calculamos la posición base
+        Transform spawnPoint = (_spawnPoints != null && _spawnPoints.Length > 0) ? _spawnPoints[0] : null;
+        Vector3 basePos = spawnPoint != null ? spawnPoint.position : Vector3.up * 3f;
+        Quaternion baseRot = spawnPoint != null ? spawnPoint.rotation : Quaternion.identity;
+
+        // 2. SPAWN
+        var playerSpawned = runner.Spawn(_playerPrefab, basePos, baseRot, player, (runner, obj) =>
+        {
+            // --- AQUÍ ESTÁ EL TRUCO ---
+            // Calculamos el desplazamiento
+            float offset = spawnIndex * 2f;
+            Vector3 finalPos = basePos + (spawnPoint != null ? spawnPoint.right : Vector3.right) * offset;
+
+            // Intentamos moverlo por NCC si existe, sino por transform normal
+            var ncc = obj.GetComponent<NetworkCharacterController>();
+            if (ncc != null)
+            {
+                ncc.Teleport(finalPos); // Esto le avisa a la física de Fusion que debe moverse
+            }
+            else
+            {
+                obj.transform.position = finalPos;
+            }
+
+            // Configuramos el modelo visual
+            var visuals = obj.GetComponent<PlayerVisuals>();
+            if (visuals != null) visuals.ModelIndex = spawnIndex;
+        });
 
         _players.Add(player, playerSpawned);
     }
@@ -168,6 +155,7 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
     public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
     {
         if (!_networkRunner.IsServer) return;
+
         if (_players.Remove(player, out var playerSpawned))
         {
             _networkRunner.Despawn(playerSpawned);
@@ -178,10 +166,23 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
     {
         var inputPlayer = new NetworkInputPlayer();
 
-        // 1. Ejes de Movimiento
-        inputPlayer.moveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        Vector2 rawInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        Vector2 finalMove = Vector2.zero;
 
-        // 2. Botones de Acción
+        // Calculamos la dirección respecto a la cámara local del jugador
+        if (Camera.main != null && rawInput.sqrMagnitude > 0.01f)
+        {
+            Transform cam = Camera.main.transform;
+            Vector3 camForward = Vector3.Scale(cam.forward, new Vector3(1, 0, 1)).normalized;
+            Vector3 camRight = Vector3.Scale(cam.right, new Vector3(1, 0, 1)).normalized;
+
+            Vector3 calculatedDir = (camForward * rawInput.y + camRight * rawInput.x).normalized;
+            finalMove = new Vector2(calculatedDir.x, calculatedDir.z);
+        }
+
+        inputPlayer.moveInput = finalMove;
+
+        // Botones
         inputPlayer.buttons.Set(NetworkInputPlayer.MOUSE_BUTTON_0, Input.GetMouseButton(0));
         inputPlayer.buttons.Set(NetworkInputPlayer.MOUSE_BUTTON_1, Input.GetMouseButton(1));
         inputPlayer.buttons.Set(NetworkInputPlayer.JUMP, Input.GetButton("Jump"));
@@ -189,7 +190,7 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
         inputPlayer.buttons.Set(NetworkInputPlayer.CROUCH, Input.GetKey(KeyCode.LeftControl));
         inputPlayer.buttons.Set(NetworkInputPlayer.RUN, Input.GetKey(KeyCode.LeftShift));
 
-        // 3. Dirección de la mirada (Mouse)
+        // Puntero del mouse
         if (Camera.main != null)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -203,6 +204,7 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
         input.Set(inputPlayer);
     }
 
+    // --- MÉTODOS REQUERIDOS POR LA INTERFAZ ---
     public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
     public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { }
