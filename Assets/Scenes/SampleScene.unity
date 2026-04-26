@@ -13554,7 +13554,7 @@ PrefabInstance:
     - target: {fileID: 3208722747471300148, guid: 0829d92f86774e749a17a6f719c2bfac, type: 3}
       propertyPath: quest
       value: 
-      objectReference: {fileID: 2047615846}
+      objectReference: {fileID: 0}
     - target: {fileID: 3208722747471300148, guid: 0829d92f86774e749a17a6f719c2bfac, type: 3}
       propertyPath: player
       value: 

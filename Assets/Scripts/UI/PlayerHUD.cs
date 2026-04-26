@@ -18,11 +18,6 @@ public class PlayerHUD : MonoBehaviour
     [Header("References")]
     public PlayerLevel playerLevel;
 
-    private void Start()
-    {
-        RefreshHUD();
-    }
-
     private void Update()
     {
         RefreshHUD();
@@ -32,22 +27,24 @@ public class PlayerHUD : MonoBehaviour
     {
         if (playerLevel == null) return;
 
-        // HP
-        hpBar.maxValue = playerLevel.maxHealth;
-        hpBar.value = playerLevel.currentHealth;
-        hpText.text = "HP: " + playerLevel.currentHealth + " / " + playerLevel.maxHealth;
+        int maxHP = playerLevel.GetMaxHP();
+        int currentHP = playerLevel.GetCurrentHP();
+        int currentShield = playerLevel.GetCurrentShield();
 
-        // Shield
+        if (maxHP <= 0) return;
+
+        hpBar.maxValue = maxHP;
+        hpBar.value = currentHP;
+        hpText.text = "HP: " + currentHP + " / " + maxHP;
+
         shieldBar.maxValue = playerLevel.maxShield;
-        shieldBar.value = playerLevel.currentShield;
-        shieldText.text = "Shield: " + playerLevel.currentShield + " / " + playerLevel.maxShield;
+        shieldBar.value = currentShield;
+        shieldText.text = "Shield: " + currentShield + " / " + playerLevel.maxShield;
 
-        // XP
         xpBar.maxValue = playerLevel.xpToNextLevel;
         xpBar.value = playerLevel.currentXP;
         xpText.text = "XP: " + playerLevel.currentXP + " / " + playerLevel.xpToNextLevel;
 
-        // Coins
         coinsText.text = "Coins: " + playerLevel.currentCoins;
     }
 }

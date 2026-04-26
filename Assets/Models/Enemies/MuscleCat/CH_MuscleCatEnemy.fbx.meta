@@ -1,9 +1,14 @@
 fileFormatVersion: 2
-guid: 32b6db242cfa1024eb9e9910350aafac
+guid: 7df588005182d7e43a0c86949d3bc5c1
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: atlas_MuscleCat
+    second: {fileID: 2100000, guid: 57c6eb9374ef1e14f97700920682eb21, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
