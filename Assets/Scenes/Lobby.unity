@@ -957,6 +957,7 @@ MonoBehaviour:
   _networkRunner: {fileID: 1410783902}
   _networkSceneManagerDefault: {fileID: 1410783903}
   _playerPrefab: {fileID: -6566311147260112500, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
+  _spawnPoints: []
   _pickupPrefabs:
   - {fileID: 3434287982648183104, guid: fc6b9e922ddcd6f4f90868c2d2a04d59, type: 3}
   - {fileID: 1968695779458781458, guid: b270a69422d74534c9f54fb1b23ff170, type: 3}
@@ -1315,12 +1316,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
