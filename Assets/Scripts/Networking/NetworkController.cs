@@ -118,10 +118,15 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
 
         if (!runner.IsServer) return;
 
-        int spawnIndex = _players.Count;
+        int spawnIndex = Mathf.Max(0, player.PlayerId - 1);
 
         // 1. Calculamos la posición base
-        Transform spawnPoint = (_spawnPoints != null && _spawnPoints.Length > 0) ? _spawnPoints[0] : null;
+        Transform spawnPoint = GameObject.Find("PlayerSpawn_Network")?.transform;
+
+        if (spawnPoint == null && _spawnPoints != null && _spawnPoints.Length > 0)
+        {
+            spawnPoint = _spawnPoints[0];
+        }
         Vector3 basePos = spawnPoint != null ? spawnPoint.position : Vector3.up * 3f;
         Quaternion baseRot = spawnPoint != null ? spawnPoint.rotation : Quaternion.identity;
 
@@ -149,7 +154,7 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
             if (visuals != null) visuals.ModelIndex = spawnIndex;
         });
 
-        _players.Add(player, playerSpawned);
+        _players[player] = playerSpawned;
     }
 
     public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
@@ -218,6 +223,64 @@ public class NetworkController : MonoBehaviour, INetworkRunnerCallbacks
     public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList) { }
     public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }
     public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
-    public void OnSceneLoadDone(NetworkRunner runner) { }
+    public void OnSceneLoadDone(NetworkRunner runner) 
+    {
+        if (!runner.IsServer) return;
+
+        string currentSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+
+        if (currentSceneName == "SampleScene")
+        {
+            Debug.Log("[SCENE LOAD] SampleScene cargada. No respawneo porque OnPlayerJoined ya lo hizo.");
+            return;
+        }
+
+        Debug.Log("[SCENE LOAD] Escena cargada. Revisando players...");
+
+        Transform spawnPoint = GameObject.Find("PlayerSpawn_Network")?.transform;
+
+        if (spawnPoint == null)
+        {
+            Debug.LogWarning("[SPAWN] No se encontró PlayerSpawn_Network.");
+            return;
+        }
+
+        foreach (PlayerRef player in runner.ActivePlayers)
+        {
+            if (_players.TryGetValue(player, out NetworkObject oldPlayer))
+            {
+                if (oldPlayer != null)
+                {
+                    runner.Despawn(oldPlayer);
+                }
+
+                _players.Remove(player);
+            }
+
+            int spawnIndex = Mathf.Max(0, player.PlayerId - 1);
+
+            Vector3 spawnPos = spawnPoint.position + spawnPoint.right * (spawnIndex * 2f);
+            Quaternion spawnRot = spawnPoint.rotation;
+
+            NetworkObject newPlayer = runner.Spawn(_playerPrefab, spawnPos, spawnRot, player, (runner, obj) =>
+            {
+                var visuals = obj.GetComponent<PlayerVisuals>();
+                if (visuals != null)
+                {
+                    visuals.ModelIndex = spawnIndex;
+                }
+            });
+
+            _players[player] = newPlayer;
+
+            var visuals = newPlayer.GetComponent<PlayerVisuals>();
+            if (visuals != null)
+            {
+                visuals.ModelIndex = _players.Count - 1;
+            }
+
+            Debug.Log($"[SPAWN] Player respawneado en nueva escena: {spawnPos}");
+        }
+    }
     public void OnSceneLoadStart(NetworkRunner runner) { }
 }
