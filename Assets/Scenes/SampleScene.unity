@@ -8090,6 +8090,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: 8241538023395661533, guid: ae8c6661c1283854fbca9fb098d34e06, type: 3}
+      propertyPath: doorBlocker
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 8275730490792326295, guid: ae8c6661c1283854fbca9fb098d34e06, type: 3}
       propertyPath: m_Layer
       value: 6

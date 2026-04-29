@@ -1,10 +1,10 @@
 using UnityEngine;
-using Fusion; // ¡Añadido para multijugador!
+using Fusion; // ¡Anadido para multijugador!
 
 public class PaintWall : NetworkBehaviour // Cambiamos a NetworkBehaviour
 {
     public int maxHP = 30;
-    public float lifeTime = 15f; // si querés que desaparezca solo
+    public float lifeTime = 15f; // si queres que desaparezca solo
 
     // Sincronizamos la vida para que todos vean la pared romperse al mismo tiempo
     [Networked] private int currentHP { get; set; }

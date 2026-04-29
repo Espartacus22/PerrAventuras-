@@ -45,10 +45,11 @@ public class PaintProjectileBehavior : NetworkBehaviour // Cambiado a NetworkBeh
         // Dañar al jugador
         if (other.CompareTag("Player"))
         {
-            var hp = other.GetComponent<PlayerLevel>();
-            if (hp != null)
+            IDamageable damageable = other.GetComponent<IDamageable>();
+
+            if (damageable != null)
             {
-                hp.TakeDamage(damage);
+                damageable.TakeDamage(damage);
                 Debug.Log($"Lata de pintura impactó al jugador por {damage}");
             }
 

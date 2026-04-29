@@ -44,10 +44,11 @@ public class TrashProjectileBehavior : NetworkBehaviour // Cambiado a NetworkBeh
 
         if (other.CompareTag("Player"))
         {
-            PlayerLevel lvl = other.GetComponent<PlayerLevel>();
-            if (lvl != null)
+            IDamageable damageable = other.GetComponent<IDamageable>();
+
+            if (damageable != null)
             {
-                lvl.TakeDamage(damage);
+                damageable.TakeDamage(damage);
             }
 
             // Usamos Despawn oficial en vez de Destroy local

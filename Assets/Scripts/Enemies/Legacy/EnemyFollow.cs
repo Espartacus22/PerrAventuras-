@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.AI;
-using Fusion; // ¡Añadido para el multijugador!
+using Fusion; // ¡Anadido para el multijugador!
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(EnemyStats))]
 public class EnemyFollow : NetworkBehaviour // Cambiado a NetworkBehaviour
 {
-    [Header("Configuración")]
+    [Header("Configuracion")]
     public EnemyType enemyData;
 
     [Header("Rangos")]
@@ -125,11 +125,12 @@ public class EnemyFollow : NetworkBehaviour // Cambiado a NetworkBehaviour
     {
         lastAttackTime = Runner.SimulationTime;
 
-        PlayerLevel playerLevel = target.GetComponent<PlayerLevel>();
-        if (playerLevel != null)
+        IDamageable damageable = target.GetComponent<IDamageable>();
+
+        if (damageable != null)
         {
-            // Como esto solo lo ejecuta el servidor, el daño será oficial y no se duplicará
-            playerLevel.TakeDamage(Mathf.RoundToInt(attackDamage));
+            // Como esto solo lo ejecuta el servidor, el daño será oficial y no se duplicara
+            damageable.TakeDamage(Mathf.RoundToInt(attackDamage));
             Debug.Log($"[{gameObject.name}] Atacó al jugador por {attackDamage}");
         }
     }

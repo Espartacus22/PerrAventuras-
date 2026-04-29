@@ -1,5 +1,5 @@
 using UnityEngine;
-using Fusion; // ¡Añadido!
+using Fusion; // ¡Anadido!
 
 public class EnemyProjectileBehavior : NetworkBehaviour // Cambiado a NetworkBehaviour
 {
@@ -27,7 +27,7 @@ public class EnemyProjectileBehavior : NetworkBehaviour // Cambiado a NetworkBeh
         // Todos los clientes mueven la bala visualmente
         transform.Translate(Vector3.forward * speed * Runner.DeltaTime);
 
-        // Solo el servidor verifica si voló demasiado lejos para destruirla
+        // Solo el servidor verifica si volo demasiado lejos para destruirla
         if (HasStateAuthority)
         {
             float distanceTraveled = Vector3.Distance(startPosition, transform.position);
@@ -46,10 +46,10 @@ public class EnemyProjectileBehavior : NetworkBehaviour // Cambiado a NetworkBeh
         // Daño al player
         if (other.CompareTag("Player"))
         {
-            PlayerLevel playerLevel = other.GetComponent<PlayerLevel>();
-            if (playerLevel != null)
+            IDamageable damageable = other.GetComponent<IDamageable>();
+            if (damageable != null)
             {
-                playerLevel.TakeDamage(Mathf.RoundToInt(damage));
+                damageable.TakeDamage(Mathf.RoundToInt(damage));
             }
 
             Runner.Despawn(Object);
