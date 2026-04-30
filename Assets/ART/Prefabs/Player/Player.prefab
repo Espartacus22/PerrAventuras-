@@ -647,9 +647,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -1048451147095016122, guid: 32b6db242cfa1024eb9e9910350aafac, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 32b6db242cfa1024eb9e9910350aafac, type: 3}
       propertyPath: m_Name
       value: CH_Personaje_Michelle_export
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 32b6db242cfa1024eb9e9910350aafac, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 32b6db242cfa1024eb9e9910350aafac, type: 3}
+      propertyPath: m_TagString
+      value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 3233913933109985587, guid: 32b6db242cfa1024eb9e9910350aafac, type: 3}
+      propertyPath: m_Layer
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -733,6 +749,14 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 39af4c0c3def71f43b3cf01cc44aaffb, type: 3}
       propertyPath: m_Name
       value: Caniche
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 39af4c0c3def71f43b3cf01cc44aaffb, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 39af4c0c3def71f43b3cf01cc44aaffb, type: 3}
+      propertyPath: m_TagString
+      value: Player
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

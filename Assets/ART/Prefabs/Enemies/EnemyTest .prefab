@@ -298,6 +298,7 @@ GameObject:
   - component: {fileID: 3475759047977758519}
   - component: {fileID: 2086601786686841688}
   - component: {fileID: 416613911884154054}
+  - component: {fileID: 7208973232657439639}
   m_Layer: 0
   m_Name: 'EnemyTest '
   m_TagString: Enemy
@@ -655,6 +656,7 @@ MonoBehaviour:
   - {fileID: 2203099660460086362}
   - {fileID: 8747780525555571112}
   - {fileID: 416613911884154054}
+  - {fileID: 7208973232657439639}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &416613911884154054
 MonoBehaviour:
@@ -673,6 +675,23 @@ MonoBehaviour:
   SyncParent: 0
   _autoAOIOverride: 1
   DisableSharedModeInterpolation: 0
+--- !u!114 &7208973232657439639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5949828187330856686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6110740b5243087498722f0c19387690, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyFollow
+  enemyData: {fileID: 11400000, guid: ae6342742b833e84d8aa9719bb4f7348, type: 2}
+  chaseRange: 15
+  attackRange: 2
+  attackDamage: 15
+  attackCooldown: 1.5
 --- !u!1 &6439778550189181946
 GameObject:
   m_ObjectHideFlags: 0
