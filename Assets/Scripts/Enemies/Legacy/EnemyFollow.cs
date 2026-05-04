@@ -23,6 +23,9 @@ public class EnemyFollow : NetworkBehaviour // Cambiado a NetworkBehaviour
     private float lastPathUpdateTime;
     private float pathUpdateInterval = 0.5f; // Solo actualizar path cada 0.5s
 
+    private float lastTargetSearchTime;
+    private float targetSearchInterval = 0.5f;
+
 
     //Inicializa referencias locales del enemigo antes de iniciar la partida.
     //Acá toma el NavMeshAgent y configura velocidad, rotación y frenado.-
@@ -32,8 +35,9 @@ public class EnemyFollow : NetworkBehaviour // Cambiado a NetworkBehaviour
 
         // CONFIGURACIÓN CLAVE PARA RIGIDBODY PLAYER
         agent.updatePosition = true;
-        agent.updateRotation = false; // Nosotros controlamos la rotación
-        agent.autoBraking = true; // Frena suavemente
+        agent.updateRotation = true; // Nosotros controlamos la rotación
+        agent.autoBraking = false; // Frena suavemente
+        agent.isStopped = false;
 
         if (enemyData != null)
         {
@@ -62,14 +66,14 @@ public class EnemyFollow : NetworkBehaviour // Cambiado a NetworkBehaviour
     public override void FixedUpdateNetwork()
     {
         // REGLA DE ORO: Solo el servidor mueve al enemigo y ejecuta ataques
-        if (!HasStateAuthority) return;
+        if (!Object.HasStateAuthority) return;
 
-        if (target != null)
+        if (Runner.SimulationTime >= lastTargetSearchTime + targetSearchInterval)
         {
-            Debug.Log($"[{gameObject.name}] Target actual: {target.name}");
+            FindPlayer();
+            lastTargetSearchTime = Runner.SimulationTime;
         }
 
-        // Buscar jugador si se pierde (ej. si se desconecta o muere)
         if (target == null || !target.gameObject.activeInHierarchy)
         {
             FindPlayer();
@@ -78,23 +82,20 @@ public class EnemyFollow : NetworkBehaviour // Cambiado a NetworkBehaviour
 
         float distance = Vector3.Distance(transform.position, target.position);
 
-        // PERSEGUIR (solo si está en rango)
         if (distance <= chaseRange)
         {
             ChasePlayer();
         }
         else
         {
-            agent.ResetPath(); // Para de perseguir
+            agent.ResetPath();
         }
 
-        // ATACAR (Usamos Runner.SimulationTime en vez de Time.time)
         if (distance <= attackRange && Runner.SimulationTime >= lastAttackTime + attackCooldown)
         {
             Attack();
         }
 
-        // Rotar hacia jugador (suave)
         RotateToPlayer();
     }
 
@@ -103,15 +104,30 @@ public class EnemyFollow : NetworkBehaviour // Cambiado a NetworkBehaviour
     void FindPlayer()
     {
         // En multijugador, buscamos al jugador más cercano en lugar de uno al azar
-        target = FindClosestPlayer();
+        NetPlayerDamageAdapter[] players =
+        FindObjectsByType<NetPlayerDamageAdapter>(FindObjectsSortMode.None);
+
+        float closestDist = float.MaxValue;
+        Transform bestTarget = null;
+
+        foreach (var p in players)
+        {
+            if (p == null) continue;
+
+            float d = Vector3.Distance(transform.position, p.transform.position);
+
+            if (d < closestDist)
+            {
+                closestDist = d;
+                bestTarget = p.transform;
+            }
+        }
+
+        target = bestTarget;
 
         if (target != null)
         {
-            Debug.Log($"[{gameObject.name}] Encontró al jugador más cercano: {target.name}");
-        }
-        else
-        {
-            Debug.LogWarning($"[{gameObject.name}] No encontró jugadores.");
+            Debug.Log($"[{gameObject.name}] Target más cercano: {target.name}");
         }
     }
 
@@ -145,7 +161,24 @@ public class EnemyFollow : NetworkBehaviour // Cambiado a NetworkBehaviour
         // Actualizar path usando el reloj del servidor
         if (Runner.SimulationTime >= lastPathUpdateTime + pathUpdateInterval)
         {
-            agent.SetDestination(target.position);
+            if (!agent.enabled || !agent.isOnNavMesh)
+            {
+                Debug.LogWarning($"[{gameObject.name}] Agent no válido. Enabled: {agent.enabled}, OnNavMesh: {agent.isOnNavMesh}");
+                return;
+            }
+
+            agent.isStopped = false;
+            agent.speed = enemyData != null ? enemyData.moveSpeed : 3.5f;
+            bool pathOk = agent.SetDestination(target.position);
+
+            Debug.Log(
+                $"[{gameObject.name}] Persiguiendo a {target.name} | " +
+                $"SetDestination: {pathOk} | " +
+                $"PathStatus: {agent.pathStatus} | " +
+                $"Remaining: {agent.remainingDistance} | " +
+                $"Velocity: {agent.velocity}"
+            );
+
             lastPathUpdateTime = Runner.SimulationTime;
         }
     }
@@ -160,9 +193,12 @@ public class EnemyFollow : NetworkBehaviour // Cambiado a NetworkBehaviour
 
         if (damageable != null)
         {
-            // Como esto solo lo ejecuta el servidor, el daño será oficial y no se duplicara
             damageable.TakeDamage(Mathf.RoundToInt(attackDamage));
-            Debug.Log($"[{gameObject.name}] Atacó al jugador por {attackDamage}");
+            Debug.Log($"[{gameObject.name}] Atacó a {target.name} por {attackDamage}");
+        }
+        else
+        {
+            Debug.LogWarning($"[{gameObject.name}] Target sin IDamageable: {target.name}");
         }
     }
 
