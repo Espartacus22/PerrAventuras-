@@ -34,8 +34,10 @@ public class BasicRangedAttackStrategy : IRangedAttackStrategy
         // CANDADO DE RED: Solo el servidor spawnea la bala para que no se dupliquen
         if (combat.HasStateAuthority)
         {
-            Vector3 spawnPosition = combat.transform.position + combat.transform.forward * 1.0f + Vector3.up * 0.8f;
-            Vector3 shootDirection = combat.transform.forward;
+            Transform firePoint = combat.FirePoint;
+
+            Vector3 spawnPosition = firePoint.position;
+            Vector3 shootDirection = firePoint.forward;
 
             NetworkObject prefabNetObj = attack.projectilePrefab.GetComponent<NetworkObject>();
             if (prefabNetObj != null)

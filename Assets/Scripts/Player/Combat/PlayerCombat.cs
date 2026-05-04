@@ -22,32 +22,29 @@ public class PlayerCombat : NetworkBehaviour // Cambiado a NetworkBehaviour
 
     [SerializeField] private int selectedRangedIndex = 0;
 
+    [Header("Puntos de ataque")]
+    [SerializeField] private Transform firePoint;
+
+    public Transform FirePoint => firePoint;
+
 
 
     private Animator animator;
-
     private AudioSource audioSource;
-
     private PlayerInputHandler inputHandler;
 
 
 
     private IMeleeAttackStrategy meleeStrategy;
-
     private IRangedAttackStrategy rangedStrategy;
 
 
 
     public CharacterType CharacterData => characterData;
-
     public int SelectedMeleeIndex => selectedMeleeIndex;
-
     public int SelectedRangedIndex => selectedRangedIndex;
-
     public Animator Animator => animator;
-
     public AudioSource AudioSource => audioSource;
-
     public float LastAttackTime { get; set; }
 
 
