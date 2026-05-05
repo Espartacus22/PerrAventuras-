@@ -39,6 +39,9 @@ public class SkaterCatEnemy : NetworkBehaviour // Cambiado a NetworkBehaviour
     private bool furyCharging;
     private bool furyActive;
     private float furyStartTime;
+    
+    private float lastTargetSearchTime;
+    [SerializeField] private float targetSearchInterval = 0.5f;
 
     void Awake()
     {
@@ -75,6 +78,12 @@ public class SkaterCatEnemy : NetworkBehaviour // Cambiado a NetworkBehaviour
         // REGLA DE ORO: Solo el servidor piensa, se mueve y dispara
         if (!HasStateAuthority) return;
 
+        if (Runner.SimulationTime >= lastTargetSearchTime + targetSearchInterval)
+        {
+            FindClosestPlayer();
+            lastTargetSearchTime = Runner.SimulationTime;
+        }
+
         if (target == null || !target.gameObject.activeInHierarchy)
         {
             FindClosestPlayer();
@@ -108,19 +117,25 @@ public class SkaterCatEnemy : NetworkBehaviour // Cambiado a NetworkBehaviour
 
     void FindClosestPlayer()
     {
-        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        NetPlayerDamageAdapter[] players =
+        FindObjectsByType<NetPlayerDamageAdapter>(FindObjectsSortMode.None);
+
         float closestDist = float.MaxValue;
         Transform bestTarget = null;
 
         foreach (var p in players)
         {
+            if (p == null) continue;
+
             float d = Vector3.Distance(transform.position, p.transform.position);
+
             if (d < closestDist)
             {
                 closestDist = d;
                 bestTarget = p.transform;
             }
         }
+
         target = bestTarget;
     }
 

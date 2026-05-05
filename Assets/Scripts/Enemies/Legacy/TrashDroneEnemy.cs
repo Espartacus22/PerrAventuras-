@@ -22,6 +22,9 @@ public class TrashDroneEnemy : NetworkBehaviour // Cambiado a NetworkBehaviour
     int currentPoint;
     float nextShootTime;
 
+    private float lastTargetSearchTime;
+    [SerializeField] private float targetSearchInterval = 0.5f;
+
     public override void Spawned()
     {
         // Solo el servidor inicializa la posición oficial
@@ -41,6 +44,12 @@ public class TrashDroneEnemy : NetworkBehaviour // Cambiado a NetworkBehaviour
         // REGLA DE ORO: Solo el servidor mueve al dron y efectúa los disparos
         if (!HasStateAuthority) return;
 
+        if (Runner.SimulationTime >= lastTargetSearchTime + targetSearchInterval)
+        {
+            FindClosestPlayer();
+            lastTargetSearchTime = Runner.SimulationTime;
+        }
+
         // Si el jugador objetivo se desconectó o murió, buscar a otro
         if (targetPlayer == null || !targetPlayer.gameObject.activeInHierarchy)
         {
@@ -53,19 +62,25 @@ public class TrashDroneEnemy : NetworkBehaviour // Cambiado a NetworkBehaviour
 
     void FindClosestPlayer()
     {
-        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        NetPlayerDamageAdapter[] players =
+        FindObjectsByType<NetPlayerDamageAdapter>(FindObjectsSortMode.None);
+
         float closestDist = float.MaxValue;
         Transform bestTarget = null;
 
         foreach (var p in players)
         {
+            if (p == null) continue;
+
             float d = Vector3.Distance(transform.position, p.transform.position);
+
             if (d < closestDist)
             {
                 closestDist = d;
                 bestTarget = p.transform;
             }
         }
+
         targetPlayer = bestTarget;
     }
 
@@ -114,13 +129,22 @@ public class TrashDroneEnemy : NetworkBehaviour // Cambiado a NetworkBehaviour
         if (trashProjectilePrefab != null && firePoints != null)
         {
             NetworkObject netPrefab = trashProjectilePrefab.GetComponent<NetworkObject>();
+
             if (netPrefab != null)
             {
                 foreach (var fp in firePoints)
                 {
                     if (fp == null) continue;
-                    // Ahora fp.rotation ya está inclinado hacia abajo porque el dron rotó
-                    Runner.Spawn(netPrefab, fp.position, fp.rotation);
+
+                    NetworkObject go = Runner.Spawn(netPrefab, fp.position, fp.rotation);
+
+                    EnemyProjectileBehavior proj = go.GetComponent<EnemyProjectileBehavior>();
+
+                    if (proj != null)
+                    {
+                        proj.SetDamage(projectileDamage);
+                        proj.SetRange(shootRange);
+                    }
                 }
             }
         }

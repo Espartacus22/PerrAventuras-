@@ -63,12 +63,14 @@ public class GraffityCatCloneEnemy : NetworkBehaviour // Cambiado
         foreach (var hit in hits)
         {
             if (!hit.CompareTag("Player")) continue;
-            IDamageable damageable = hit.GetComponent<IDamageable>();
+
+            IDamageable damageable = hit.GetComponentInParent<IDamageable>();
 
             if (damageable != null)
             {
                 damageable.TakeDamage(meleeDamage);
             }
+
             break;
         }
 

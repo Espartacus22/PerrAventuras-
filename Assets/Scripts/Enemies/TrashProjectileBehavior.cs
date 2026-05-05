@@ -44,7 +44,7 @@ public class TrashProjectileBehavior : NetworkBehaviour // Cambiado a NetworkBeh
 
         if (other.CompareTag("Player"))
         {
-            IDamageable damageable = other.GetComponent<IDamageable>();
+            IDamageable damageable = other.GetComponentInParent<IDamageable>();
 
             if (damageable != null)
             {

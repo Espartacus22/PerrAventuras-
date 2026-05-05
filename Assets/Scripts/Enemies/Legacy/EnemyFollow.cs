@@ -124,11 +124,6 @@ public class EnemyFollow : NetworkBehaviour // Cambiado a NetworkBehaviour
         }
 
         target = bestTarget;
-
-        if (target != null)
-        {
-            Debug.Log($"[{gameObject.name}] Target más cercano: {target.name}");
-        }
     }
 
     //Busca todos los players con NetPlayerDamageAdapter y devuelve el más cercano al enemigo.
@@ -161,23 +156,10 @@ public class EnemyFollow : NetworkBehaviour // Cambiado a NetworkBehaviour
         // Actualizar path usando el reloj del servidor
         if (Runner.SimulationTime >= lastPathUpdateTime + pathUpdateInterval)
         {
-            if (!agent.enabled || !agent.isOnNavMesh)
-            {
-                Debug.LogWarning($"[{gameObject.name}] Agent no válido. Enabled: {agent.enabled}, OnNavMesh: {agent.isOnNavMesh}");
-                return;
-            }
 
             agent.isStopped = false;
             agent.speed = enemyData != null ? enemyData.moveSpeed : 3.5f;
             bool pathOk = agent.SetDestination(target.position);
-
-            Debug.Log(
-                $"[{gameObject.name}] Persiguiendo a {target.name} | " +
-                $"SetDestination: {pathOk} | " +
-                $"PathStatus: {agent.pathStatus} | " +
-                $"Remaining: {agent.remainingDistance} | " +
-                $"Velocity: {agent.velocity}"
-            );
 
             lastPathUpdateTime = Runner.SimulationTime;
         }
@@ -194,11 +176,6 @@ public class EnemyFollow : NetworkBehaviour // Cambiado a NetworkBehaviour
         if (damageable != null)
         {
             damageable.TakeDamage(Mathf.RoundToInt(attackDamage));
-            Debug.Log($"[{gameObject.name}] Atacó a {target.name} por {attackDamage}");
-        }
-        else
-        {
-            Debug.LogWarning($"[{gameObject.name}] Target sin IDamageable: {target.name}");
         }
     }
 

@@ -46,7 +46,8 @@ public class EnemyProjectileBehavior : NetworkBehaviour // Cambiado a NetworkBeh
         // Daño al player
         if (other.CompareTag("Player"))
         {
-            IDamageable damageable = other.GetComponent<IDamageable>();
+            IDamageable damageable = other.GetComponentInParent<IDamageable>();
+
             if (damageable != null)
             {
                 damageable.TakeDamage(Mathf.RoundToInt(damage));

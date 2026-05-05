@@ -42,14 +42,11 @@ public class ProjectileBehavior : NetworkBehaviour // Cambiado a NetworkBehaviou
     {
         if (!HasStateAuthority) return;
 
-        Debug.Log("[PROJECTILE] Choqué con: " + other.name);
-
         if (other.CompareTag("Player")) return;
 
         BreakableChest chest = other.GetComponentInParent<BreakableChest>();
         if (chest != null)
         {
-            Debug.Log("[PROJECTILE] Cofre detectado. Daño: " + Mathf.RoundToInt(damage));
             chest.TakeDamage(Mathf.RoundToInt(damage));
             Runner.Despawn(Object);
             return;

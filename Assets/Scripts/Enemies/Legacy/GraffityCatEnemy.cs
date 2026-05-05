@@ -87,6 +87,9 @@ public class GraffityCatEnemy : NetworkBehaviour // Cambiado a NetworkBehaviour
     private float _nextRangedTime;
     private float _nextMeleeTime;
 
+    private float lastTargetSearchTime;
+    [SerializeField] private float targetSearchInterval = 0.5f;
+
     void Awake()
     {
         if (agent == null) agent = GetComponent<NavMeshAgent>();
@@ -119,6 +122,12 @@ public class GraffityCatEnemy : NetworkBehaviour // Cambiado a NetworkBehaviour
     public override void FixedUpdateNetwork()
     {
         if (!HasStateAuthority) return;
+
+        if (Runner.SimulationTime >= lastTargetSearchTime + targetSearchInterval)
+        {
+            FindClosestPlayer();
+            lastTargetSearchTime = Runner.SimulationTime;
+        }
 
         // Si el jugador se desconectó o murió, buscamos otro
         if (playerTarget == null || !playerTarget.gameObject.activeInHierarchy)
@@ -172,19 +181,25 @@ public class GraffityCatEnemy : NetworkBehaviour // Cambiado a NetworkBehaviour
 
     void FindClosestPlayer()
     {
-        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        NetPlayerDamageAdapter[] players =
+        FindObjectsByType<NetPlayerDamageAdapter>(FindObjectsSortMode.None);
+
         float closestDist = float.MaxValue;
         Transform bestTarget = null;
 
         foreach (var p in players)
         {
+            if (p == null) continue;
+
             float d = Vector3.Distance(transform.position, p.transform.position);
+
             if (d < closestDist)
             {
                 closestDist = d;
                 bestTarget = p.transform;
             }
         }
+
         playerTarget = bestTarget;
     }
 
