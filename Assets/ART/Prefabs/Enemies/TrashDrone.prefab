@@ -716,16 +716,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TrashDroneEnemy
   patrolPoints: []
-  moveSpeed: 0
+  moveSpeed: 3
   pointTolerance: 0.5
   hoverHeight: 3
   firePoints:
   - {fileID: 7758912035439495191}
   - {fileID: 5745021739647671365}
   trashProjectilePrefab: {fileID: 9014407918597591715, guid: da73d1c38bb8beb4989fb3d34411ffe5, type: 3}
-  shootRange: 15
+  shootRange: 20
   shootCooldown: 1.2
   projectileDamage: 10
+  targetSearchInterval: 0.5
 --- !u!114 &6626172603624272146
 MonoBehaviour:
   m_ObjectHideFlags: 0

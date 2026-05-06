@@ -4494,10 +4494,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1639197391288723502, guid: 03ff800818d5f0745872db53405cc4ef, type: 3}
-      propertyPath: m_IsKinematic
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 2086601786686841688, guid: 03ff800818d5f0745872db53405cc4ef, type: 3}
       propertyPath: SortKey
       value: 1025032953
@@ -11624,17 +11620,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 43f60176e2e68d940810d945e7456d52, type: 3}
---- !u!114 &1611743852 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 704939298777472772, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
-  m_PrefabInstance: {fileID: 6979685026015746401}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &1617020498
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12659,18 +12644,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3262858353294049374, guid: 73bde1fbe186dee49bc1f28002a83aeb, type: 3}
-      propertyPath: _currentHealth
-      value: 200
-      objectReference: {fileID: 0}
-    - target: {fileID: 5556441622023033696, guid: 73bde1fbe186dee49bc1f28002a83aeb, type: 3}
-      propertyPath: rangedRange
-      value: 40
-      objectReference: {fileID: 0}
-    - target: {fileID: 5556441622023033696, guid: 73bde1fbe186dee49bc1f28002a83aeb, type: 3}
-      propertyPath: playerTarget
-      value: 
-      objectReference: {fileID: 7286331782221990802, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
     - target: {fileID: 5556441622023033696, guid: 73bde1fbe186dee49bc1f28002a83aeb, type: 3}
       propertyPath: 'patrolPoints.Array.data[0]'
       value: 
@@ -12695,22 +12668,6 @@ PrefabInstance:
       propertyPath: 'patrolPoints.Array.data[5]'
       value: 
       objectReference: {fileID: 1905678029}
-    - target: {fileID: 5556441622023033696, guid: 73bde1fbe186dee49bc1f28002a83aeb, type: 3}
-      propertyPath: cloneSpawnPoints.Array.size
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 5921789994184799041, guid: 73bde1fbe186dee49bc1f28002a83aeb, type: 3}
-      propertyPath: m_Interpolate
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5921789994184799041, guid: 73bde1fbe186dee49bc1f28002a83aeb, type: 3}
-      propertyPath: m_IsKinematic
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5921789994184799041, guid: 73bde1fbe186dee49bc1f28002a83aeb, type: 3}
-      propertyPath: m_CollisionDetection
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 6441372081630746205, guid: 73bde1fbe186dee49bc1f28002a83aeb, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -14536,30 +14493,6 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 600222073523257605, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
-      propertyPath: m_Speed
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 600222073523257605, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
-      propertyPath: m_Acceleration
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 600222073523257605, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
-      propertyPath: m_AngularSpeed
-      value: 360
-      objectReference: {fileID: 0}
-    - target: {fileID: 600222073523257605, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
-      propertyPath: m_StoppingDistance
-      value: 1.2
-      objectReference: {fileID: 0}
-    - target: {fileID: 1993956735322181211, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
-      propertyPath: healthSlider
-      value: 
-      objectReference: {fileID: 1611743852}
-    - target: {fileID: 1993956735322181211, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
-      propertyPath: _currentHealth
-      value: 100
-      objectReference: {fileID: 0}
     - target: {fileID: 2750055640213073792, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
       propertyPath: m_Name
       value: SkaterCat
@@ -14608,38 +14541,6 @@ PrefabInstance:
       propertyPath: SortKey
       value: 1040940724
       objectReference: {fileID: 0}
-    - target: {fileID: 7748327497303564727, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
-      propertyPath: m_UseGravity
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7748327497303564727, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
-      propertyPath: m_Interpolate
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7748327497303564727, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
-      propertyPath: m_IsKinematic
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7748327497303564727, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
-      propertyPath: m_CollisionDetection
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8146861949022120714, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
-      propertyPath: target
-      value: 
-      objectReference: {fileID: 7286331782221990802, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
-    - target: {fileID: 8146861949022120714, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
-      propertyPath: furyRange
-      value: 6.27
-      objectReference: {fileID: 0}
-    - target: {fileID: 8146861949022120714, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
-      propertyPath: furyDamage
-      value: 35
-      objectReference: {fileID: 0}
-    - target: {fileID: 8146861949022120714, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
-      propertyPath: sniperRange
-      value: 70
-      objectReference: {fileID: 0}
     - target: {fileID: 8146861949022120714, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
       propertyPath: 'patrolPoints.Array.data[0]'
       value: 
@@ -14665,8 +14566,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects:
-    - {fileID: 4076134307578532062, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}
+    m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7907cfb7daa42a841b119e620e1625d2, type: 3}

@@ -91,15 +91,18 @@ public class LaserTurret : NetworkBehaviour
 
             if (HasStateAuthority && hit.collider.CompareTag("Player"))
             {
-                PlayerLevel lvl = hit.collider.GetComponent<PlayerLevel>();
-                if (lvl != null)
+                IDamageable damageable = hit.collider.GetComponentInParent<IDamageable>();
+
+                if (damageable != null)
                 {
                     _damageAccumulator += damagePerSecond * Runner.DeltaTime;
+
                     if (_damageAccumulator >= 1f)
                     {
                         int damageToApply = Mathf.FloorToInt(_damageAccumulator);
                         _damageAccumulator -= damageToApply;
-                        lvl.TakeDamage(damageToApply);
+
+                        damageable.TakeDamage(damageToApply);
                     }
                 }
             }

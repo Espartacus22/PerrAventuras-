@@ -149,11 +149,11 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 1
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!195 &2830971308372174443
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -164,11 +164,11 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 1479372276
   m_Radius: 0.5
-  m_Speed: 3.5
-  m_Acceleration: 8
+  m_Speed: 5
+  m_Acceleration: 30
   avoidancePriority: 50
-  m_AngularSpeed: 120
-  m_StoppingDistance: 0
+  m_AngularSpeed: 360
+  m_StoppingDistance: 1.2
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
@@ -193,7 +193,7 @@ MonoBehaviour:
   enemyData: {fileID: 11400000, guid: f9ce1aa5302aeb34b8e20104b3b0b609, type: 2}
   enemyStats: {fileID: 3262858353294049374}
   agent: {fileID: 2830971308372174443}
-  playerTarget: {fileID: 0}
+  playerTarget: {fileID: 7286331782221990802, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
   patrolPoints:
   - {fileID: 0}
   - {fileID: 0}
@@ -206,7 +206,7 @@ MonoBehaviour:
   desiredCombatDistance: 2
   paintProjectilePrefab: {fileID: 8780201219809036415, guid: e53eaa92be8dab9499ec82b145d529dc, type: 3}
   firePoint: {fileID: 758516784550025714}
-  rangedRange: 50
+  rangedRange: 40
   rangedCooldown: 2
   rangedDamage: 20
   meleeRange: 2.5
@@ -234,6 +234,7 @@ MonoBehaviour:
   jumpHeight: 2
   jumpDuration: 1
   jumpCooldown: 4
+  targetSearchInterval: 0.5
 --- !u!114 &3262858353294049374
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -248,7 +249,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyData: {fileID: 11400000, guid: f9ce1aa5302aeb34b8e20104b3b0b609, type: 2}
   healthSlider: {fileID: 3268386063715956890}
-  _currentHealth: 0
+  _currentHealth: 200
 --- !u!114 &2495370447254452948
 MonoBehaviour:
   m_ObjectHideFlags: 0
