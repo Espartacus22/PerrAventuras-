@@ -1,5 +1,5 @@
 using UnityEngine;
-using Fusion; // ¡Añadido!
+using Fusion;
 
 public class BasicMeleeAttackStrategy : IMeleeAttackStrategy
 {
@@ -10,8 +10,9 @@ public class BasicMeleeAttackStrategy : IMeleeAttackStrategy
 
         var attack = combat.CharacterData.meleeAttacks[combat.SelectedMeleeIndex];
 
-        if (combat.Runner.SimulationTime < combat.LastAttackTime + attack.cooldown) return;
-        combat.LastAttackTime = combat.Runner.SimulationTime;
+        // --- VALIDACIÓN DE COOLDOWN DE FUSION ---
+        if (!combat.MeleeCooldown.ExpiredOrNotRunning(combat.Runner)) return;
+        combat.MeleeCooldown = TickTimer.CreateFromSeconds(combat.Runner, attack.cooldown);
 
         if (combat.Animator != null && attack.animation != null)
             combat.Animator.Play(attack.animation.name);
@@ -22,7 +23,7 @@ public class BasicMeleeAttackStrategy : IMeleeAttackStrategy
         if (attack.impactEffectPrefab != null)
             Object.Instantiate(attack.impactEffectPrefab, combat.transform.position + combat.transform.forward, combat.transform.rotation);
 
-        // CANDADO DE RED: Solo el servidor aplica el daño a los enemigos
+        // --- EL DAÑO SIGUE EXCLUSIVO DEL SERVIDOR ---
         if (combat.HasStateAuthority)
         {
             Collider[] hitEnemies = Physics.OverlapSphere(

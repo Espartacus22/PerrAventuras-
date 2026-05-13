@@ -1,55 +1,81 @@
 using UnityEngine;
+using Fusion;
+using Networking;
 
-public class BreakableChest : MonoBehaviour
+public class BreakableChest : NetworkBehaviour
 {
+    [Header("Configuracion de Vida")]
     public int maxHP = 30;
-    int currentHP;
 
-    [Header("Drops")]
-    public GameObject xpDropPrefab;     // XPOrb u otro
-    public int xpDropCount = 3;
+    // Usamos [Networked] para que todos los jugadores vean la misma vida
+    [Networked] protected int networkedHP { get; set; }
 
-    public GameObject healthDropPrefab; // HealthPickup, opcional
-    public int healthDropCount = 1;
+    [Header("Configuracion de Loot Aleatorio")]
+    [Tooltip("IDs de los items en tu ItemDatabase que pueden salir de este cofre")]
+    public int[] possibleItemIDs;
 
-    void Start()
+    [Tooltip("Cantidad de objetos que soltara al romperse")]
+    public int itemsToDrop = 1;
+
+    public override void Spawned()
     {
-        currentHP = maxHP;
-        GetComponent<Collider>().isTrigger = false; // puede ser sólido
+        // El servidor (StateAuthority) es el unico que setea la vida inicial
+        if (HasStateAuthority)
+        {
+            networkedHP = maxHP;
+        }
     }
 
     public void TakeDamage(int amount)
     {
-        currentHP -= amount;
-        if (currentHP <= 0)
-            Break();
+        // Solo el servidor procesa el daño para evitar trampas
+        if (!HasStateAuthority) return;
+
+        networkedHP -= amount;
+
+        if (networkedHP <= 0)
+        {
+            EjecutarRotura();
+        }
     }
 
-    void Break()
+    protected virtual void EjecutarRotura()
     {
-        // XP
-        for (int i = 0; i < xpDropCount; i++)
+        // Soltamos los items basados en los IDs de la lista
+        for (int i = 0; i < itemsToDrop; i++)
         {
-            if (xpDropPrefab != null)
-            {
-                Vector3 pos = transform.position + Random.insideUnitSphere * 0.5f;
-                pos.y = transform.position.y + 0.5f;
-                Instantiate(xpDropPrefab, pos, Quaternion.identity);
-            }
+            SpawnearItemAlAzar();
         }
 
-        // Health
-        for (int i = 0; i < healthDropCount; i++)
+        // En Photon Fusion usamos Despawn para eliminar el objeto de la red
+        if (Object != null && Runner != null)
         {
-            if (healthDropPrefab != null)
+            Runner.Despawn(Object);
+        }
+    }
+
+    private void SpawnearItemAlAzar()
+    {
+        if (possibleItemIDs == null || possibleItemIDs.Length == 0) return;
+
+        // Elegimos un ID aleatorio de la lista que configuraste en el Inspector
+        int selectedID = possibleItemIDs[Random.Range(0, possibleItemIDs.Length)];
+
+        // Buscamos la data en tu ItemDatabase
+        var itemData = ItemDatabase.GetItem(selectedID);
+
+        if (itemData != null && itemData.pickupPrefab != null)
+        {
+            NetworkObject prefabObj = itemData.pickupPrefab.GetComponent<NetworkObject>();
+
+            if (prefabObj != null)
             {
-                Vector3 pos = transform.position + Random.insideUnitSphere * 0.5f;
-                pos.y = transform.position.y + 0.5f;
-                Instantiate(healthDropPrefab, pos, Quaternion.identity);
+                // Un pequeño offset para que no aparezcan todos en el mismo pixel
+                Vector3 spawnPos = transform.position + (Random.insideUnitSphere * 0.5f);
+                spawnPos.y = transform.position.y + 0.5f;
+
+                Runner.Spawn(prefabObj, spawnPos, Quaternion.identity);
             }
         }
-
-        // TODO: partículas, sonido
-        Destroy(gameObject);
     }
 }

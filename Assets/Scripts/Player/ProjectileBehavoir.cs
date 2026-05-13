@@ -1,12 +1,11 @@
 using UnityEngine;
-using Fusion; // ¡Añadido!
+using Fusion;
 
-public class ProjectileBehavior : NetworkBehaviour // Cambiado a NetworkBehaviour
+public class ProjectileBehavior : NetworkBehaviour
 {
-    public float speed = 10f;
+    public float speed = 15f;
     public int coreDamage = 10;
 
-    // Variables sincronizadas para que todos sepan cuánto daño hace
     [Networked] private float damage { get; set; }
     [Networked] private float maxRange { get; set; }
     [Networked] private Vector3 startPosition { get; set; }
@@ -20,20 +19,27 @@ public class ProjectileBehavior : NetworkBehaviour // Cambiado a NetworkBehaviou
         {
             startPosition = transform.position;
         }
+
+        if (HasInputAuthority && !HasStateAuthority)
+        {
+            Renderer[] todosLosGraficos = GetComponentsInChildren<Renderer>();
+            foreach (Renderer grafico in todosLosGraficos)
+            {
+                grafico.enabled = false;
+            }
+        }
     }
 
     public override void FixedUpdateNetwork()
     {
-        // Todos mueven la bala visualmente
         transform.Translate(Vector3.forward * speed * Runner.DeltaTime);
 
-        // Solo el servidor la destruye cuando llega a su rango máximo
         if (HasStateAuthority)
         {
             float distanceTraveled = Vector3.Distance(startPosition, transform.position);
             if (distanceTraveled > maxRange)
             {
-                Runner.Despawn(Object); // Usamos Despawn en lugar de Destroy
+                Runner.Despawn(Object);
             }
         }
     }
@@ -41,9 +47,9 @@ public class ProjectileBehavior : NetworkBehaviour // Cambiado a NetworkBehaviou
     void OnTriggerEnter(Collider other)
     {
         if (!HasStateAuthority) return;
-
         if (other.CompareTag("Player")) return;
 
+        // --- RESTAURADO TU CÓDIGO DE DAÑO EXACTO ---
         BreakableChest chest = other.GetComponentInParent<BreakableChest>();
         if (chest != null)
         {
@@ -80,4 +86,3 @@ public class ProjectileBehavior : NetworkBehaviour // Cambiado a NetworkBehaviou
         Runner.Despawn(Object);
     }
 }
-
