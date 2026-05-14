@@ -1,28 +1,25 @@
 using UnityEngine;
 using Fusion;
-using UnityEngine.EventSystems; // <--- 1. IMPORTANTE: Necesario para detectar la UI
+using UnityEngine.EventSystems;
 
 public class BasicRangedAttackStrategy : IRangedAttackStrategy
 {
     public void Execute(PlayerCombat combat)
     {
-        // --- NUEVO BLOQUEO DE UI ---
-        // Si el mouse está sobre un casillero del inventario u otro elemento de UI, abortamos el ataque.
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-        {
-            return;
-        }
-        // ---------------------------
+        // 1. Bloqueo si el mouse está sobre la UI
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
+        // 2. Validaciones de datos
         if (combat.CharacterData == null || combat.CharacterData.rangedAttacks == null) return;
         if (combat.SelectedRangedIndex < 0 || combat.SelectedRangedIndex >= combat.CharacterData.rangedAttacks.Count) return;
 
         var attack = combat.CharacterData.rangedAttacks[combat.SelectedRangedIndex];
 
-        // Cooldown multijugador
+        // 3. Gestión de Cooldown (Usando LastAttackTime de PlayerCombat)
         if (combat.Runner.SimulationTime < combat.LastAttackTime + attack.cooldown) return;
         combat.LastAttackTime = combat.Runner.SimulationTime;
 
+        // 4. Feedback visual y sonoro
         if (combat.Animator != null && attack.animation != null)
             combat.Animator.Play(attack.animation.name);
 
@@ -31,34 +28,40 @@ public class BasicRangedAttackStrategy : IRangedAttackStrategy
 
         if (attack.projectilePrefab == null) return;
 
-        // CANDADO DE RED: Solo el servidor spawnea la bala para que no se dupliquen
+        // --- 5. BALA VISUAL (CLIENTE) ---
+        if (!combat.HasStateAuthority && combat.Runner.IsForward)
+        {
+            GameObject visualDummy = Object.Instantiate(
+                attack.projectilePrefab.gameObject,
+                combat.FirePoint.position,
+                combat.FirePoint.rotation
+            );
+
+            if (visualDummy.TryGetComponent<NetworkObject>(out var netObj)) Object.Destroy(netObj);
+            if (visualDummy.TryGetComponent<ProjectileBehavior>(out var behavior)) Object.Destroy(behavior);
+
+            LocalVisualProjectile lvp = visualDummy.AddComponent<LocalVisualProjectile>();
+            ProjectileBehavior originalBehavior = attack.projectilePrefab.GetComponent<ProjectileBehavior>();
+
+            if (originalBehavior != null) lvp.speed = originalBehavior.speed;
+            lvp.SetRange(attack.range);
+        }
+
+        // --- 6. BALA REAL (SERVIDOR) ---
         if (combat.HasStateAuthority)
         {
-            Transform firePoint = combat.FirePoint;
+            NetworkObject projectileNetObj = combat.Runner.Spawn(
+                attack.projectilePrefab.GetComponent<NetworkObject>(),
+                combat.FirePoint.position,
+                combat.FirePoint.rotation,
+                combat.Object.InputAuthority
+            );
 
-            Vector3 spawnPosition = firePoint.position;
-            Vector3 shootDirection = firePoint.forward;
-
-            NetworkObject prefabNetObj = attack.projectilePrefab.GetComponent<NetworkObject>();
-            if (prefabNetObj != null)
+            ProjectileBehavior pb = projectileNetObj.GetComponent<ProjectileBehavior>();
+            if (pb != null)
             {
-                NetworkObject projectileNetObj = combat.Runner.Spawn(
-                    prefabNetObj,
-                    spawnPosition,
-                    Quaternion.LookRotation(shootDirection),
-                    combat.Object.InputAuthority
-                );
-
-                ProjectileBehavior pb = projectileNetObj.GetComponent<ProjectileBehavior>();
-                if (pb != null)
-                {
-                    pb.SetRange(attack.range);
-                    pb.SetDamage(attack.damage);
-                }
-            }
-            else
-            {
-                Debug.LogError("¡El prefab de la bala necesita un NetworkObject!");
+                pb.SetRange(attack.range);
+                pb.SetDamage(attack.damage);
             }
         }
     }

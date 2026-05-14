@@ -440,6 +440,38 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1 &484863490 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8123539134760599737, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+  m_PrefabInstance: {fileID: 1127667764}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &484863491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 484863490}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90a93abf1a391964a94e5c139605105b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Unity::Fusion.NetworkSceneManagerDefault
+  IsSceneTakeOverEnabled: 1
+  LogSceneLoadErrors: 1
+  DestroySpawnedPrefabsOnSceneUnload: 1
+--- !u!114 &484863492
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 484863490}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1199893898, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkRunner
 --- !u!1 &970836644
 GameObject:
   m_ObjectHideFlags: 0
@@ -738,6 +770,89 @@ MonoBehaviour:
   Components:
   - {fileID: 1042308583}
   _guid: 6d475660-e21c-459d-
+--- !u!1001 &1127667764
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 5002671690917938235, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -2.37978
+      objectReference: {fileID: 0}
+    - target: {fileID: 5002671690917938235, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.85
+      objectReference: {fileID: 0}
+    - target: {fileID: 5002671690917938235, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.36582
+      objectReference: {fileID: 0}
+    - target: {fileID: 5002671690917938235, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5002671690917938235, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5002671690917938235, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5002671690917938235, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5002671690917938235, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5002671690917938235, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5002671690917938235, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6730502270437423418, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: _lobbyPanel
+      value: 
+      objectReference: {fileID: 1435402133}
+    - target: {fileID: 6730502270437423418, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: _networkRunner
+      value: 
+      objectReference: {fileID: 484863492}
+    - target: {fileID: 6730502270437423418, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: _joinRoomButton
+      value: 
+      objectReference: {fileID: 329272100}
+    - target: {fileID: 6730502270437423418, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: _createRoomButton
+      value: 
+      objectReference: {fileID: 452545217}
+    - target: {fileID: 6730502270437423418, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: _networkSceneManagerDefault
+      value: 
+      objectReference: {fileID: 484863491}
+    - target: {fileID: 8123539134760599737, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: m_Name
+      value: NetworkRunner
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8123539134760599737, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 484863492}
+    - targetCorrespondingSourceObject: {fileID: 8123539134760599737, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 484863491}
+  m_SourcePrefab: {fileID: 100100000, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
 --- !u!1 &1155976569
 GameObject:
   m_ObjectHideFlags: 0
@@ -877,163 +992,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1155976569}
   m_CullTransparentMesh: 1
---- !u!1 &1410783901
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1410783904}
-  - component: {fileID: 1410783902}
-  - component: {fileID: 1410783903}
-  - component: {fileID: 1410783905}
-  - component: {fileID: 1410783906}
-  m_Layer: 0
-  m_Name: NetworkRunner
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1410783902
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1410783901}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1199893898, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1410783903
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1410783901}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90a93abf1a391964a94e5c139605105b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  IsSceneTakeOverEnabled: 1
-  LogSceneLoadErrors: 1
-  DestroySpawnedPrefabsOnSceneUnload: 1
---- !u!4 &1410783904
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1410783901}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1410783905
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1410783901}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 27078bcdafb99f049888bb103a012968, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _lobbyPanel: {fileID: 1435402133}
-  _createRoomButton: {fileID: 452545217}
-  _joinRoomButton: {fileID: 329272100}
-  _networkRunner: {fileID: 1410783902}
-  _networkSceneManagerDefault: {fileID: 1410783903}
-  _playerPrefab: {fileID: -6566311147260112500, guid: 6a5d9afae85f2e74c9427e3fecae1442, type: 3}
-  _spawnPoints: []
-  _pickupPrefabs:
-  - {fileID: 3434287982648183104, guid: fc6b9e922ddcd6f4f90868c2d2a04d59, type: 3}
-  - {fileID: 1968695779458781458, guid: b270a69422d74534c9f54fb1b23ff170, type: 3}
-  - {fileID: 1422488841406037356, guid: 296e6e581df4f8f48b5841820a8683a5, type: 3}
-  - {fileID: 7943514242683856230, guid: 520048e6874c35542900d5224dfef493, type: 3}
-  _pickupAmount: 25
-  _pickupRadius: 10
---- !u!114 &1410783906
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1410783901}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -232609262, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkEvents
-  OnInput:
-    m_PersistentCalls:
-      m_Calls: []
-  OnInputMissing:
-    m_PersistentCalls:
-      m_Calls: []
-  OnConnectedToServer:
-    m_PersistentCalls:
-      m_Calls: []
-  OnDisconnectedFromServer:
-    m_PersistentCalls:
-      m_Calls: []
-  OnConnectRequest:
-    m_PersistentCalls:
-      m_Calls: []
-  OnConnectFailed:
-    m_PersistentCalls:
-      m_Calls: []
-  PlayerJoined:
-    m_PersistentCalls:
-      m_Calls: []
-  PlayerLeft:
-    m_PersistentCalls:
-      m_Calls: []
-  OnSimulationMessage:
-    m_PersistentCalls:
-      m_Calls: []
-  OnShutdown:
-    m_PersistentCalls:
-      m_Calls: []
-  OnSessionListUpdate:
-    m_PersistentCalls:
-      m_Calls: []
-  OnCustomAuthenticationResponse:
-    m_PersistentCalls:
-      m_Calls: []
-  OnHostMigration:
-    m_PersistentCalls:
-      m_Calls: []
-  OnSceneLoadDone:
-    m_PersistentCalls:
-      m_Calls: []
-  OnSceneLoadStart:
-    m_PersistentCalls:
-      m_Calls: []
-  OnReliableData:
-    m_PersistentCalls:
-      m_Calls: []
-  OnReliableProgress:
-    m_PersistentCalls:
-      m_Calls: []
-  OnObjectEnterAOI:
-    m_PersistentCalls:
-      m_Calls: []
-  OnObjectExitAOI:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &1435402133
 GameObject:
   m_ObjectHideFlags: 0
@@ -1471,5 +1429,5 @@ SceneRoots:
   - {fileID: 1042308584}
   - {fileID: 1981105906}
   - {fileID: 74112515}
-  - {fileID: 1410783904}
   - {fileID: 2117951730}
+  - {fileID: 1127667764}

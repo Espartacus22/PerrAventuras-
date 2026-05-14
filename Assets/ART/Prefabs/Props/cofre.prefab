@@ -61,13 +61,10 @@ PrefabInstance:
       addedObject: {fileID: 2449585026542178040}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fd152f015416953408daf0a899bd96f4, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6417540051006453654}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fd152f015416953408daf0a899bd96f4, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 5320127529482802789}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fd152f015416953408daf0a899bd96f4, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4123542275581243702}
+      addedObject: {fileID: 6227275845824847435}
   m_SourcePrefab: {fileID: 100100000, guid: fd152f015416953408daf0a899bd96f4, type: 3}
 --- !u!1 &3784036760157669980 stripped
 GameObject:
@@ -95,22 +92,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.015769618, y: 0.02799745, z: 0.017192807}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6417540051006453654
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3784036760157669980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6df681959cd099b458d09062e219902f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Breakable
-  maxHealth: 5
-  coinReward: 5
-  hpReward: 50
-  shieldReward: 20
 --- !u!114 &5320127529482802789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -127,9 +108,10 @@ MonoBehaviour:
   ObjectInterest: 1
   Flags: 262145
   NestedObjects: []
-  NetworkedBehaviours: []
+  NetworkedBehaviours:
+  - {fileID: 6227275845824847435}
   ForceRemoteRenderTimeframe: 0
---- !u!114 &4123542275581243702
+--- !u!114 &6227275845824847435
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -141,8 +123,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e1df8efe8d169946a17beea5af82187, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BreakableChest
-  maxHP: 5
-  xpDropPrefab: {fileID: 4288601612095329630, guid: 5cd768c3c99935649a6c4e24cb8b88b9, type: 3}
-  xpDropCount: 3
-  healthDropPrefab: {fileID: 2307162825395307599, guid: 35659fe0cd32fcf43a9e185b586284f6, type: 3}
-  healthDropCount: 1
+  maxHP: 30
+  possibleItemIDs: 00000000010000000200000004000000
+  itemsToDrop: 1

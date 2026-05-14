@@ -49,16 +49,26 @@ public class InventorySystem : NetworkBehaviour
 
         if (item?.isConsumable == true)
         {
-            // CORRECCIÓN: Buscamos PlayerLevel para curar
             PlayerLevel playerStats = GetComponent<PlayerLevel>();
 
             if (playerStats != null)
             {
-                playerStats.Heal((int)item.healAmount);
-                Debug.Log($"[INVENTARIO] Usaste {item.itemName}. Curación aplicada.");
-            }
+                // --- AQUÍ ESTÁ LA CORRECCIÓN ---
+                // Solo entramos si la vida actual es menor a la máxima
+                if (playerStats.currentHealth < playerStats.maxHealth)
+                {
+                    playerStats.Heal((int)item.healAmount);
+                    Debug.Log($"[INVENTARIO] Usaste {item.itemName}. Vida restaurada.");
 
-            Items.Set(slot, -1);
+                    // Solo si se usó efectivamente, vaciamos el slot
+                    Items.Set(slot, -1);
+                }
+                else
+                {
+                    // Opcional: Un log para saber por qué no se gasta
+                    Debug.Log("[INVENTARIO] Vida completa, poción reservada.");
+                }
+            }
         }
     }
 
