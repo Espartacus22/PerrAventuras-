@@ -47,13 +47,13 @@ public class InventorySystem : NetworkBehaviour
 
         var item = ItemDatabase.GetItem(Items[slot]);
 
+        // 1. LÓGICA PARA CONSUMIBLES (Pociones, Comida)
         if (item?.isConsumable == true)
         {
             PlayerLevel playerStats = GetComponent<PlayerLevel>();
 
             if (playerStats != null)
             {
-                // --- AQUÍ ESTÁ LA CORRECCIÓN ---
                 // Solo entramos si la vida actual es menor a la máxima
                 if (playerStats.currentHealth < playerStats.maxHealth)
                 {
@@ -65,10 +65,17 @@ public class InventorySystem : NetworkBehaviour
                 }
                 else
                 {
-                    // Opcional: Un log para saber por qué no se gasta
                     Debug.Log("[INVENTARIO] Vida completa, poción reservada.");
                 }
             }
+        }
+        // 2. NUEVA LÓGICA PARA EQUIPABLES (Collares, Armaduras)
+        else if (item?.isEquipable == true)
+        {
+            Debug.Log($"[INVENTARIO] Te equipaste: {item.itemName}.");
+
+            
+     
         }
     }
 
@@ -102,4 +109,43 @@ public class InventorySystem : NetworkBehaviour
     }
 
     private void OnInventoryChanged() => RefreshUI();
+
+    // --- MÉTODOS PÚBLICOS PARA EL NPC Y MISIONES ---
+
+    public bool HasItem(int itemId)
+    {
+        for (int i = 0; i < SLOTS; i++)
+        {
+            if (Items[i] == itemId) return true;
+        }
+        return false;
+    }
+
+    public bool RemoveItem(int itemId)
+    {
+        if (!Object.HasStateAuthority) return false;
+
+        for (int i = 0; i < SLOTS; i++)
+        {
+            if (Items[i] == itemId)
+            {
+                Items.Set(i, -1);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public bool AddItem(int itemId)
+    {
+        if (!Object.HasStateAuthority) return false;
+
+        int freeSlot = FindFreeSlot();
+        if (freeSlot != -1)
+        {
+            Items.Set(freeSlot, itemId);
+            return true;
+        }
+        return false;
+    }
 }

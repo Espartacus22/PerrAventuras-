@@ -199,6 +199,8 @@ GameObject:
   - component: {fileID: 8390994022787975930}
   - component: {fileID: 5327323899880454185}
   - component: {fileID: 2338988608525739296}
+  - component: {fileID: 6490849164867671991}
+  - component: {fileID: 8279939063860963113}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -330,6 +332,8 @@ MonoBehaviour:
   - {fileID: 8390994022787975930}
   - {fileID: 5327323899880454185}
   - {fileID: 2338988608525739296}
+  - {fileID: 6490849164867671991}
+  - {fileID: 8279939063860963113}
   ForceRemoteRenderTimeframe: 0
 --- !u!95 &7449930566605193071
 Animator:
@@ -632,6 +636,36 @@ MonoBehaviour:
   _modelCharacterA: {fileID: 2555495361636233883}
   _modelCharacterB: {fileID: 3963082435102549934}
   _ModelIndex: 0
+--- !u!114 &6490849164867671991
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8874039823671508997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0937462f659b7b745affb2228da2947e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInteraction
+  interactionRadius: 3
+  interactableLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+--- !u!114 &8279939063860963113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8874039823671508997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3e602cea2f75704facf395bfd5b0cfb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MissionController
+  currentMissionSteps: []
+  currentFailureSteps: []
 --- !u!1001 &3438384705080217546
 PrefabInstance:
   m_ObjectHideFlags: 0

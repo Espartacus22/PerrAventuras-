@@ -16,7 +16,7 @@ MonoBehaviour:
   itemName: Collar
   icon: {fileID: 0}
   maxStack: 99
-  isConsumable: 1
+  isConsumable: 0
   healAmount: 0
   isEquipable: 1
-  equipPrefab: {fileID: 0}
+  pickupPrefab: {fileID: 0}
