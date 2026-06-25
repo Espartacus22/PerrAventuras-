@@ -1,10 +1,7 @@
 fileFormatVersion: 2
 guid: db39f030cdb962e44b078c71949dc039
-PrefabImporter:
-  externalObjects: {}
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 
+labels:
+- FusionPrefab
 AssetOrigin:
   serializedVersion: 1
   productId: 306443
@@ -12,3 +9,8 @@ AssetOrigin:
   packageVersion: 1.1
   assetPath: Assets/LowPolyCityAssetPack/Prefabs/Houses/NoInteriorHouses/House_24.prefab
   uploadId: 730406
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

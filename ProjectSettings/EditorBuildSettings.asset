@@ -14,18 +14,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Lobby.unity
     guid: 5e6bd7288bdfead40bae9ba55aa1156b
-  - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
-  - enabled: 0
-    path: Assets/Scenes/CityScene.unity
-    guid: aa13a28d59a76f04b8a0f6a7b7ed55bc
-  - enabled: 0
-    path: Assets/Scenes/Test_Networking.unity
-    guid: 64b03a77ee7e01249b16f7a8aadca24b
-  - enabled: 0
-    path: Assets/Scenes/Net_Park.unity
-    guid: 0a4b566a3a89bb745bfb299b604efdc4
   - enabled: 1
     path: Assets/Scenes/OpenWorld.unity
     guid: accee3e2dc133f644b5ec20d2de7382b
