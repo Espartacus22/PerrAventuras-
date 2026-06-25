@@ -199,17 +199,13 @@ public class PlayerMovement : NetworkBehaviour
         int maxJumps = HasDoubleJump() ? 2 : 1;
         if (jumpCount < maxJumps)
         {
-            // Si es el segundo salto legítimo (jumpCount == 1),
-            // aplicamos un contra-impulso vertical para limpiar la caída y reiniciar la altura limpia.
-            if (jumpCount > 0)
-            {
-                ncc.Move(new Vector3(0f, characterData.jumpForce - ncc.Velocity.y, 0f));
-            }
-            else
-            {
-                ncc.Jump(true, characterData.jumpForce);
-            }
+            // Reseteamos la velocidad vertical al saltar para que el salto sea siempre consistente
+            // independientemente de si estás cayendo o subiendo.
+            Vector3 vel = ncc.Velocity;
+            vel.y = 0; // Eliminamos la inercia vertical
+            ncc.Velocity = vel;
 
+            ncc.Jump(true, characterData.jumpForce);
             jumpCount++;
         }
     }

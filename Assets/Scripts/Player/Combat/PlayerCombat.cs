@@ -60,7 +60,7 @@ public class PlayerCombat : NetworkBehaviour
 
 
 
-    // --- TEMPORIZADORES DE RED PARA PREDICCIÓN EXACTA ---
+    // --- TEMPORIZADORES DE RED PARA PREDICCIÃ“N EXACTA ---
 
     [Networked] public TickTimer RangedCooldown { get; set; }
 
