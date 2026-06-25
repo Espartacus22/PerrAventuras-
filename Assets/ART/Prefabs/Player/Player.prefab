@@ -506,8 +506,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   renderers:
-  - {fileID: 8643171158666478743}
+  - {fileID: 3314453655646570107}
   - {fileID: 1223469779180574505}
+  - {fileID: 3417595983384638852}
   flashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.08
   flashCount: 4
@@ -602,11 +603,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Fusion.Unity::Fusion.NetworkCharacterController
   _stateAuthorityChangeErrorCorrectionDelta: 0
-  gravity: -20
+  gravity: -50
   jumpImpulse: 8
   acceleration: 200
   braking: 200
-  maxSpeed: 10
+  maxSpeed: 8
   rotationSpeed: 20
 --- !u!114 &5327323899880454185
 MonoBehaviour:
@@ -749,6 +750,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 32b6db242cfa1024eb9e9910350aafac, type: 3}
   m_PrefabInstance: {fileID: 3438384705080217546}
   m_PrefabAsset: {fileID: 0}
+--- !u!23 &3417595983384638852 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 61403174094781006, guid: 32b6db242cfa1024eb9e9910350aafac, type: 3}
+  m_PrefabInstance: {fileID: 3438384705080217546}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4197033433797335807
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -833,6 +839,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 7944858128246991972}
   m_SourcePrefab: {fileID: 100100000, guid: 39af4c0c3def71f43b3cf01cc44aaffb, type: 3}
+--- !u!23 &3314453655646570107 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 39af4c0c3def71f43b3cf01cc44aaffb, type: 3}
+  m_PrefabInstance: {fileID: 4197033433797335807}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &3963082435102549934 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 39af4c0c3def71f43b3cf01cc44aaffb, type: 3}

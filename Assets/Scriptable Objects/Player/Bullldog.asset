@@ -18,11 +18,11 @@ MonoBehaviour:
   runMultiplier: 2
   crouchMultiplier: 0.5
   rotationSpeed: 15
-  jumpForce: 13
+  jumpForce: 20
   dobleSalto: 0
-  dashSpeed: 30
-  dashDuration: 0.5
-  crouchHeight: 0.5
+  dashSpeed: 100
+  dashDuration: 0.27
+  crouchHeight: 0.7
   meleeAttacks:
   - attackName: Ataque con Martillo
     damage: 20

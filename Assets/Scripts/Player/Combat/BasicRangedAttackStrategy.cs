@@ -6,20 +6,20 @@ public class BasicRangedAttackStrategy : IRangedAttackStrategy
 {
     public void Execute(PlayerCombat combat)
     {
-        // 1. Bloqueo si el mouse está sobre la UI
+        // 1. Bloqueo de UI
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
-        // 2. Validaciones de datos
+        // 2. Validaciones
         if (combat.CharacterData == null || combat.CharacterData.rangedAttacks == null) return;
         if (combat.SelectedRangedIndex < 0 || combat.SelectedRangedIndex >= combat.CharacterData.rangedAttacks.Count) return;
 
         var attack = combat.CharacterData.rangedAttacks[combat.SelectedRangedIndex];
 
-        // 3. Gestión de Cooldown (Usando LastAttackTime de PlayerCombat)
+        // 3. Cooldown
         if (combat.Runner.SimulationTime < combat.LastAttackTime + attack.cooldown) return;
         combat.LastAttackTime = combat.Runner.SimulationTime;
 
-        // 4. Feedback visual y sonoro
+        // 4. Feedback
         if (combat.Animator != null && attack.animation != null)
             combat.Animator.Play(attack.animation.name);
 
@@ -28,14 +28,14 @@ public class BasicRangedAttackStrategy : IRangedAttackStrategy
 
         if (attack.projectilePrefab == null) return;
 
+        // Posición y rotación de origen
+        Vector3 spawnPos = combat.FirePoint.position;
+        Quaternion spawnRot = combat.FirePoint.rotation;
+
         // --- 5. BALA VISUAL (CLIENTE) ---
         if (!combat.HasStateAuthority && combat.Runner.IsForward)
         {
-            GameObject visualDummy = Object.Instantiate(
-                attack.projectilePrefab.gameObject,
-                combat.FirePoint.position,
-                combat.FirePoint.rotation
-            );
+            GameObject visualDummy = Object.Instantiate(attack.projectilePrefab.gameObject, spawnPos, spawnRot);
 
             if (visualDummy.TryGetComponent<NetworkObject>(out var netObj)) Object.Destroy(netObj);
             if (visualDummy.TryGetComponent<ProjectileBehavior>(out var behavior)) Object.Destroy(behavior);
@@ -52,8 +52,8 @@ public class BasicRangedAttackStrategy : IRangedAttackStrategy
         {
             NetworkObject projectileNetObj = combat.Runner.Spawn(
                 attack.projectilePrefab.GetComponent<NetworkObject>(),
-                combat.FirePoint.position,
-                combat.FirePoint.rotation,
+                spawnPos,
+                spawnRot,
                 combat.Object.InputAuthority
             );
 

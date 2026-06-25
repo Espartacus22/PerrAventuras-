@@ -15,7 +15,9 @@ public class PDashState : PState
 
     public override void LogicUpdate()
     {
-        dashTimer -= Time.deltaTime;
+        // CORRECCIÓN MULTIPLAYER: Usamos el delta time del Runner de Fusion 
+        // para que el tiempo corra sincronizado con las físicas de red.
+        dashTimer -= player.Runner.DeltaTime;
 
         if (dashTimer <= 0f)
         {
