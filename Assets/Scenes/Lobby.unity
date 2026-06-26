@@ -823,6 +823,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1435402133}
     - target: {fileID: 6730502270437423418, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: _pickupAmount
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6730502270437423418, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
+      propertyPath: _pickupRadius
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6730502270437423418, guid: 51af455c63354494688bf9b28bb5109a, type: 3}
       propertyPath: _networkRunner
       value: 
       objectReference: {fileID: 484863492}
