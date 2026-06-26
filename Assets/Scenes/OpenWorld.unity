@@ -41703,6 +41703,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4181232147476146228, guid: 92ecdd9721f74c34988b33bd2c988aa4, type: 3}
+      propertyPath: m_fontSizeMin
+      value: 30.07
+      objectReference: {fileID: 0}
+    - target: {fileID: 4181232147476146228, guid: 92ecdd9721f74c34988b33bd2c988aa4, type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4181232147476146228, guid: 92ecdd9721f74c34988b33bd2c988aa4, type: 3}
+      propertyPath: m_HorizontalAlignment
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4310185247954382881, guid: 92ecdd9721f74c34988b33bd2c988aa4, type: 3}
       propertyPath: m_Name
       value: Canvas_NPC
@@ -41785,6 +41797,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4442920226808260938, guid: 92ecdd9721f74c34988b33bd2c988aa4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5219082882669567194, guid: 92ecdd9721f74c34988b33bd2c988aa4, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5219082882669567194, guid: 92ecdd9721f74c34988b33bd2c988aa4, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5219082882669567194, guid: 92ecdd9721f74c34988b33bd2c988aa4, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7037393470015778033, guid: 92ecdd9721f74c34988b33bd2c988aa4, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -69364,6 +69392,75 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours: []
   ForceRemoteRenderTimeframe: 0
+--- !u!1001 &1852764436
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -573289868721117298, guid: d0450f017ccae9242b342b54f375bee6, type: 3}
+      propertyPath: dialogueText
+      value: 
+      objectReference: {fileID: 1116497817}
+    - target: {fileID: -573289868721117298, guid: d0450f017ccae9242b342b54f375bee6, type: 3}
+      propertyPath: dialoguePanel
+      value: 
+      objectReference: {fileID: 1116497818}
+    - target: {fileID: 2951430851616671965, guid: d0450f017ccae9242b342b54f375bee6, type: 3}
+      propertyPath: SortKey
+      value: 100498932
+      objectReference: {fileID: 0}
+    - target: {fileID: 7115266445705776209, guid: d0450f017ccae9242b342b54f375bee6, type: 3}
+      propertyPath: m_Name
+      value: NPC Doble Salto
+      objectReference: {fileID: 0}
+    - target: {fileID: 9154325657290421873, guid: d0450f017ccae9242b342b54f375bee6, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 115.051056
+      objectReference: {fileID: 0}
+    - target: {fileID: 9154325657290421873, guid: d0450f017ccae9242b342b54f375bee6, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.027000003
+      objectReference: {fileID: 0}
+    - target: {fileID: 9154325657290421873, guid: d0450f017ccae9242b342b54f375bee6, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -238.41228
+      objectReference: {fileID: 0}
+    - target: {fileID: 9154325657290421873, guid: d0450f017ccae9242b342b54f375bee6, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.10492874
+      objectReference: {fileID: 0}
+    - target: {fileID: 9154325657290421873, guid: d0450f017ccae9242b342b54f375bee6, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9154325657290421873, guid: d0450f017ccae9242b342b54f375bee6, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.99447984
+      objectReference: {fileID: 0}
+    - target: {fileID: 9154325657290421873, guid: d0450f017ccae9242b342b54f375bee6, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9154325657290421873, guid: d0450f017ccae9242b342b54f375bee6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9154325657290421873, guid: d0450f017ccae9242b342b54f375bee6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 167.954
+      objectReference: {fileID: 0}
+    - target: {fileID: 9154325657290421873, guid: d0450f017ccae9242b342b54f375bee6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d0450f017ccae9242b342b54f375bee6, type: 3}
 --- !u!1001 &1854575121
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -82358,3 +82455,4 @@ SceneRoots:
   - {fileID: 755046501}
   - {fileID: 227201871}
   - {fileID: 1181258307}
+  - {fileID: 1852764436}

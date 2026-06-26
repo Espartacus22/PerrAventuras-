@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34fd7e8568a229c4e926c1d759d33112, type: 3}
+  m_Name: Mission_DobleSalto_002
+  m_EditorClassIdentifier: Assembly-CSharp::MissionData
+  missionId: DobleSalto_002
+  missionName: Desbloqueo Habiliadad Doble Salto mediante NPC
+  description: "Entregar 10 monedas para que le ense\xF1e doble salto\n"
+  missionSteps:
+  - targetId: Talk_NPC_DobleSalto
+    amount: 1
+    failureId: 
+  failureSteps: []
+  xp: 0
+  coins: 0

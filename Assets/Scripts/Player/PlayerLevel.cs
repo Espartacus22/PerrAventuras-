@@ -28,6 +28,7 @@ public class PlayerLevel : NetworkBehaviour
     [Header("Monedas")]
     [Networked] public int currentCoins { get; set; }
 
+
     // --- VARIABLES LOCALES FIJAS ---
     [Header("Escalado por nivel")]
     public int healthPerLevel = 20;
@@ -56,7 +57,7 @@ public class PlayerLevel : NetworkBehaviour
         if (HasStateAuthority)
         {
             xpToNextLevel = 100;
-            maxHealth = 100; // O characterData.baseHealth si lo prefieres
+            maxHealth = 100;
             currentHealth = maxHealth;
             maxShield = 0;
             currentShield = 0;
@@ -66,12 +67,9 @@ public class PlayerLevel : NetworkBehaviour
 
         _lastVisibleHealth = currentHealth;
 
-        // ¡EL ARREGLO DE LA UI ESTÁ AQUÍ!
         if (HasInputAuthority)
         {
-            // Le agregamos "UnityEngine." para que Fusion no tire el error CS0176
             PlayerHUD hud = UnityEngine.Object.FindFirstObjectByType<PlayerHUD>();
-
             if (hud != null)
             {
                 hud.playerLevel = this;
@@ -87,12 +85,8 @@ public class PlayerLevel : NetworkBehaviour
         {
             if (currentHealth < _lastVisibleHealth)
             {
-                if (damageFlash != null)
-                {
-                    damageFlash.Flash();
-                }
+                if (damageFlash != null) damageFlash.Flash();
 
-                // Actualizamos la UI al recibir daño
                 if (HasInputAuthority)
                 {
                     PlayerHUD hud = UnityEngine.Object.FindFirstObjectByType<PlayerHUD>();
@@ -173,28 +167,20 @@ public class PlayerLevel : NetworkBehaviour
             finalDamage -= shieldDamage;
         }
 
-        if (finalDamage > 0)
-        {
-            currentHealth -= finalDamage;
-        }
+        if (finalDamage > 0) currentHealth -= finalDamage;
 
-        if (currentHealth <= 0)
-        {
-            Die();
-        }
+        if (currentHealth <= 0) Die();
     }
 
     public void Heal(int amount)
     {
-        if (!HasStateAuthority) return;
-        if (amount <= 0) return;
+        if (!HasStateAuthority || amount <= 0) return;
         currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
     }
 
     public void RestoreShield(int amount)
     {
-        if (!HasStateAuthority) return;
-        if (amount <= 0) return;
+        if (!HasStateAuthority || amount <= 0) return;
         currentShield = Mathf.Min(currentShield + amount, maxShield);
     }
 
@@ -212,15 +198,7 @@ public class PlayerLevel : NetworkBehaviour
     private void Die()
     {
         PlayerRespawn respawn = GetComponent<PlayerRespawn>();
-        if (respawn != null)
-        {
-            respawn.Respawn();
-        }
-        else
-        {
-            RestoreFullState();
-        }
+        if (respawn != null) respawn.Respawn();
+        else RestoreFullState();
     }
 }
-
-

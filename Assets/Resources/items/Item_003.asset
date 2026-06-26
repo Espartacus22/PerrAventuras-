@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 3
   itemName: Collar
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 00eec9d1cf5708140bda1189e3ece6ec, type: 3}
   maxStack: 99
   isConsumable: 0
   healAmount: 0
-  isEquipable: 1
+  isEquipable: 0
   pickupPrefab: {fileID: 0}
