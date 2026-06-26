@@ -115,16 +115,13 @@ public class PlayerMovement : NetworkBehaviour
         StateMachine.CurrentState.LogicUpdate();
         StateMachine.CurrentState.PhysicsUpdate();
 
-        // --- COMUNICACIÓN ANIMATOR OPTIMIZADA PARA FUSION ---
-        // Obtenemos el componente de red que maneja la sincronización
-        var netMecanim = GetComponent<NetworkMecanimAnimator>();
-
-        // Si existe y tiene un Animator asignado, actualizamos el parámetro a través de la red
-        if (netMecanim != null && netMecanim.Animator != null)
+        // Comunicación Animator
+        Animator anim = GetComponentInChildren<Animator>();
+        if (anim != null)
         {
             float speed = ncc.Velocity.magnitude / ncc.maxSpeed;
-            // Al llamar al Animator del componente de red, Fusion sincroniza el cambio
-            netMecanim.Animator.SetFloat("Speed", speed);
+            anim.SetFloat("Speed", speed);
+            anim.SetBool("IsGrounded", ncc.Grounded);
         }
     }
 

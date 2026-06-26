@@ -4,72 +4,31 @@ using UnityEngine;
 public class PlayerVisuals : NetworkBehaviour
 {
     [Header("Modelos 3D")]
-    [SerializeField] private GameObject _modelCharacterA; // Beagle
-    [SerializeField] private GameObject _modelCharacterB; // Caniche
+    [SerializeField] private GameObject _modelCharacterA; // Arrastra tu modelo 1 aquí
+    [SerializeField] private GameObject _modelCharacterB; // Arrastra tu modelo 2 aquí
 
-    // El Networked permite que todos los clientes vean qué modelo está activo
+    // Variable de red: 0 será para el Host, 1 será para el Cliente
+    // OnChangedRender avisa a Unity que debe actualizar la vista si este número cambia
     [Networked, OnChangedRender(nameof(UpdateVisuals))]
     public int ModelIndex { get; set; }
 
     public override void Spawned()
     {
-        // Forzamos la actualización inicial al aparecer
+        // Apenas nace el jugador, actualizamos qué modelo debe verse
         UpdateVisuals();
     }
 
-    public void UpdateVisuals()
+    private void UpdateVisuals()
     {
-        // Debug para saber qué está haciendo cada jugador
-        Debug.Log($"[{gameObject.name}] Actualizando visuales. Index actual: {ModelIndex}");
-
-        if (_modelCharacterA == null || _modelCharacterB == null)
+        if (ModelIndex == 0)
         {
-            Debug.LogError("Faltan referencias a los modelos en PlayerVisuals");
-            return;
+            _modelCharacterA.SetActive(true);
+            _modelCharacterB.SetActive(false);
         }
-
-        // Definimos cuál modelo activar
-        bool isBeagle = (ModelIndex == 1);
-
-        GameObject activeModel = isBeagle ? _modelCharacterA : _modelCharacterB;
-        Animator newAnimator = activeModel.GetComponentInChildren<Animator>();
-
-        try
+        else
         {
-            // Activamos/Desactivamos
-            _modelCharacterA.SetActive(isBeagle);
-            _modelCharacterB.SetActive(!isBeagle);
-
-            if (newAnimator != null && newAnimator.runtimeAnimatorController != null)
-            {
-                var netMecanim = GetComponent<NetworkMecanimAnimator>();
-
-                if (netMecanim != null)
-                {
-                    // Deshabilitar temporalmente evita conflictos de sincronización
-                    netMecanim.enabled = false;
-
-                    // Asignamos el nuevo Animator
-                    netMecanim.Animator = newAnimator;
-
-                    // --- RESET FORZADO ---
-                    // Esto es vital para que el Animator pase de "congelado" a "activo"
-                    newAnimator.Rebind();
-                    newAnimator.Update(0);
-                    // ---------------------
-
-                    netMecanim.enabled = true;
-                    Debug.Log($"[{gameObject.name}] Animator asignado correctamente a: {newAnimator.name}");
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"[{gameObject.name}] El modelo activo no tiene un Animator válido.");
-            }
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError("Error crítico en UpdateVisuals: " + e.Message);
+            _modelCharacterA.SetActive(false);
+            _modelCharacterB.SetActive(true);
         }
     }
 }

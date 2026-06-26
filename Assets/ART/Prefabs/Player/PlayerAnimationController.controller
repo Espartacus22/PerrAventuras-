@@ -74,8 +74,8 @@ AnimatorStateTransition:
   serializedVersion: 3
   m_TransitionDuration: 0
   m_TransitionOffset: 0
-  m_ExitTime: 0.3470588
-  m_HasExitTime: 1
+  m_ExitTime: 0.64705884
+  m_HasExitTime: 0
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
@@ -156,7 +156,7 @@ AnimatorStateMachine:
     m_Position: {x: 490, y: 40, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -4431571610075363910}
-    m_Position: {x: 460, y: 180, z: 0}
+    m_Position: {x: 595.12634, y: 360.68057, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
@@ -175,7 +175,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Rig_Char_Player_Caniche|Anim_Char_Player_Caniche_MeleeAttack
-  m_Speed: 20
+  m_Speed: 5
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 6052502637539043293}
@@ -236,7 +236,7 @@ AnimatorStateTransition:
   m_TransitionDuration: 0.53699994
   m_TransitionOffset: 0
   m_ExitTime: 1
-  m_HasExitTime: 0
+  m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
