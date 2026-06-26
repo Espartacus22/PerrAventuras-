@@ -242,7 +242,7 @@ MonoBehaviour:
   firePoint: {fileID: 7817972316249161228}
   range: 25
   rotateSpeed: 10
-  damagePerSecond: 2
+  damagePerSecond: 20
   playerMask:
     serializedVersion: 2
     m_Bits: 8
