@@ -28,7 +28,7 @@ MonoBehaviour:
     damage: 20
     cooldown: 0.2
     range: 3
-    animation: {fileID: 0}
+    animation: {fileID: -2863092994477133246, guid: a342e7387b642134dbf85ba6727dfd66, type: 3}
     sound: {fileID: 0}
     impactEffectPrefab: {fileID: 0}
     canChainCombo: 1

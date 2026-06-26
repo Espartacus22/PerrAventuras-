@@ -8,7 +8,7 @@ using UnityEngine;
 public class PlayerMovement : NetworkBehaviour
 {
     [Header("Datos del personaje")]
-    public CharacterType characterData; // El ScriptableObject
+    public CharacterType characterData;
     private NetworkCharacterController ncc;
     private CharacterController unityCC;
     private PlayerInputHandler inputHandler;
@@ -19,15 +19,9 @@ public class PlayerMovement : NetworkBehaviour
     private Vector3 originalCenter;
     private Vector3 dashDirection;
 
-    // --- VARIABLE DE RED CONTROL DE IMPULSOS ---
-    private NetworkButtons _prevButtons; // Guarda los botones del tick anterior para detectar el click inicial
+    private NetworkButtons _prevButtons;
 
-    public int JumpCount
-    {
-        get { return jumpCount; }
-    }
-
-    // Variable para recordar si un NPC nos regaló el salto en esta partida
+    public int JumpCount => jumpCount;
     private bool _unlockedDoubleJump = false;
 
     // --- MÁQUINA DE ESTADOS ---
@@ -43,8 +37,6 @@ public class PlayerMovement : NetworkBehaviour
     public CharacterType CharacterData => characterData;
     public bool IsGrounded => ncc.Grounded;
     public float VerticalVelocity => ncc.Velocity.y;
-
-    // Propiedad pública para que tus scripts de disparo puedan leer la velocidad real actual
     public Vector3 CurrentVelocity => ncc.Velocity;
 
     private void Awake()
@@ -67,7 +59,6 @@ public class PlayerMovement : NetworkBehaviour
     public override void Spawned()
     {
         StateMachine.Initialize(IdleState);
-
         if (characterData != null)
         {
             ncc.maxSpeed = characterData.walkSpeed;
@@ -92,32 +83,19 @@ public class PlayerMovement : NetworkBehaviour
 
         if (GetInput(out NetworkInputPlayer input))
         {
-            // 1. Sincronización de inputs continuos (Mantener apretado WASD, Correr, Agacharse)
             inputHandler.MoveInput = input.moveInput;
             inputHandler.RunHeld = input.buttons.IsSet(NetworkInputPlayer.RUN);
             inputHandler.CrouchPressed = input.buttons.IsSet(NetworkInputPlayer.CROUCH);
             inputHandler.RangedPressed = input.buttons.IsSet(NetworkInputPlayer.MOUSE_BUTTON_1);
             inputHandler.MeleePressed = input.buttons.IsSet(NetworkInputPlayer.MOUSE_BUTTON_0);
 
-            // --- EL TRUCO DE RED (Detección de Taps únicos) ---
-            // Calculamos qué botones se ACABAN DE PULSAR en este frame de red comparado con el anterior
             NetworkButtons pressedButtons = input.buttons.GetPressed(_prevButtons);
-
-            // Asignamos los inputs de acción usando únicamente el pulso (GetPressed)
-            // Esto evita loops infinitos si el jugador deja el dedo apoyado en el botón
             inputHandler.JumpPressed = pressedButtons.IsSet(NetworkInputPlayer.JUMP);
             inputHandler.DashPressed = pressedButtons.IsSet(NetworkInputPlayer.DASH);
-
-            // Guardamos el estado actual para la comparación del próximo tick de red
             _prevButtons = input.buttons;
 
-            // Protección de reseteo del salto en el suelo de forma nativa
-            if (ncc.Grounded && ncc.Velocity.y <= 0.01f)
-            {
-                jumpCount = 0;
-            }
+            if (ncc.Grounded && ncc.Velocity.y <= 0.01f) jumpCount = 0;
 
-            // --- 2. LÓGICA DE ROTACIÓN CON CAMPO DE VISIÓN (FOV) ---
             Vector3 moveDir = new Vector3(inputHandler.MoveInput.x, 0f, inputHandler.MoveInput.y);
             bool isAiming = inputHandler.RangedPressed || inputHandler.MeleePressed;
 
@@ -126,27 +104,25 @@ public class PlayerMovement : NetworkBehaviour
                 Vector3 forwardDir = moveDir.sqrMagnitude > 0.01f ? moveDir : transform.forward;
                 Vector3 mouseDir = input.lookDirection - transform.position;
                 mouseDir.y = 0;
-
                 float angle = Vector3.Angle(forwardDir, mouseDir);
 
-                if (angle < 60f && mouseDir.sqrMagnitude > 0.1f)
-                {
-                    RotateTowardsNetwork(transform.position + mouseDir);
-                }
-                else if (moveDir.sqrMagnitude > 0.01f)
-                {
-                    RotateTowardsNetwork(transform.position + moveDir);
-                }
+                if (angle < 60f && mouseDir.sqrMagnitude > 0.1f) RotateTowardsNetwork(transform.position + mouseDir);
+                else if (moveDir.sqrMagnitude > 0.01f) RotateTowardsNetwork(transform.position + moveDir);
             }
-            else if (moveDir.sqrMagnitude > 0.01f)
-            {
-                RotateTowardsNetwork(transform.position + moveDir);
-            }
+            else if (moveDir.sqrMagnitude > 0.01f) RotateTowardsNetwork(transform.position + moveDir);
         }
 
-        // --- 3. PROCESAMIENTO DE ESTADOS Y FÍSICA ---
         StateMachine.CurrentState.LogicUpdate();
         StateMachine.CurrentState.PhysicsUpdate();
+
+        // Comunicación Animator
+        Animator anim = GetComponentInChildren<Animator>();
+        if (anim != null)
+        {
+            float speed = ncc.Velocity.magnitude / ncc.maxSpeed;
+            anim.SetFloat("Speed", speed);
+            anim.SetBool("IsGrounded", ncc.Grounded);
+        }
     }
 
     public bool HasMovementInput() => inputHandler.MoveInput.sqrMagnitude > 0.01f;
@@ -154,57 +130,34 @@ public class PlayerMovement : NetworkBehaviour
     public void Move(bool running)
     {
         if (isDashing) return;
-
         Vector3 moveDir = new Vector3(inputHandler.MoveInput.x, 0f, inputHandler.MoveInput.y);
         float currentSpeed = characterData.walkSpeed;
         if (isCrouching) currentSpeed *= characterData.crouchMultiplier;
         else if (running) currentSpeed *= characterData.runMultiplier;
-
         ncc.maxSpeed = currentSpeed;
-
-        if (moveDir.sqrMagnitude <= 0.01f)
-        {
-            ncc.Move(Vector3.zero);
-            return;
-        }
+        if (moveDir.sqrMagnitude <= 0.01f) { ncc.Move(Vector3.zero); return; }
         ncc.Move(moveDir);
     }
 
     public void MoveInAir()
     {
         if (isDashing) return;
-
         Vector3 moveDir = new Vector3(inputHandler.MoveInput.x, 0f, inputHandler.MoveInput.y);
         ncc.maxSpeed = characterData.walkSpeed * 0.8f;
-
-        if (moveDir.sqrMagnitude > 0.01f)
-        {
-            ncc.Move(moveDir);
-        }
-        else
-        {
-            ncc.Move(Vector3.zero);
-        }
+        ncc.Move(moveDir.sqrMagnitude > 0.01f ? moveDir : Vector3.zero);
     }
 
     public void MoveCrouched() => Move(false);
-
-    public void StopHorizontalMovement()
-    {
-        ncc.Move(Vector3.zero);
-    }
+    public void StopHorizontalMovement() => ncc.Move(Vector3.zero);
 
     public void Jump()
     {
         int maxJumps = HasDoubleJump() ? 2 : 1;
         if (jumpCount < maxJumps)
         {
-            // Reseteamos la velocidad vertical al saltar para que el salto sea siempre consistente
-            // independientemente de si estás cayendo o subiendo.
             Vector3 vel = ncc.Velocity;
-            vel.y = 0; // Eliminamos la inercia vertical
+            vel.y = 0;
             ncc.Velocity = vel;
-
             ncc.Jump(true, characterData.jumpForce);
             jumpCount++;
         }
@@ -219,33 +172,17 @@ public class PlayerMovement : NetworkBehaviour
 
     public void DashMove()
     {
-        // 1. Guardamos la velocidad máxima original para restaurarla después
         float velocidadNormal = ncc.maxSpeed;
-
-        // 2. Desbloqueamos el techo de velocidad: 
-        // Le damos un valor altísimo para que no recorte nuestro Dash de 500
         ncc.maxSpeed = 1000f;
-
-        // 3. Calculamos la velocidad deseada
         Vector3 dashVel = dashDirection.normalized * characterData.dashSpeed;
-
-        // 4. Compensamos gravedad si estamos en el aire
-        if (!ncc.Grounded)
-        {
-            dashVel.y = -ncc.Velocity.y;
-        }
-
-        // 5. Aplicamos el movimiento
+        if (!ncc.Grounded) dashVel.y = -ncc.Velocity.y;
         ncc.Move(dashVel);
-
-        // 6. IMPORTANTE: Restauramos el techo original para no romper el movimiento normal
         ncc.maxSpeed = velocidadNormal;
     }
 
     public void EndDash()
     {
         isDashing = false;
-        // Cortamos el impulso del dash al instante al salir del estado
         ncc.Move(Vector3.zero);
     }
 
@@ -278,20 +215,7 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
-    public void UnlockDoubleJump()
-    {
-        _unlockedDoubleJump = true;
-        Debug.Log($"{name}: Doble salto desbloqueado por NPC/Evento.");
-    }
-
-    public void LockDoubleJump()
-    {
-        _unlockedDoubleJump = false;
-        Debug.Log($"{name}: Doble salto bloqueado.");
-    }
-
-    public bool HasDoubleJump()
-    {
-        return (characterData != null && characterData.dobleSalto) || _unlockedDoubleJump;
-    }
+    public void UnlockDoubleJump() => _unlockedDoubleJump = true;
+    public void LockDoubleJump() => _unlockedDoubleJump = false;
+    public bool HasDoubleJump() => (characterData != null && characterData.dobleSalto) || _unlockedDoubleJump;
 }

@@ -14,8 +14,10 @@ public class BasicMeleeAttackStrategy : IMeleeAttackStrategy
         if (!combat.MeleeCooldown.ExpiredOrNotRunning(combat.Runner)) return;
         combat.MeleeCooldown = TickTimer.CreateFromSeconds(combat.Runner, attack.cooldown);
 
-        if (combat.Animator != null && attack.animation != null)
-            combat.Animator.Play(attack.animation.name);
+        if (combat.Animator != null)
+        {
+            combat.Animator.SetTrigger("AttackTrigger");
+        }
 
         if (combat.AudioSource != null && attack.sound != null)
             combat.AudioSource.PlayOneShot(attack.sound);
