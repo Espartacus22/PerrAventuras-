@@ -724,8 +724,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76062a9c50edc9945a58da4cdf4ce4b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerVisuals
-  _modelCharacterA: {fileID: 1027376465062470129}
-  _modelCharacterB: {fileID: 4080122181040620019}
+  _modelCharacterA: {fileID: 4080122181040620019}
+  _modelCharacterB: {fileID: 1027376465062470129}
   _ModelIndex: 0
 --- !u!114 &6490849164867671991
 MonoBehaviour:
