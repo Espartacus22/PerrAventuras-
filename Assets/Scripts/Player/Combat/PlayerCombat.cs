@@ -33,7 +33,7 @@ public class PlayerCombat : NetworkBehaviour
         Animator = GetComponentInChildren<Animator>();
         AudioSource = GetComponent<AudioSource>();
         inputHandler = GetComponent<PlayerInputHandler>();
-        
+
 
         meleeStrategy = new BasicMeleeAttackStrategy();
         rangedStrategy = new BasicRangedAttackStrategy();
@@ -66,3 +66,4 @@ public class PlayerCombat : NetworkBehaviour
         }
     }
 }
+

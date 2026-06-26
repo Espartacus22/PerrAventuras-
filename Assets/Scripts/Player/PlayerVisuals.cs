@@ -1,3 +1,4 @@
+
 using Fusion;
 using UnityEngine;
 
@@ -72,4 +73,6 @@ public class PlayerVisuals : NetworkBehaviour
             Debug.LogError("Error crítico en UpdateVisuals: " + e.Message);
         }
     }
+
 }
+

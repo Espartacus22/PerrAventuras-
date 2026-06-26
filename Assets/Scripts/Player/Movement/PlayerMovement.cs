@@ -222,3 +222,4 @@ public class PlayerMovement : NetworkBehaviour
     public void LockDoubleJump() => _unlockedDoubleJump = false;
     public bool HasDoubleJump() => (characterData != null && characterData.dobleSalto) || _unlockedDoubleJump;
 }
+
