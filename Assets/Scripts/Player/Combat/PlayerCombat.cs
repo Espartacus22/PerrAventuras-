@@ -38,7 +38,14 @@ public class PlayerCombat : NetworkBehaviour
         meleeStrategy = new BasicMeleeAttackStrategy();
         rangedStrategy = new BasicRangedAttackStrategy();
     }
-
+    public void TriggerAttackAnimation(string triggerName)
+    {
+        var netMecanim = GetComponent<NetworkMecanimAnimator>();
+        if (netMecanim != null && netMecanim.Animator != null)
+        {
+            netMecanim.Animator.SetTrigger(triggerName);
+        }
+    }
     public override void FixedUpdateNetwork()
     {
         if (Animator == null || !Animator.gameObject.activeInHierarchy) return;

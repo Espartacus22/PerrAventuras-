@@ -16,7 +16,13 @@ public class BasicMeleeAttackStrategy : IMeleeAttackStrategy
 
         if (combat.Animator != null)
         {
-            combat.Animator.SetTrigger("AttackTrigger");
+            // NO uses combat.Animator.SetTrigger directamente.
+            // Llama a una función que use el NetworkMecanimAnimator
+            var netMecanim = combat.GetComponent<NetworkMecanimAnimator>();
+            if (netMecanim != null && netMecanim.Animator != null)
+            {
+                netMecanim.Animator.SetTrigger("AttackTrigger");
+            }
         }
 
         if (combat.AudioSource != null && attack.sound != null)
