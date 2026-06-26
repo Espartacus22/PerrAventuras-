@@ -47,20 +47,16 @@ public class InventorySystem : NetworkBehaviour
 
         var item = ItemDatabase.GetItem(Items[slot]);
 
-        // 1. LÓGICA PARA CONSUMIBLES (Pociones, Comida)
         if (item?.isConsumable == true)
         {
             PlayerLevel playerStats = GetComponent<PlayerLevel>();
 
             if (playerStats != null)
             {
-                // Solo entramos si la vida actual es menor a la máxima
                 if (playerStats.currentHealth < playerStats.maxHealth)
                 {
                     playerStats.Heal((int)item.healAmount);
                     Debug.Log($"[INVENTARIO] Usaste {item.itemName}. Vida restaurada.");
-
-                    // Solo si se usó efectivamente, vaciamos el slot
                     Items.Set(slot, -1);
                 }
                 else
@@ -69,13 +65,9 @@ public class InventorySystem : NetworkBehaviour
                 }
             }
         }
-        // 2. NUEVA LÓGICA PARA EQUIPABLES (Collares, Armaduras)
         else if (item?.isEquipable == true)
         {
             Debug.Log($"[INVENTARIO] Te equipaste: {item.itemName}.");
-
-            
-     
         }
     }
 
@@ -147,5 +139,30 @@ public class InventorySystem : NetworkBehaviour
             return true;
         }
         return false;
+    }
+
+    // MÉTODOS NUEVOS PARA LA MISIÓN DE LAS 10 MONEDAS
+    public int GetTotalItemCount(int itemId)
+    {
+        int count = 0;
+        for (int i = 0; i < SLOTS; i++)
+        {
+            if (Items[i] == itemId) count++;
+        }
+        return count;
+    }
+
+    public void RemoveItems(int itemId, int amount)
+    {
+        if (!Object.HasStateAuthority) return;
+        int removed = 0;
+        for (int i = 0; i < SLOTS && removed < amount; i++)
+        {
+            if (Items[i] == itemId)
+            {
+                Items.Set(i, -1);
+                removed++;
+            }
+        }
     }
 }

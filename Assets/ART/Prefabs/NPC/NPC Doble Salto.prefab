@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 2951430851616671965}
   - component: {fileID: -573289868721117298}
   m_Layer: 10
-  m_Name: NPC
+  m_Name: NPC Doble Salto
   m_TagString: NPC
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -129,7 +129,7 @@ MonoBehaviour:
   m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
-  SortKey: 3197691614
+  SortKey: 4206021037
   ObjectInterest: 1
   Flags: 262145
   NestedObjects: []
@@ -148,14 +148,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34826774c9d0a684598277335c859f9d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkNPCMissions
-  modoNPC: 0
-  missionToGive: {fileID: 11400000, guid: afe7cdb7cd4c5f2449ddd501a1971098, type: 2}
+  modoNPC: 1
+  missionToGive: {fileID: 11400000, guid: 72f43afcd6d1f9a41bf868ec4c9ba73f, type: 2}
   gemaItemId: 2
   tiraItemId: 1
   collarResultId: 3
-  monedaItemId: 10
-  cantidadMonedas: 10
-  dialoguePanel: {fileID: 7115266445705776209}
+  cantidadMonedas: 3
+  dialoguePanel: {fileID: 0}
   dialogueText: {fileID: 0}
 --- !u!1001 &28104454495408461
 PrefabInstance:
